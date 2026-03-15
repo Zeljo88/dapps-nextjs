@@ -20,7 +20,7 @@ export default async function HomePage() {
                 Cardano DApp Store
               </h1>
               <p style={{ fontSize: 15, opacity: 0.85, maxWidth: 500 }}>
-                Real-time analytics for {stats.totalDapps} active DApps on Cardano — TVL, volume, transactions and yields.
+                Real-time analytics for DApps on Cardano — TVL, volume, transactions and yields.
               </p>
             </div>
             <a href="https://adripool.net" target="_blank" rel="noopener noreferrer"
