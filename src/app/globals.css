@@ -1,19 +1,45 @@
 @import "tailwindcss";
 
-:root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #111118;
-  --bg-card: #16161f;
+/* ── Dark theme (default) ── */
+:root, [data-theme="dark"] {
+  --bg-primary:    #0a0a0f;
+  --bg-secondary:  #111118;
+  --bg-card:       #16161f;
   --bg-card-hover: #1e1e2a;
-  --border: #2a2a3a;
-  --border-light: #333344;
-  --text-primary: #f1f1f3;
-  --text-secondary: #9999b0;
-  --text-muted: #666680;
-  --accent: #8b5cf6;
-  --accent-dim: rgba(139, 92, 246, 0.15);
-  --green: #10b981;
-  --red: #ef4444;
+  --border:        #2a2a3a;
+  --border-light:  #333344;
+  --text-primary:  #f1f1f3;
+  --text-secondary:#9999b0;
+  --text-muted:    #666680;
+  --accent:        #8b5cf6;
+  --accent-dim:    rgba(139,92,246,0.15);
+  --green:         #10b981;
+  --red:           #ef4444;
+  --hero-bg:       linear-gradient(135deg, #0a0a0f 0%, #111118 100%);
+  --hero-text:     #f1f1f3;
+  --nav-bg:        rgba(10,10,15,0.85);
+  --shadow:        0 2px 16px rgba(0,0,0,0.4);
+}
+
+/* ── Light theme (blue gradient, original vibe) ── */
+[data-theme="light"] {
+  --bg-primary:    #f0f4ff;
+  --bg-secondary:  #e8eeff;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f5f8ff;
+  --border:        #d0d9f0;
+  --border-light:  #b8c8e8;
+  --text-primary:  #0f1a3a;
+  --text-secondary:#3a5080;
+  --text-muted:    #7a90b8;
+  --accent:        #0066ff;
+  --accent-dim:    rgba(0,102,255,0.1);
+  --green:         #00b87a;
+  --red:           #e03040;
+  --hero-bg:       linear-gradient(135deg, #0052cc 0%, #00c6a2 100%);
+  --hero-text:     #ffffff;
+  --nav-bg:        rgba(0,70,180,0.92);
+  --shadow:        0 2px 16px rgba(0,60,160,0.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,19 +49,20 @@ body {
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.2s, color 0.2s;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: background 0.2s, border-color 0.2s;
 }
-
 .card:hover { border-color: var(--border-light); }
 
 .badge {
@@ -49,15 +76,31 @@ body {
   text-transform: uppercase;
 }
 
-.btn-primary {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
+/* Hero banner — used on homepage */
+.hero-banner {
+  background: var(--hero-bg);
+  color: var(--hero-text);
+  border-radius: 16px;
+  padding: 40px 48px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
 }
-.btn-primary:hover { opacity: 0.85; }
+
+.hero-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 60%),
+                    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Mesh pattern overlay for light hero */
+[data-theme="light"] .hero-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
