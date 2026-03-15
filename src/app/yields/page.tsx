@@ -2,6 +2,12 @@ import { fmt } from "@/lib/api";
 
 export const revalidate = 3600;
 
+export const metadata = {
+  title: "Cardano Yields",
+  description: "Best yield rates on Cardano — APY, TVL and pool data for Liqwid, Indigo, Minswap LP and 90+ more pools.",
+  alternates: { canonical: "https://dappsoncardano.com/yields" },
+};
+
 async function fetchYields() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28"}/yields`, { next: { revalidate: 3600 } });
   return res.json();

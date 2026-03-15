@@ -2,8 +2,9 @@ import SwapWidget from "@/components/SwapWidget";
 import "@dexhunterio/swaps/lib/assets/style.css";
 
 export const metadata = {
-  title: "Swap | DApps on Cardano",
-  description: "Swap Cardano tokens at the best rates across all DEXes — powered by DexHunter.",
+  title: "Swap Cardano Tokens",
+  description: "Swap ADA and Cardano tokens at the best rates — automatically routes across Minswap, SundaeSwap, WingRiders and 11 more DEXes.",
+  alternates: { canonical: "https://dappsoncardano.com/swap" },
 };
 
 export default function SwapPage() {

@@ -9,13 +9,27 @@ import { fetchGlobalStats } from "@/lib/api";
 const GA_ID = "G-0YSY4YKKD0";
 
 export const metadata: Metadata = {
-  title: "DApps on Cardano",
-  description: "Real-time analytics for Cardano DApps — TVL, volume, transactions and yields.",
+  title: { default: "DApps on Cardano", template: "%s | DApps on Cardano" },
+  description: "Real-time analytics for Cardano DApps — TVL, volume, DEX transactions and yield rates. Track 94+ DApps, swap tokens at best rates.",
+  keywords: ["Cardano", "DApps", "DeFi", "ADA", "TVL", "DEX", "swap", "yield", "analytics", "blockchain"],
+  metadataBase: new URL("https://dappsoncardano.com"),
+  alternates: { canonical: "https://dappsoncardano.com" },
   openGraph: {
-    title: "DApps on Cardano",
-    description: "Real-time analytics for Cardano DApps",
+    title: "DApps on Cardano — Real-time DeFi Analytics",
+    description: "Track TVL, volume, yields and transactions for 94+ Cardano DApps. Swap tokens at best rates across 14+ DEXes.",
+    url: "https://dappsoncardano.com",
     siteName: "DApps on Cardano",
+    type: "website",
+    locale: "en_US",
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@dappsoncardano",
+    creator: "@AdriaStakePool",
+    title: "DApps on Cardano — Real-time DeFi Analytics",
+    description: "Track TVL, volume, yields and transactions for 94+ Cardano DApps.",
+  },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

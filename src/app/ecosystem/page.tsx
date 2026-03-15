@@ -3,6 +3,12 @@ import EcosystemCharts from "@/components/EcosystemCharts";
 
 export const revalidate = 300;
 
+export const metadata = {
+  title: "Cardano Ecosystem",
+  description: "Cardano DeFi ecosystem overview — total TVL, DEX volume, DApp categories and on-chain statistics.",
+  alternates: { canonical: "https://dappsoncardano.com/ecosystem" },
+};
+
 export default async function EcosystemPage() {
   const [eco, stats] = await Promise.all([fetchEcosystem(), fetchGlobalStats()]);
 
