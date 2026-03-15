@@ -30,8 +30,8 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 17, fontWeight: 800, color: "white",
           }}>₳</div>
-          <span style={{ fontWeight: 700, fontSize: 15, color: "var(--hero-text)",
-            opacity: 0.95, letterSpacing: "-0.01em" }}>
+          <span style={{ fontWeight: 700, fontSize: 15, color: "rgba(255,255,255,0.95)",
+            letterSpacing: "-0.01em" }}>
             DApps on Cardano
           </span>
         </Link>
@@ -44,9 +44,9 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
               <Link key={l.href} href={l.href} style={{
                 padding: "6px 14px", borderRadius: 8, fontSize: 14, fontWeight: 500,
                 textDecoration: "none",
-                color: active ? "white" : "var(--text-secondary)",
-                background: active ? "var(--accent-dim)" : "transparent",
-                border: active ? "1px solid var(--accent-dim)" : "1px solid transparent",
+                color: active ? "white" : "rgba(255,255,255,0.7)",
+                background: active ? "rgba(255,255,255,0.18)" : "transparent",
+                border: active ? "1px solid rgba(255,255,255,0.25)" : "1px solid transparent",
                 transition: "all 0.15s",
               }}>{l.label}</Link>
             );
@@ -56,7 +56,7 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
         {/* Right side controls */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
           {/* Live indicator */}
-          <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--green)",
               boxShadow: "0 0 6px var(--green)" }} />
             Mainnet

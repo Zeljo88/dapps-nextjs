@@ -11,13 +11,13 @@ export default function ThemeToggle() {
       style={{
         width: 36, height: 36,
         borderRadius: 8,
-        background: "transparent",
-        border: "1px solid var(--border)",
+        background: "rgba(255,255,255,0.12)",
+        border: "1px solid rgba(255,255,255,0.2)",
         cursor: "pointer",
-        fontSize: 17,
+        fontSize: 16,
         display: "flex", alignItems: "center", justifyContent: "center",
         transition: "all 0.15s",
-        color: "var(--text-secondary)",
+        color: "rgba(255,255,255,0.8)",
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.borderColor = "var(--border-light)";

@@ -7,7 +7,7 @@ export default function CurrencyToggle({ adaPrice }: { adaPrice: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       {adaPrice > 0 && (
-        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
           1 ₳ = ${adaPrice.toFixed(4)}
         </span>
       )}
@@ -16,7 +16,7 @@ export default function CurrencyToggle({ adaPrice }: { adaPrice: number }) {
         title="Toggle currency"
         style={{
           display: "flex", alignItems: "center",
-          background: "var(--bg-card)", border: "1px solid var(--border)",
+          background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
           borderRadius: 8, overflow: "hidden", cursor: "pointer", padding: 0,
         }}
       >
@@ -25,7 +25,7 @@ export default function CurrencyToggle({ adaPrice }: { adaPrice: number }) {
             padding: "5px 12px", fontSize: 13, fontWeight: 700,
             transition: "all 0.15s",
             background: currency === c ? "var(--accent)" : "transparent",
-            color: currency === c ? "white" : "var(--text-muted)",
+            color: currency === c ? "white" : "rgba(255,255,255,0.5)",
           }}>
             {c === "ADA" ? "₳" : "$"}
           </span>

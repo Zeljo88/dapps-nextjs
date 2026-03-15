@@ -18,6 +18,8 @@ export default function DAppTable({ dapps, adaPrice }: { dapps: any[], adaPrice:
 
   const filtered = useMemo(() => {
     let d = dapps;
+    // Hide DApps with no data at all (0 TVL AND 0 tx count AND 0 volume)
+    d = d.filter(x => x.tvl > 0 || x.trxCount > 0 || x.volume30d > 0);
     if (search) d = d.filter(x => x.name.toLowerCase().includes(search.toLowerCase()));
     if (cat !== "ALL") d = d.filter(x => x.category === cat);
     d = [...d].sort((a, b) => {
@@ -81,6 +83,7 @@ export default function DAppTable({ dapps, adaPrice }: { dapps: any[], adaPrice:
 
         <div style={{ marginLeft: "auto", fontSize: 13, color: "var(--text-muted)" }}>
           {filtered.length} DApps
+          {search || cat !== "ALL" ? ` of ${dapps.filter(x => x.tvl > 0 || x.trxCount > 0 || x.volume30d > 0).length}` : ""}
         </div>
       </div>
 
