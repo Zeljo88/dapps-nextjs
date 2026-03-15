@@ -1,4 +1,6 @@
 "use client";
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useWallet, SUPPORTED_WALLETS } from "@/lib/wallet";
 
 const WALLET_EMOJIS: Record<string, string> = {
@@ -20,16 +22,17 @@ export default function WalletModal({ onClose }: { onClose: () => void }) {
     installed: installedWallets.some(iw => iw.name === w.name),
   })).sort((a, b) => (b.installed ? 1 : 0) - (a.installed ? 1 : 0));
 
-  return (
+  const modal = (
     <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      zIndex: 9999,
+      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+      zIndex: 99999,
       background: "rgba(0,0,0,0.75)",
       backdropFilter: "blur(6px)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: "20px",
+      boxSizing: "border-box",
     }} onClick={onClose}>
       <div style={{
         background: "var(--bg-card)",
@@ -41,8 +44,6 @@ export default function WalletModal({ onClose }: { onClose: () => void }) {
         maxHeight: "80vh",
         overflowY: "auto",
         boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
-        position: "relative",
-        zIndex: 10000,
       }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
@@ -118,6 +119,9 @@ export default function WalletModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(modal, document.body);
 }
 
 function getWalletUrl(name: string): string {
