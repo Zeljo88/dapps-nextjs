@@ -1,11 +1,12 @@
-import { fetchDapps, fetchGlobalStats, fmt, fmtNum } from "@/lib/api";
-import StatCard from "@/components/StatCard";
+import { fetchDapps, fetchGlobalStats, fmtNum } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
+import HomeStats from "@/components/HomeStats";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
   const [dapps, stats] = await Promise.all([fetchDapps(), fetchGlobalStats()]);
+  const adaPrice = stats.adaPrice || 0;
 
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
@@ -19,47 +20,27 @@ export default async function HomePage() {
         </p>
       </div>
 
-      {/* Stats row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 36 }}>
-        <StatCard
-          label="Total TVL"
-          value={fmt(stats.totalTvl)}
-          sub="Across all DApps"
-          color="#8b5cf6"
-          icon="💰"
-        />
-        <StatCard
-          label="30d Volume"
-          value={fmt(stats.totalVolume30d)}
-          sub="DEX trading volume"
-          color="#10b981"
-          icon="📊"
-        />
-        <StatCard
-          label="Transactions"
-          value={fmtNum(stats.totalTxCount)}
-          sub="Script interactions"
-          color="#3b82f6"
-          icon="⚡"
-        />
-        <StatCard
-          label="DApps Tracked"
-          value={`${stats.totalDapps}`}
-          sub={`${stats.dappsWithTvl} with TVL data`}
-          color="#f59e0b"
-          icon="🔧"
-        />
-        <StatCard
-          label="Current Epoch"
-          value={`${stats.currentEpoch}`}
-          sub={`Block #${(stats.blockHeight || 0).toLocaleString()}`}
-          color="#06b6d4"
-          icon="🔗"
-        />
+      {/* Stats row — client component for currency switching */}
+      <HomeStats stats={stats} adaPrice={adaPrice} />
+
+      {/* Epoch/block info row */}
+      <div style={{ display: "flex", gap: 20, marginBottom: 36, flexWrap: "wrap" }}>
+        {[
+          { label: "Transactions", value: fmtNum(stats.totalTxCount), sub: "Script interactions", color: "#3b82f6" },
+          { label: "DApps Tracked", value: `${stats.totalDapps}`, sub: `${stats.dappsWithTvl} with TVL data`, color: "#f59e0b" },
+          { label: "Current Epoch", value: `${stats.currentEpoch}`, sub: `Block #${(stats.blockHeight || 0).toLocaleString()}`, color: "#06b6d4" },
+        ].map(c => (
+          <div key={c.label} className="card" style={{ padding: "16px 22px", flex: "1 1 180px" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600,
+              textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>{c.label}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: c.color }}>{c.value}</div>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>{c.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* DApp Table */}
-      <DAppTable dapps={dapps} />
+      <DAppTable dapps={dapps} adaPrice={adaPrice} />
     </main>
   );
 }

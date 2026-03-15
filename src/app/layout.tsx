@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { CurrencyProvider } from "@/lib/currency";
+import { fetchGlobalStats } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "DApps on Cardano",
@@ -12,12 +14,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  let adaPrice = 0;
+  try { adaPrice = (await fetchGlobalStats()).adaPrice || 0; } catch {}
+
   return (
     <html lang="en">
       <body style={{ minHeight: "100vh" }}>
-        <Navbar />
-        {children}
+        <CurrencyProvider>
+          <Navbar adaPrice={adaPrice} />
+          {children}
         <footer style={{
           marginTop: 80, padding: "32px 24px",
           borderTop: "1px solid var(--border)",
@@ -40,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </footer>
+        </CurrencyProvider>
       </body>
     </html>
   );

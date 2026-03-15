@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import CurrencyToggle from "./CurrencyToggle";
 
-export default function Navbar() {
+export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
   const path = usePathname();
   const links = [
     { href: "/", label: "DApps" },
@@ -47,10 +48,13 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Cardano branding */}
-        <div style={{ fontSize: 13, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)" }} />
-          Mainnet
+        {/* Right side */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)" }} />
+            Mainnet
+          </div>
+          <CurrencyToggle adaPrice={adaPrice} />
         </div>
       </div>
     </nav>

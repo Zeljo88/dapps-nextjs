@@ -1,18 +1,20 @@
 "use client";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { fmt, fmtNum, CATEGORY_COLORS } from "@/lib/api";
+import { fmtNum, CATEGORY_COLORS } from "@/lib/api";
 import CategoryBadge from "./CategoryBadge";
+import { useCurrency } from "@/lib/currency";
 
 const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMUNITY", "STABLECOIN"];
 
 type SortKey = "tvl" | "volume30d" | "trxCount" | "name";
 
-export default function DAppTable({ dapps }: { dapps: any[] }) {
+export default function DAppTable({ dapps, adaPrice }: { dapps: any[], adaPrice: number }) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("tvl");
   const [asc, setAsc] = useState(false);
+  const { format } = useCurrency();
 
   const filtered = useMemo(() => {
     let d = dapps;
@@ -136,11 +138,11 @@ export default function DAppTable({ dapps }: { dapps: any[] }) {
                   <td style={td}><CategoryBadge category={d.category} /></td>
                   <td style={{ ...td, textAlign: "right", fontWeight: 600, fontFamily: "monospace",
                     color: d.tvl > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
-                    {d.tvl > 0 ? fmt(d.tvl) : "—"}
+                    {d.tvl > 0 ? format(d.tvl, adaPrice) : "—"}
                   </td>
                   <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
                     color: d.volume30d > 0 ? "#10b981" : "var(--text-muted)" }}>
-                    {d.volume30d > 0 ? fmt(d.volume30d) : "—"}
+                    {d.volume30d > 0 ? format(d.volume30d, adaPrice) : "—"}
                   </td>
                   <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
                     color: d.trxCount > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
