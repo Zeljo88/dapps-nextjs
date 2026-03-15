@@ -54,7 +54,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </div>
                 <div style={{ display: "flex", gap: 20 }}>
                   <span>Data: DeFiLlama · Blockfrost · Koios</span>
-                  <a href="https://adripool.net" target="_blank" rel="noopener noreferrer"
+                  <a href="https://adriapool.net" target="_blank" rel="noopener noreferrer"
                     style={{ color: "var(--accent)", textDecoration: "none" }}>
                     Powered by ADRIA Pool
                   </a>
