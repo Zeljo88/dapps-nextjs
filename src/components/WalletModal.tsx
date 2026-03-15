@@ -26,11 +26,15 @@ export default function WalletModal({ onClose }: { onClose: () => void }) {
       background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: 20,
+      overflowY: "auto",
     }} onClick={onClose}>
       <div style={{
         background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 20, padding: 28, width: "100%", maxWidth: 400,
         boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+        margin: "auto",
+        maxHeight: "90vh",
+        overflowY: "auto",
       }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
