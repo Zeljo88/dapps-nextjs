@@ -117,7 +117,7 @@ export default function DAppTable({ dapps, adaPrice }: { dapps: any[], adaPrice:
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                   <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{i + 1}</td>
                   <td style={td}>
-                    <Link href={`/dapp/${d.id}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
+                    <Link href={`/dapp/${encodeURIComponent(d.name)}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
                       {/* Logo placeholder */}
                       <div style={{
                         width: 36, height: 36, borderRadius: 10,

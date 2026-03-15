@@ -10,9 +10,9 @@ export async function fetchDapps(category?: string) {
   return res.json();
 }
 
-export async function fetchDapp(id: string) {
-  const res = await fetch(`${API_BASE}/dapps/find-dapp/${id}`, {
-    cache: "no-store", // never cache — always fetch fresh
+export async function fetchDapp(nameOrId: string) {
+  const res = await fetch(`${API_BASE}/dapps/find-dapp/${encodeURIComponent(nameOrId)}`, {
+    cache: "no-store",
     signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) throw new Error(`DApp not found (${res.status})`);

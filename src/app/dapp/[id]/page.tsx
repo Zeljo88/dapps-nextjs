@@ -16,11 +16,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: dapp.name,
       description: dapp.description ||
         `${dapp.name} on Cardano — ${dapp.category} DApp${tvlStr}${volStr}. View TVL, transactions, yield rates and smart contract scripts.`,
-      alternates: { canonical: `https://dappsoncardano.com/dapp/${id}` },
+      alternates: { canonical: `https://dappsoncardano.com/dapp/${encodeURIComponent(dapp.name)}` },
       openGraph: {
         title: `${dapp.name} — Cardano DApp Analytics`,
         description: dapp.description || `Real-time data for ${dapp.name}${tvlStr}`,
-        url: `https://dappsoncardano.com/dapp/${id}`,
+        url: `https://dappsoncardano.com/dapp/${encodeURIComponent(dapp.name)}`,
         type: "website",
       },
     };
