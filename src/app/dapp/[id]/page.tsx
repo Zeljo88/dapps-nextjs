@@ -32,7 +32,8 @@ export default async function DAppPage({ params }: { params: { id: string } }) {
   let dapp;
   try {
     dapp = await fetchDapp(params.id);
-  } catch {
+  } catch (e) {
+    console.error(`[DApp page] Failed to fetch dapp ${params.id}:`, e);
     return (
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
         <div className="card" style={{ padding: 48, textAlign: "center" }}>

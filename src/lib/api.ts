@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28";
+// Server-side uses API_URL (not exposed to client), client-side uses NEXT_PUBLIC_API_URL
+const API_BASE = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28";
 
 export async function fetchDapps(category?: string) {
   const url = category
@@ -10,8 +11,11 @@ export async function fetchDapps(category?: string) {
 }
 
 export async function fetchDapp(id: string) {
-  const res = await fetch(`${API_BASE}/dapps/find-dapp/${id}`, { next: { revalidate: 300 } });
-  if (!res.ok) throw new Error("DApp not found");
+  const res = await fetch(`${API_BASE}/dapps/find-dapp/${id}`, {
+    next: { revalidate: 300 },
+    signal: AbortSignal.timeout(10000), // 10s timeout
+  });
+  if (!res.ok) throw new Error(`DApp not found (${res.status})`);
   return res.json();
 }
 
