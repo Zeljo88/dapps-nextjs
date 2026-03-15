@@ -20,7 +20,7 @@ export default async function HomePage() {
                 Cardano DApp Store
               </h1>
               <p style={{ fontSize: 15, opacity: 0.85, maxWidth: 500 }}>
-                Real-time analytics for {stats.totalDapps} DApps on Cardano — TVL, volume, transactions and yields.
+                Real-time analytics for {stats.totalDapps} active DApps on Cardano — TVL, volume, transactions and yields.
               </p>
             </div>
             <a href="https://adripool.net" target="_blank" rel="noopener noreferrer"
@@ -45,7 +45,7 @@ export default async function HomePage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 36 }}>
         {[
           { label: "Transactions", value: fmtNum(stats.totalTxCount), sub: "Script interactions", color: "#3b82f6" },
-          { label: "DApps Tracked", value: `${stats.totalDapps}`, sub: `${stats.dappsWithTvl} with live TVL`, color: "#f59e0b" },
+          { label: "Active DApps", value: `${stats.totalDapps}`, sub: `${stats.dappsWithTvl} with live TVL`, color: "#f59e0b" },
           { label: "Current Epoch", value: `${stats.currentEpoch}`, sub: `Block #${(stats.blockHeight || 0).toLocaleString()}`, color: "#06b6d4" },
         ].map(c => (
           <div key={c.label} className="card" style={{ padding: "16px 22px" }}>
