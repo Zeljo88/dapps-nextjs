@@ -96,6 +96,12 @@ body {
   pointer-events: none;
 }
 
+/* Hide DexHunter "Powered by" footer inside swap widget */
+.dhs-cursor-pointer.dhs-justify-center,
+a[href*="dexhunter.io/swap"].dhs-cursor-pointer {
+  display: none !important;
+}
+
 /* Mesh pattern overlay for light hero */
 [data-theme="light"] .hero-banner::after {
   content: "";
