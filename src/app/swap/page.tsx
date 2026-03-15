@@ -91,10 +91,7 @@ export default function SwapPage() {
               ))}
             </div>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 12 }}>
-              Powered by{" "}
-              <a href="https://dexhunter.io" target="_blank" rel="noopener noreferrer"
-                style={{ color: "var(--accent)", textDecoration: "none" }}>DexHunter</a>
-              {" "}— best rate routing across 14+ DEXes.
+              Best rate routing across 14+ Cardano DEXes — automatically.
             </div>
           </div>
 
