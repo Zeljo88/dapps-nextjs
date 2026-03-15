@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/lib/theme";
 import { WalletProvider } from "@/lib/wallet";
 import { fetchGlobalStats } from "@/lib/api";
 
+const GA_ID = "G-0YSY4YKKD0";
+
 export const metadata: Metadata = {
   title: "DApps on Cardano",
   description: "Real-time analytics for Cardano DApps — TVL, volume, transactions and yields.",
@@ -22,6 +24,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" data-theme="dark">
+      <head>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}} />
+      </head>
       <body style={{ minHeight: "100vh" }}>
         <ThemeProvider>
           <WalletProvider>
