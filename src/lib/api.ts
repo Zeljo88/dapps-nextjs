@@ -37,14 +37,16 @@ export async function fetchCategories() {
   return res.json();
 }
 
-export function fmt(n: number, decimals = 2): string {
+export function fmt(n: number | null | undefined, decimals = 2): string {
+  if (!n && n !== 0) return "—";
   if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(decimals)}M`;
   if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
   return `$${n.toFixed(0)}`;
 }
 
-export function fmtNum(n: number): string {
+export function fmtNum(n: number | null | undefined): string {
+  if (!n && n !== 0) return "—";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return `${n}`;

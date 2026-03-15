@@ -106,13 +106,13 @@ function YieldsTab({ yields }: { yields: any[] }) {
                 </td>
                 <td style={{ padding: "14px 16px", textAlign: "right", fontWeight: 700,
                   color: y.apy > 10 ? "#10b981" : y.apy > 0 ? "#f59e0b" : "var(--text-muted)" }}>
-                  {y.apy > 0 ? `${y.apy.toFixed(2)}%` : "—"}
+                  {(y.apy > 0) ? `${Number(y.apy).toFixed(2)}%` : "—"}
                 </td>
                 <td style={{ padding: "14px 16px", textAlign: "right", color: "var(--text-secondary)", fontFamily: "monospace" }}>
-                  {y.apyBase > 0 ? `${y.apyBase.toFixed(2)}%` : "—"}
+                  {(y.apyBase > 0) ? `${Number(y.apyBase).toFixed(2)}%` : "—"}
                 </td>
                 <td style={{ padding: "14px 16px", textAlign: "right", color: "#10b981", fontFamily: "monospace" }}>
-                  {y.apyReward > 0 ? `${y.apyReward.toFixed(2)}%` : "—"}
+                  {(y.apyReward > 0) ? `${Number(y.apyReward).toFixed(2)}%` : "—"}
                 </td>
                 <td style={{ padding: "14px 16px", textAlign: "right" }}>
                   <span style={{
