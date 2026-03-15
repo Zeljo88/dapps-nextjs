@@ -1,6 +1,7 @@
 import { fetchDapps, fetchGlobalStats, fmtNum } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
 import HomeStats from "@/components/HomeStats";
+import { StakeWithAdriaButton } from "@/components/WalletConnect";
 
 export const revalidate = 300;
 
@@ -23,17 +24,7 @@ export default async function HomePage() {
                 Real-time analytics for DApps on Cardano — TVL, volume, transactions and yields.
               </p>
             </div>
-            <a href="https://adripool.net" target="_blank" rel="noopener noreferrer"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
-                backdropFilter: "blur(8px)", borderRadius: 10,
-                padding: "10px 20px", fontSize: 14, fontWeight: 600,
-                color: "white", textDecoration: "none",
-                transition: "all 0.15s",
-              }}>
-              🏊 Stake with ADRIA
-            </a>
+            <StakeWithAdriaButton />
           </div>
         </div>
       </div>

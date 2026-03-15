@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@dexhunterio/swaps": "^2.0.4",
+    "@meshsdk/core": "^1.9.0-beta.101",
+    "@meshsdk/react": "^2.0.0-beta.2",
     "@radix-ui/react-tooltip": "^1.2.8",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",

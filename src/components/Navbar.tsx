@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import CurrencyToggle from "./CurrencyToggle";
 import ThemeToggle from "./ThemeToggle";
+import WalletConnect from "./WalletConnect";
 
 export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
   const path = usePathname();
@@ -68,6 +69,9 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
 
           {/* Dark/Light toggle */}
           <ThemeToggle />
+
+          {/* Wallet connect */}
+          <WalletConnect />
         </div>
       </div>
     </nav>
