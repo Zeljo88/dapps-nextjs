@@ -75,11 +75,26 @@ export default function SwapPage() {
           {/* Fee info */}
           <div className="card" style={{ padding: 24, border: "1px solid var(--accent-dim)",
             background: "var(--accent-dim)" }}>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-              <span style={{ fontWeight: 700, color: "var(--accent)" }}>Zero platform fee</span>
-              {" "}— you only pay the standard DEX fee (0.3% or less). Powered by{" "}
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)",
+              textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Fee breakdown</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "Platform fee (dappsoncardano.com)", value: "0.1%", color: "var(--accent)" },
+                { label: "DEX liquidity fee", value: "0.05–0.3%", color: "var(--text-secondary)" },
+                { label: "Cardano network fee", value: "~0.17 ADA", color: "var(--text-secondary)" },
+              ].map(r => (
+                <div key={r.label} style={{ display: "flex", justifyContent: "space-between",
+                  fontSize: 13, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
+                  <span style={{ color: "var(--text-muted)" }}>{r.label}</span>
+                  <span style={{ fontWeight: 700, color: r.color }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 12 }}>
+              Powered by{" "}
               <a href="https://dexhunter.io" target="_blank" rel="noopener noreferrer"
-                style={{ color: "var(--accent)", textDecoration: "none" }}>DexHunter</a>.
+                style={{ color: "var(--accent)", textDecoration: "none" }}>DexHunter</a>
+              {" "}— best rate routing across 14+ DEXes.
             </div>
           </div>
 
