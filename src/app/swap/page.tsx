@@ -1,4 +1,5 @@
 import SwapWidget from "@/components/SwapWidget";
+import "@dexhunterio/swaps/lib/assets/style.css";
 
 export const metadata = {
   title: "Swap | DApps on Cardano",
