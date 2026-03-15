@@ -22,19 +22,27 @@ export default function WalletModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 1000,
-      background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 20,
-      overflowY: "auto",
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      zIndex: 9999,
+      background: "rgba(0,0,0,0.75)",
+      backdropFilter: "blur(6px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
     }} onClick={onClose}>
       <div style={{
-        background: "var(--bg-card)", border: "1px solid var(--border)",
-        borderRadius: 20, padding: 28, width: "100%", maxWidth: 400,
-        boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
-        margin: "auto",
-        maxHeight: "90vh",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
+        borderRadius: 20,
+        padding: 28,
+        width: "100%",
+        maxWidth: 400,
+        maxHeight: "80vh",
         overflowY: "auto",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+        position: "relative",
+        zIndex: 10000,
       }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
