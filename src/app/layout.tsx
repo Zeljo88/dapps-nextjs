@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     description: "Track TVL, volume, yields and transactions for 94+ Cardano DApps.",
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  verification: { google: "9E19dwMDP2glZXbKRGfp8uUmudJvY0boVxV2sZ3h_Fc" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
