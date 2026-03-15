@@ -6,20 +6,21 @@ import type { Metadata } from "next";
 
 export const revalidate = 300;
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const dapp = await fetchDapp(params.id);
+    const dapp = await fetchDapp(id);
     const tvlStr = dapp.tvl > 0 ? ` — TVL ${fmt(dapp.tvl)}` : "";
     const volStr = dapp.volume30d > 0 ? `, 30d volume ${fmt(dapp.volume30d)}` : "";
     return {
       title: dapp.name,
       description: dapp.description ||
         `${dapp.name} on Cardano — ${dapp.category} DApp${tvlStr}${volStr}. View TVL, transactions, yield rates and smart contract scripts.`,
-      alternates: { canonical: `https://dappsoncardano.com/dapp/${params.id}` },
+      alternates: { canonical: `https://dappsoncardano.com/dapp/${id}` },
       openGraph: {
         title: `${dapp.name} — Cardano DApp Analytics`,
         description: dapp.description || `Real-time data for ${dapp.name}${tvlStr}`,
-        url: `https://dappsoncardano.com/dapp/${params.id}`,
+        url: `https://dappsoncardano.com/dapp/${id}`,
         type: "website",
       },
     };
@@ -28,12 +29,13 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function DAppPage({ params }: { params: { id: string } }) {
+export default async function DAppPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   let dapp;
   try {
-    dapp = await fetchDapp(params.id);
+    dapp = await fetchDapp(id);
   } catch (e) {
-    console.error(`[DApp page] Failed to fetch dapp ${params.id}:`, e);
+    console.error(`[DApp page] Failed to fetch dapp ${id}:`, e);
     return (
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
         <div className="card" style={{ padding: 48, textAlign: "center" }}>
