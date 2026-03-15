@@ -1,0 +1,199 @@
+"use client";
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { fmt, fmtNum, CATEGORY_COLORS } from "@/lib/api";
+import CategoryBadge from "./CategoryBadge";
+
+const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMUNITY", "STABLECOIN"];
+
+type SortKey = "tvl" | "volume30d" | "trxCount" | "name";
+
+export default function DAppTable({ dapps }: { dapps: any[] }) {
+  const [search, setSearch] = useState("");
+  const [cat, setCat] = useState("ALL");
+  const [sort, setSort] = useState<SortKey>("tvl");
+  const [asc, setAsc] = useState(false);
+
+  const filtered = useMemo(() => {
+    let d = dapps;
+    if (search) d = d.filter(x => x.name.toLowerCase().includes(search.toLowerCase()));
+    if (cat !== "ALL") d = d.filter(x => x.category === cat);
+    d = [...d].sort((a, b) => {
+      const av = sort === "name" ? a.name : (a[sort] || 0);
+      const bv = sort === "name" ? b.name : (b[sort] || 0);
+      if (typeof av === "string") return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+      return asc ? av - bv : bv - av;
+    });
+    return d;
+  }, [dapps, search, cat, sort, asc]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sort === key) setAsc(!asc);
+    else { setSort(key); setAsc(false); }
+  };
+
+  const SortIcon = ({ k }: { k: SortKey }) => (
+    <span style={{ marginLeft: 4, color: sort === k ? "var(--accent)" : "var(--text-muted)", fontSize: 11 }}>
+      {sort === k ? (asc ? "↑" : "↓") : "↕"}
+    </span>
+  );
+
+  return (
+    <div>
+      {/* Toolbar */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+        {/* Search */}
+        <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+            color: "var(--text-muted)", fontSize: 15 }}>🔍</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search DApps..."
+            style={{
+              width: "100%", paddingLeft: 36, paddingRight: 12, height: 40,
+              background: "var(--bg-card)", border: "1px solid var(--border)",
+              borderRadius: 8, color: "var(--text-primary)", fontSize: 14,
+              outline: "none",
+            }}
+          />
+        </div>
+
+        {/* Category filters */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {CATEGORIES.map(c => {
+            const color = c === "ALL" ? "#8b5cf6" : (CATEGORY_COLORS[c] || "#6b7280");
+            const active = cat === c;
+            return (
+              <button key={c} onClick={() => setCat(c)} style={{
+                padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", border: "1px solid",
+                background: active ? `${color}20` : "transparent",
+                borderColor: active ? `${color}60` : "var(--border)",
+                color: active ? color : "var(--text-secondary)",
+                transition: "all 0.15s",
+              }}>{c === "ALL" ? "All" : c === "COLLECTION" ? "NFT" : c.charAt(0) + c.slice(1).toLowerCase()}</button>
+            );
+          })}
+        </div>
+
+        <div style={{ marginLeft: "auto", fontSize: 13, color: "var(--text-muted)" }}>
+          {filtered.length} DApps
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <th style={th}>#</th>
+                <th style={th} onClick={() => toggleSort("name")} className="cursor-pointer">
+                  Name <SortIcon k="name" />
+                </th>
+                <th style={th}>Category</th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tvl")} className="cursor-pointer">
+                  TVL <SortIcon k="tvl" />
+                </th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("volume30d")} className="cursor-pointer">
+                  30d Volume <SortIcon k="volume30d" />
+                </th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("trxCount")} className="cursor-pointer">
+                  Tx Count <SortIcon k="trxCount" />
+                </th>
+                <th style={th}>Links</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((d, i) => (
+                <tr key={d.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-card-hover)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                  <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{i + 1}</td>
+                  <td style={td}>
+                    <Link href={`/dapp/${d.id}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
+                      {/* Logo placeholder */}
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 10,
+                        background: `${CATEGORY_COLORS[d.category] || "#6b7280"}25`,
+                        border: `1px solid ${CATEGORY_COLORS[d.category] || "#6b7280"}35`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 16, fontWeight: 700,
+                        color: CATEGORY_COLORS[d.category] || "#6b7280",
+                        flexShrink: 0,
+                      }}>
+                        {d.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{d.name}</div>
+                        {d.subCategory && d.subCategory !== d.category && (
+                          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>{d.subCategory}</div>
+                        )}
+                      </div>
+                    </Link>
+                  </td>
+                  <td style={td}><CategoryBadge category={d.category} /></td>
+                  <td style={{ ...td, textAlign: "right", fontWeight: 600, fontFamily: "monospace",
+                    color: d.tvl > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
+                    {d.tvl > 0 ? fmt(d.tvl) : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
+                    color: d.volume30d > 0 ? "#10b981" : "var(--text-muted)" }}>
+                    {d.volume30d > 0 ? fmt(d.volume30d) : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
+                    color: d.trxCount > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
+                    {d.trxCount > 0 ? fmtNum(d.trxCount) : "—"}
+                  </td>
+                  <td style={td}>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {d.link && (
+                        <a href={d.link} target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "none",
+                            padding: "3px 8px", borderRadius: 5, border: "1px solid var(--border)",
+                            transition: "all 0.15s" }}
+                          onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = "var(--border-light)"; (e.target as HTMLElement).style.color = "var(--text-primary)"; }}
+                          onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; (e.target as HTMLElement).style.color = "var(--text-muted)"; }}>
+                          🌐
+                        </a>
+                      )}
+                      {d.twitter && (
+                        <a href={d.twitter} target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "none",
+                            padding: "3px 8px", borderRadius: 5, border: "1px solid var(--border)",
+                            transition: "all 0.15s" }}
+                          onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = "#1d9bf0"; (e.target as HTMLElement).style.color = "#1d9bf0"; }}
+                          onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; (e.target as HTMLElement).style.color = "var(--text-muted)"; }}>
+                          𝕏
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const th: React.CSSProperties = {
+  padding: "12px 16px",
+  textAlign: "left",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "var(--text-muted)",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  cursor: "pointer",
+  userSelect: "none",
+  whiteSpace: "nowrap",
+};
+
+const td: React.CSSProperties = {
+  padding: "14px 16px",
+  verticalAlign: "middle",
+};
