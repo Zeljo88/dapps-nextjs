@@ -1,7 +1,7 @@
 import { fetchDapps, fetchGlobalStats, fmtNum } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
 import HomeStats from "@/components/HomeStats";
-import { StakeWithAdriaButton } from "@/components/WalletConnect";
+import StakeButton from "@/components/StakeButton";
 
 export const revalidate = 300;
 
@@ -24,7 +24,7 @@ export default async function HomePage() {
                 Real-time analytics for DApps on Cardano — TVL, volume, transactions and yields.
               </p>
             </div>
-            <StakeWithAdriaButton />
+            <StakeButton />
           </div>
         </div>
       </div>

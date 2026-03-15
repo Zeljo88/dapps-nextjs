@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme";
+import { WalletProvider } from "@/lib/wallet";
 import { fetchGlobalStats } from "@/lib/api";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" data-theme="dark">
       <body style={{ minHeight: "100vh" }}>
         <ThemeProvider>
+          <WalletProvider>
           <CurrencyProvider>
             <Navbar adaPrice={adaPrice} />
             {children}
@@ -49,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </div>
             </footer>
           </CurrencyProvider>
+          </WalletProvider>
         </ThemeProvider>
       </body>
     </html>
