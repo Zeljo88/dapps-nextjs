@@ -207,6 +207,17 @@ export default function PortfolioClient() {
   });
   const rewardsUsd = rewardsAda * adaPrice;
 
+  // Total portfolio value = ADA + staking rewards + token values
+  const tokenTotalUsd = fungible.reduce((sum, t) => {
+    const unit = `${t.policyId}${t.assetName}`;
+    const price = tokenPrices[unit];
+    if (!price) return sum;
+    const amount = t.amount / Math.pow(10, price.decimals);
+    return sum + amount * price.priceUsd;
+  }, 0);
+  const totalUsd = adaUsd + rewardsUsd + tokenTotalUsd;
+  const totalAda = adaPrice > 0 ? totalUsd / adaPrice : adaBalance + rewardsAda;
+
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
       {/* Header */}
@@ -259,11 +270,11 @@ export default function PortfolioClient() {
               icon="🎁"
             />
             <SummaryCard
-              label="Staking Pool"
-              value={staking?.poolTicker || (loading ? "..." : "Not staking")}
-              sub={staking?.ros ? `${staking.ros.toFixed(2)}% ROS` : ""}
-              color={staking?.isAdria ? "#10b981" : "#3b82f6"}
-              icon="🏊"
+              label="Total Portfolio"
+              value={totalAda > 0 ? `${totalAda >= 1000 ? `${(totalAda/1000).toFixed(2)}K` : totalAda.toFixed(2)} ₳` : loading ? "..." : "—"}
+              sub={totalUsd > 0 ? `≈ $${totalUsd.toFixed(2)}` : ""}
+              color="#f59e0b"
+              icon="📊"
             />
             <SummaryCard
               label="Tokens"
