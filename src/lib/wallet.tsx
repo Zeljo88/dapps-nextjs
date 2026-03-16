@@ -54,8 +54,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
     };
     detect();
-    // Re-detect after a short delay (some wallets inject late)
     setTimeout(detect, 1000);
+  }, []);
+
+  // Auto-reconnect on page refresh
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("connectedWallet") : null;
+    if (saved) {
+      setTimeout(() => connect(saved), 800); // slight delay for wallet to inject
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const connect = useCallback(async (walletName: string) => {
@@ -131,6 +139,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         balanceLovelace: balLovelace,
         api,
       });
+      // Persist wallet name for auto-reconnect
+      if (typeof window !== "undefined") localStorage.setItem("connectedWallet", walletName);
     } catch (e: any) {
       setError(e.message || "Connection failed");
     }
@@ -140,6 +150,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const disconnect = useCallback(() => {
     setWallet(null);
     setError("");
+    if (typeof window !== "undefined") localStorage.removeItem("connectedWallet");
   }, []);
 
   const delegate = useCallback(async () => {
