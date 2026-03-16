@@ -11,6 +11,7 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
     { href: "/", label: "DApps" },
     { href: "/ecosystem", label: "Ecosystem" },
     { href: "/yields", label: "Yields" },
+    { href: "/portfolio", label: "💼 Portfolio" },
     { href: "/swap", label: "🔄 Swap" },
   ];
 
