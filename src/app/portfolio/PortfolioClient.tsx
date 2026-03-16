@@ -159,6 +159,7 @@ export default function PortfolioClient() {
   const [yields, setYields] = useState<YieldOpportunity[]>([]);
   const [loading, setLoading] = useState(false);
   const [adaPrice, setAdaPrice] = useState(0);
+  const [tokenPrices, setTokenPrices] = useState<Record<string, { priceUsd: number; symbol: string; decimals: number }>>({});
 
   useEffect(() => {
     fetch(`/api/stats`).then(r => r.json()).then(d => setAdaPrice(d.adaPrice || 0)).catch(() => {});
@@ -177,6 +178,11 @@ export default function PortfolioClient() {
       setStaking(s);
       setTokens(t);
       setLoading(false);
+      if (t.length > 0) {
+        const units = t.map((tok: TokenBalance) => `${tok.policyId}${tok.assetName}`).join(",");
+        fetch(`/api/token-prices?units=${encodeURIComponent(units)}`)
+          .then(r => r.json()).then(setTokenPrices).catch(() => {});
+      }
     });
   }, [wallet]);
 
@@ -292,31 +298,81 @@ export default function PortfolioClient() {
               <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No native tokens found in this wallet.</p>
             )}
             {tokens.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
-                {tokens.map((t, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between",
-                    alignItems: "center", padding: "12px 16px", borderRadius: 10,
-                    background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                        background: "linear-gradient(135deg, #8b5cf620, #3b82f620)",
-                        border: "1px solid var(--border)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 13, fontWeight: 700, color: "#8b5cf6",
-                      }}>
-                        {t.ticker.slice(0, 3).toUpperCase()}
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {/* Header */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 12,
+                  padding: "8px 16px", borderBottom: "1px solid var(--border)",
+                  fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
+                  textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <span>Token</span>
+                  <span style={{ textAlign: "right" }}>Balance</span>
+                  <span style={{ textAlign: "right", minWidth: 90 }}>Value</span>
+                </div>
+                {tokens.map((t, i) => {
+                  const unit = `${t.policyId}${t.assetName}`;
+                  const price = tokenPrices[unit];
+                  const amount = t.amount / Math.pow(10, price?.decimals ?? t.decimals);
+                  const valueUsd = price ? amount * price.priceUsd : null;
+                  const valueAda = (valueUsd && adaPrice > 0) ? valueUsd / adaPrice : null;
+                  const displayTicker = price?.symbol || t.ticker;
+
+                  return (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 12,
+                      alignItems: "center", padding: "12px 16px",
+                      borderBottom: i < tokens.length - 1 ? "1px solid var(--border)" : "none",
+                      transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-secondary)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      {/* Token info */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                          background: "linear-gradient(135deg, #8b5cf620, #3b82f620)",
+                          border: "1px solid var(--border)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 11, fontWeight: 800, color: "#8b5cf6",
+                        }}>
+                          {displayTicker.slice(0, 4).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>
+                            {displayTicker}
+                          </div>
+                          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                            {t.policyId.slice(0, 10)}...
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>{t.ticker}</div>
-                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{t.policyId.slice(0, 10)}...</div>
+
+                      {/* Balance */}
+                      <div style={{ textAlign: "right", fontFamily: "monospace",
+                        fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>
+                        {fmtToken(t.amount, price?.decimals ?? t.decimals)}
+                      </div>
+
+                      {/* Value in ADA */}
+                      <div style={{ textAlign: "right", minWidth: 90 }}>
+                        {valueAda !== null ? (
+                          <div>
+                            <div style={{ fontWeight: 700, color: "#8b5cf6", fontSize: 14 }}>
+                              {valueAda >= 1000
+                                ? `${(valueAda/1000).toFixed(1)}K ₳`
+                                : `${valueAda.toFixed(1)} ₳`}
+                            </div>
+                            {valueUsd !== null && (
+                              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                                ≈${valueUsd < 0.01 ? valueUsd.toFixed(4) : valueUsd.toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>—</span>
+                        )}
                       </div>
                     </div>
-                    <div style={{ fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace", fontSize: 14 }}>
-                      {fmtToken(t.amount, t.decimals)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
