@@ -29,8 +29,43 @@ export default function DAppTabs({ dapp }: { dapp: any }) {
   );
 }
 
+const FEATURE_LABELS: Record<string, string> = {
+  SWAP: "Swap",
+  LIMIT_ORDERS: "Limit Orders",
+  LIQUIDITY_MINING: "Liquidity Mining",
+  YIELD_FARMING: "Yield Farming",
+  ZAP: "Zap",
+  LENDING: "Lending",
+  BORROWING: "Borrowing",
+  STAKING: "Staking",
+  NFT_MINTING: "NFT Minting",
+  NFT_TRADING: "NFT Trading",
+  LAUNCHPAD: "Launchpad",
+  GOVERNANCE: "Governance",
+  BRIDGE: "Bridge",
+  ORACLE: "Oracle",
+  DERIVATIVES: "Derivatives",
+  LOTTERY: "Lottery",
+  OPTIONS: "Options",
+  LIQUID_STAKING: "Liquid Staking",
+  SYNTHETICS: "Synthetics",
+};
+
+function FeatureBadge({ feature }: { feature: string }) {
+  const label = FEATURE_LABELS[feature] || feature.replace(/_/g, " ");
+  return (
+    <span style={{
+      padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+      background: "#3b82f615", color: "#60a5fa",
+      border: "1px solid #3b82f630",
+      whiteSpace: "nowrap",
+    }}>{label}</span>
+  );
+}
+
 function OverviewTab({ dapp }: { dapp: any }) {
   const releases = dapp.releases || [];
+  const features: string[] = dapp.features || [];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
       <div className="card" style={{ padding: 24 }}>
@@ -42,6 +77,11 @@ function OverviewTab({ dapp }: { dapp: any }) {
           <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>{dapp.description}</p>
         ) : (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No description available.</p>
+        )}
+        {features.length > 0 && (
+          <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {features.map(f => <FeatureBadge key={f} feature={f} />)}
+          </div>
         )}
         <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
           <InfoRow label="Category" value={dapp.category} />
@@ -139,7 +179,7 @@ function ScriptsTab({ scripts }: { scripts: any[] }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-              {["Name / Purpose", "Script Hash", "Type", "Tx Count", "Explorer"].map(h => (
+              {["Name / Purpose", "Script Hash", "Contract Address", "Type", "Tx Count", "Explorer"].map(h => (
                 <th key={h} style={{ padding: "12px 16px", textAlign: h === "Tx Count" ? "right" : "left",
                   fontSize: 12, fontWeight: 600, color: "var(--text-muted)",
                   textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
@@ -157,6 +197,11 @@ function ScriptsTab({ scripts }: { scripts: any[] }) {
                 </td>
                 <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: "var(--text-secondary)" }}>
                   {s.scriptHash ? `${s.scriptHash.slice(0, 16)}...${s.scriptHash.slice(-8)}` : "—"}
+                </td>
+                <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: "var(--text-muted)", maxWidth: 180 }}>
+                  {s.contractAddress
+                    ? <span title={s.contractAddress}>{s.contractAddress.slice(0, 12)}...{s.contractAddress.slice(-6)}</span>
+                    : "—"}
                 </td>
                 <td style={{ padding: "12px 16px" }}>
                   {s.plutusVersion && (

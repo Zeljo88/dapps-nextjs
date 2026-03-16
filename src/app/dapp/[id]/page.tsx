@@ -126,6 +126,11 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
                   𝕏 Twitter
                 </a>
               )}
+              {dapp.discord && (
+                <a href={dapp.discord} target="_blank" rel="noopener noreferrer" style={{ ...linkStyle, borderColor: "#5865f240" }}>
+                  💬 Discord
+                </a>
+              )}
               {dapp.llamaUrl && (
                 <a href={dapp.llamaUrl} target="_blank" rel="noopener noreferrer" style={{ ...linkStyle, borderColor: "#10b98140" }}>
                   📈 DeFiLlama
