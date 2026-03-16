@@ -70,76 +70,38 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setConnecting(true);
     setError("");
     try {
-      const cardano = (window as any).cardano;
-      if (!cardano?.[walletName]) throw new Error("Wallet not found. Please install it first.");
-      const api = await cardano[walletName].enable();
+      // Use MeshJS BrowserWallet — handles all CBOR decoding + address resolution
+      const { BrowserWallet } = await import("@meshsdk/core");
+      const meshWallet = await BrowserWallet.enable(walletName);
 
-      // Get balance — CBOR decode
-      const balHex = await api.getBalance();
-      let balLovelace = 0;
-      try {
-        const { decode } = await import("cbor-x");
-        const decoded = decode(Buffer.from(balHex, "hex"));
-        // Decoded is either a number (lovelace only) or [lovelace, multiasset]
-        if (typeof decoded === "number" || typeof decoded === "bigint") {
-          balLovelace = Number(decoded);
-        } else if (Array.isArray(decoded)) {
-          balLovelace = Number(decoded[0]);
-        } else {
-          balLovelace = 0;
-        }
-        if (!isFinite(balLovelace)) balLovelace = 0;
-      } catch {
-        balLovelace = 0;
-      }
+      // Balance
+      const lovelaceStr = await meshWallet.getLovelace();
+      const balLovelace = parseInt(lovelaceStr || "0", 10) || 0;
 
-      // Get address
-      let address = "";
-      try {
-        const addrs = await api.getUsedAddresses();
-        address = addrs?.[0] || "";
-        if (!address) {
-          const unused = await api.getUnusedAddresses();
-          address = unused?.[0] || "";
-        }
-      } catch {}
+      // Address
+      const addrs = await meshWallet.getUsedAddresses();
+      const address = addrs?.[0] || (await meshWallet.getUnusedAddresses())?.[0] || "";
 
-      // Get reward/stake address — CIP-30 returns hex-encoded address bytes
+      // Reward/stake address — MeshJS returns proper bech32
       let rewardAddress = "";
       try {
-        const rewards = await api.getRewardAddresses();
-        const raw = rewards?.[0] || "";
-        if (raw.startsWith("stake")) {
-          // Already bech32
-          rewardAddress = raw;
-        } else if (raw.length > 0) {
-          // Try MeshJS resolver
-          try {
-            const { resolveRewardAddress } = await import("@meshsdk/core");
-            // resolveRewardAddress takes a base address hex and returns stake1... bech32
-            const usedAddrs = await api.getUsedAddresses();
-            const firstAddr = usedAddrs?.[0] || "";
-            if (firstAddr) {
-              rewardAddress = resolveRewardAddress(firstAddr) || raw;
-            } else {
-              rewardAddress = raw;
-            }
-          } catch {
-            rewardAddress = raw;
-          }
-        }
+        const rewards = await meshWallet.getRewardAddresses();
+        rewardAddress = rewards?.[0] || "";
       } catch {}
+
+      // Raw CIP-30 API (needed for token balances and delegation tx)
+      const cardano = (window as any).cardano;
+      const api = cardano?.[walletName] ? await cardano[walletName].enable() : null;
 
       const wInfo = SUPPORTED_WALLETS.find(w => w.name === walletName)!;
       setWallet({
         name: walletName,
         label: wInfo.label,
-        address: address ? `${address.slice(0, 10)}...${address.slice(-6)}` : "Connected",
+        address: address ? `${address.slice(0, 12)}...${address.slice(-6)}` : "Connected",
         rewardAddress,
         balanceLovelace: balLovelace,
-        api,
+        api: api || meshWallet,
       });
-      // Persist wallet name for auto-reconnect
       if (typeof window !== "undefined") localStorage.setItem("connectedWallet", walletName);
     } catch (e: any) {
       setError(e.message || "Connection failed");

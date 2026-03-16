@@ -37,7 +37,8 @@ interface YieldOpportunity {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28";
+// Use relative path so it works on both HTTP and HTTPS (avoids mixed content)
+const API = "/api";
 const KOIOS = "https://api.koios.rest/api/v1";
 const ADRIA_POOL_ID = "pool1we9umarzn0l6jp8mcm98y28lxuuzcurzpjldnjwtgdhgw068mnr";
 
@@ -147,35 +148,25 @@ async function fetchTopYields(): Promise<YieldOpportunity[]> {
 
 // ── Parse native tokens from CIP-30 balance ──────────────────────────────────
 
-async function parseTokens(api: any): Promise<TokenBalance[]> {
+async function parseTokens(walletName: string): Promise<TokenBalance[]> {
   try {
-    const rawValue = await api.getBalance();
-    // Try to decode CBOR to get multiasset
-    const { decode } = await import("cbor-x");
-    const decoded = decode(Buffer.from(rawValue, "hex"));
+    const { BrowserWallet } = await import("@meshsdk/core");
+    const meshWallet = await BrowserWallet.enable(walletName);
+    const assets = await meshWallet.getAssets();
+    if (!assets?.length) return [];
 
-    // CBOR value structure: [lovelace, {policyId: {assetName: amount}}]
-    if (!Array.isArray(decoded) || decoded.length < 2) return [];
-    const multiasset = decoded[1];
-    if (!multiasset || typeof multiasset !== "object") return [];
-
-    const tokens: TokenBalance[] = [];
-    for (const [policy, assets] of Object.entries(multiasset as any)) {
-      const policyHex = Buffer.from(policy as any).toString("hex");
-      for (const [name, amount] of Object.entries(assets as any)) {
-        const nameHex = Buffer.from(name as any).toString("hex");
-        const meta = TOKEN_META[policyHex] || { ticker: nameHex.slice(0, 8) || "TOKEN", decimals: 0 };
-        tokens.push({
-          policyId: policyHex,
-          assetName: nameHex,
-          ticker: meta.ticker,
-          amount: Number(amount),
-          decimals: meta.decimals,
-          priceUsd: 0,
-        });
-      }
-    }
-    return tokens.sort((a, b) => b.amount - a.amount).slice(0, 20);
+    return assets.slice(0, 20).map((a: any) => {
+      const policyId = a.unit?.slice(0, 56) || "";
+      const meta = TOKEN_META[policyId] || { ticker: a.assetName?.slice(0, 8) || "TOKEN", decimals: 0 };
+      return {
+        policyId,
+        assetName: a.assetName || "",
+        ticker: a.assetName || meta.ticker,
+        amount: parseInt(a.quantity || "0"),
+        decimals: meta.decimals,
+        priceUsd: 0,
+      };
+    });
   } catch {
     return [];
   }
@@ -193,7 +184,7 @@ export default function PortfolioClient() {
   const [adaPrice, setAdaPrice] = useState(0);
 
   useEffect(() => {
-    fetch(`${API}/global/stats`).then(r => r.json()).then(d => setAdaPrice(d.adaPrice || 0)).catch(() => {});
+    fetch(`/api/stats`).then(r => r.json()).then(d => setAdaPrice(d.adaPrice || 0)).catch(() => {});
     fetchTopYields().then(setYields);
   }, []);
 
@@ -202,7 +193,7 @@ export default function PortfolioClient() {
     setLoading(true);
     Promise.all([
       fetchStakingInfo(wallet.rewardAddress),
-      parseTokens(wallet.api),
+      parseTokens(wallet.name),
     ]).then(([s, t]) => {
       setStaking(s);
       setTokens(t);
