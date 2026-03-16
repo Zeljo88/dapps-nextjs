@@ -160,6 +160,8 @@ export default function PortfolioClient() {
   const [loading, setLoading] = useState(false);
   const [adaPrice, setAdaPrice] = useState(0);
   const [tokenPrices, setTokenPrices] = useState<Record<string, { priceUsd: number; symbol: string; decimals: number }>>({});
+  const [activeTab, setActiveTab] = useState<"tokens" | "nfts">("tokens");
+  const [hideZero, setHideZero] = useState(true);
 
   useEffect(() => {
     fetch(`/api/stats`).then(r => r.json()).then(d => setAdaPrice(d.adaPrice || 0)).catch(() => {});
@@ -189,6 +191,20 @@ export default function PortfolioClient() {
   const adaBalance = wallet ? wallet.balanceLovelace / 1_000_000 : 0;
   const adaUsd = adaBalance * adaPrice;
   const rewardsAda = staking ? staking.availableRewards / 1_000_000 : 0;
+
+  // Split tokens into fungible and NFTs
+  // NFT heuristic: quantity = 1 AND no known price AND asset name looks like a hash (long hex)
+  const fungible = tokens.filter(t => {
+    const unit = `${t.policyId}${t.assetName}`;
+    const hasPrice = !!tokenPrices[unit];
+    const isNft = t.amount === 1 && !hasPrice && t.assetName.length > 16;
+    return !isNft;
+  });
+  const nfts = tokens.filter(t => {
+    const unit = `${t.policyId}${t.assetName}`;
+    const hasPrice = !!tokenPrices[unit];
+    return t.amount === 1 && !hasPrice && t.assetName.length > 16;
+  });
   const rewardsUsd = rewardsAda * adaPrice;
 
   return (
@@ -251,7 +267,7 @@ export default function PortfolioClient() {
             />
             <SummaryCard
               label="Tokens"
-              value={tokens.length > 0 ? `${tokens.length} assets` : loading ? "..." : "None"}
+              value={tokens.length > 0 ? `${fungible.length} tokens · ${nfts.length} NFTs` : loading ? "..." : "None"}
               sub=""
               color="#f59e0b"
               icon="🪙"
@@ -290,90 +306,146 @@ export default function PortfolioClient() {
             )}
           </div>
 
-          {/* Token Balances — full width */}
+          {/* Tokens + NFTs tabbed card */}
           <div className="card" style={{ padding: 24, marginBottom: 20 }}>
-            <h3 style={sectionTitle}>🪙 Token Balances</h3>
-            {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading tokens...</p>}
-            {!loading && tokens.length === 0 && (
-              <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No native tokens found in this wallet.</p>
-            )}
-            {tokens.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {/* Header */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 12,
-                  padding: "8px 16px", borderBottom: "1px solid var(--border)",
-                  fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
-                  textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  <span>Token</span>
-                  <span style={{ textAlign: "right" }}>Balance</span>
-                  <span style={{ textAlign: "right", minWidth: 90 }}>Value</span>
-                </div>
-                {tokens.map((t, i) => {
-                  const unit = `${t.policyId}${t.assetName}`;
-                  const price = tokenPrices[unit];
-                  const amount = t.amount / Math.pow(10, price?.decimals ?? t.decimals);
-                  const valueUsd = price ? amount * price.priceUsd : null;
-                  const valueAda = (valueUsd && adaPrice > 0) ? valueUsd / adaPrice : null;
-                  const displayTicker = price?.symbol || t.ticker;
 
-                  return (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 12,
-                      alignItems: "center", padding: "12px 16px",
-                      borderBottom: i < tokens.length - 1 ? "1px solid var(--border)" : "none",
-                      transition: "background 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-secondary)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                      {/* Token info */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{
-                          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                          background: "linear-gradient(135deg, #8b5cf620, #3b82f620)",
-                          border: "1px solid var(--border)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 11, fontWeight: 800, color: "#8b5cf6",
-                        }}>
-                          {displayTicker.slice(0, 4).toUpperCase()}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>
-                            {displayTicker}
+            {/* Tab bar + toggle */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", paddingBottom: 0 }}>
+                {(["tokens", "nfts"] as const).map(tab => (
+                  <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                    padding: "8px 18px", background: "none", border: "none", cursor: "pointer",
+                    fontSize: 14, fontWeight: 600,
+                    color: activeTab === tab ? "var(--accent)" : "var(--text-muted)",
+                    borderBottom: activeTab === tab ? "2px solid var(--accent)" : "2px solid transparent",
+                    marginBottom: -1, transition: "all 0.15s",
+                  }}>
+                    {tab === "tokens" ? `🪙 Tokens (${fungible.length})` : `🖼️ NFTs (${nfts.length})`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Hide zero toggle */}
+              {activeTab === "tokens" && (
+                <button onClick={() => setHideZero(v => !v)} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13,
+                  background: hideZero ? "rgba(139,92,246,0.15)" : "var(--bg-secondary)",
+                  border: `1px solid ${hideZero ? "rgba(139,92,246,0.4)" : "var(--border)"}`,
+                  color: hideZero ? "#a78bfa" : "var(--text-muted)", fontWeight: 500,
+                  transition: "all 0.15s",
+                }}>
+                  <span style={{ fontSize: 11 }}>{hideZero ? "●" : "○"}</span>
+                  Hide zero values
+                </button>
+              )}
+            </div>
+
+            {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading assets...</p>}
+
+            {/* Tokens tab */}
+            {!loading && activeTab === "tokens" && (
+              <>
+                {fungible.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No fungible tokens found.</p>}
+                {fungible.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 12,
+                      padding: "8px 16px", borderBottom: "1px solid var(--border)",
+                      fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
+                      textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      <span>Token</span>
+                      <span style={{ textAlign: "right" }}>Balance</span>
+                      <span style={{ textAlign: "right", minWidth: 90 }}>Value</span>
+                    </div>
+                    {fungible.map((t, i) => {
+                      const unit = `${t.policyId}${t.assetName}`;
+                      const price = tokenPrices[unit];
+                      const amount = t.amount / Math.pow(10, price?.decimals ?? t.decimals);
+                      const valueUsd = price ? amount * price.priceUsd : null;
+                      const valueAda = (valueUsd && adaPrice > 0) ? valueUsd / adaPrice : null;
+                      if (hideZero && valueAda === null) return null;
+                      const displayTicker = price?.symbol || t.ticker;
+                      return (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 12,
+                          alignItems: "center", padding: "12px 16px",
+                          borderBottom: "1px solid var(--border)", transition: "background 0.15s" }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-secondary)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                              background: "linear-gradient(135deg, #8b5cf620, #3b82f620)",
+                              border: "1px solid var(--border)",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 11, fontWeight: 800, color: "#8b5cf6" }}>
+                              {displayTicker.slice(0, 4).toUpperCase()}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>{displayTicker}</div>
+                              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{t.policyId.slice(0, 10)}...</div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                          <div style={{ textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>
+                            {fmtToken(t.amount, price?.decimals ?? t.decimals)}
+                          </div>
+                          <div style={{ textAlign: "right", minWidth: 90 }}>
+                            {valueAda !== null ? (
+                              <div>
+                                <div style={{ fontWeight: 700, color: "#8b5cf6", fontSize: 14 }}>
+                                  {valueAda >= 1000 ? `${(valueAda/1000).toFixed(1)}K ₳` : `${valueAda.toFixed(1)} ₳`}
+                                </div>
+                                {valueUsd !== null && (
+                                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                                    ≈${valueUsd < 0.01 ? valueUsd.toFixed(4) : valueUsd.toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
+                            ) : <span style={{ fontSize: 12, color: "var(--text-muted)" }}>—</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* NFTs tab */}
+            {!loading && activeTab === "nfts" && (
+              <>
+                {nfts.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No NFTs found in this wallet.</p>}
+                {nfts.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+                    {nfts.map((t, i) => (
+                      <div key={i} style={{ borderRadius: 12, overflow: "hidden",
+                        border: "1px solid var(--border)", background: "var(--bg-secondary)",
+                        transition: "transform 0.15s, box-shadow 0.15s", cursor: "default" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.2)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+                      >
+                        {/* NFT placeholder image */}
+                        <div style={{ height: 120, background: `linear-gradient(135deg, hsl(${(i*47)%360},60%,25%), hsl(${(i*47+60)%360},60%,20%))`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 32 }}>
+                          🖼️
+                        </div>
+                        <div style={{ padding: "10px 12px" }}>
+                          <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 13,
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {t.ticker}
+                          </div>
+                          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
                             {t.policyId.slice(0, 10)}...
                           </div>
+                          <div style={{ fontSize: 11, color: "#10b981", marginTop: 4, fontWeight: 600 }}>
+                            qty: {t.amount}
+                          </div>
                         </div>
                       </div>
-
-                      {/* Balance */}
-                      <div style={{ textAlign: "right", fontFamily: "monospace",
-                        fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>
-                        {fmtToken(t.amount, price?.decimals ?? t.decimals)}
-                      </div>
-
-                      {/* Value in ADA */}
-                      <div style={{ textAlign: "right", minWidth: 90 }}>
-                        {valueAda !== null ? (
-                          <div>
-                            <div style={{ fontWeight: 700, color: "#8b5cf6", fontSize: 14 }}>
-                              {valueAda >= 1000
-                                ? `${(valueAda/1000).toFixed(1)}K ₳`
-                                : `${valueAda.toFixed(1)} ₳`}
-                            </div>
-                            {valueUsd !== null && (
-                              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                                ≈${valueUsd < 0.01 ? valueUsd.toFixed(4) : valueUsd.toFixed(2)}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>—</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
