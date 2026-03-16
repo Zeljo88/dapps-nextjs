@@ -70,34 +70,12 @@ const TOKEN_META: Record<string, { ticker: string; decimals: number }> = {
 
 async function fetchStakingInfo(rewardAddress: string): Promise<StakingInfo | null> {
   if (!rewardAddress) return null;
-  // Accept both bech32 (stake1...) and hex — Koios needs bech32
-  let addr = rewardAddress.startsWith("stake") ? rewardAddress : null;
-
-  // If hex, try to decode via Koios address_info first
-  if (!addr && rewardAddress.length > 0) {
-    try {
-      const r = await fetch(`${KOIOS}/address_info`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "accept": "application/json" },
-        body: JSON.stringify({ _addresses: [rewardAddress] }),
-      });
-      if (r.ok) {
-        const d = await r.json();
-        addr = d?.[0]?.stake_address || null;
-      }
-    } catch {}
-  }
-
-  if (!addr) return null;
   try {
-    const res = await fetch(`${KOIOS}/account_info`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "accept": "application/json" },
-      body: JSON.stringify({ _stake_addresses: [addr] }),
-    });
+    // Use our server-side proxy which handles both bech32 and hex, avoids CORS
+    const res = await fetch(`/api/staking?addr=${encodeURIComponent(rewardAddress)}`);
     if (!res.ok) return null;
-    const data = await res.json();
-    const acc = data?.[0];
+    const json = await res.json();
+    const acc = json?.accountInfo?.[0];
     if (!acc) return null;
 
     // Get pool info
@@ -216,10 +194,12 @@ export default function PortfolioClient() {
   useEffect(() => {
     if (!wallet) { setStaking(null); setTokens([]); return; }
     setLoading(true);
+    console.log("[Portfolio] rewardAddress:", wallet.rewardAddress);
     Promise.all([
       fetchStakingInfo(wallet.rewardAddress),
       parseTokens(wallet.name),
     ]).then(([s, t]) => {
+      console.log("[Portfolio] staking result:", s);
       setStaking(s);
       setTokens(t);
       setLoading(false);
