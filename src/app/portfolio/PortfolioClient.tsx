@@ -70,8 +70,24 @@ const TOKEN_META: Record<string, { ticker: string; decimals: number }> = {
 
 async function fetchStakingInfo(rewardAddress: string): Promise<StakingInfo | null> {
   if (!rewardAddress) return null;
-  // Koios needs bech32 stake address — skip if it looks like raw hex without stake prefix
-  const addr = rewardAddress.startsWith("stake") ? rewardAddress : null;
+  // Accept both bech32 (stake1...) and hex — Koios needs bech32
+  let addr = rewardAddress.startsWith("stake") ? rewardAddress : null;
+
+  // If hex, try to decode via Koios address_info first
+  if (!addr && rewardAddress.length > 0) {
+    try {
+      const r = await fetch(`${KOIOS}/address_info`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "accept": "application/json" },
+        body: JSON.stringify({ _addresses: [rewardAddress] }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        addr = d?.[0]?.stake_address || null;
+      }
+    } catch {}
+  }
+
   if (!addr) return null;
   try {
     const res = await fetch(`${KOIOS}/account_info`, {
@@ -157,13 +173,22 @@ async function parseTokens(walletName: string): Promise<TokenBalance[]> {
 
     return assets.slice(0, 20).map((a: any) => {
       const policyId = a.unit?.slice(0, 56) || "";
-      const meta = TOKEN_META[policyId] || { ticker: a.assetName?.slice(0, 8) || "TOKEN", decimals: 0 };
+      const meta = TOKEN_META[policyId] || null;
+      // Decode hex asset name to readable string
+      let ticker = a.assetName || "";
+      try {
+        if (ticker && /^[0-9a-fA-F]+$/.test(ticker)) {
+          const decoded = Buffer.from(ticker, "hex").toString("utf8").replace(/[^\x20-\x7E]/g, "");
+          if (decoded.length > 0) ticker = decoded;
+        }
+      } catch {}
+      ticker = meta?.ticker || ticker.slice(0, 12) || "TOKEN";
       return {
         policyId,
         assetName: a.assetName || "",
-        ticker: a.assetName || meta.ticker,
+        ticker,
         amount: parseInt(a.quantity || "0"),
-        decimals: meta.decimals,
+        decimals: meta?.decimals ?? 0,
         priceUsd: 0,
       };
     });
@@ -273,92 +298,73 @@ export default function PortfolioClient() {
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-
-            {/* ADA & Staking */}
-            <div className="card" style={{ padding: 24 }}>
-              <h3 style={sectionTitle}>🏊 Staking Status</h3>
-              {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading...</p>}
+          {/* Staking + Token Balances */}
+          <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+              <h3 style={{ ...sectionTitle, marginBottom: 0 }}>🏊 Staking Status</h3>
               {!loading && !staking && (
-                <div>
-                  <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 16 }}>Not currently staking.</p>
-                  <Link href="/" style={ctaBtn}>Stake with ADRIA →</Link>
-                </div>
+                <Link href="/" style={ctaBtn}>Stake with ADRIA →</Link>
               )}
-              {staking && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <InfoRow label="Pool" value={
-                    <span>
-                      {staking.poolTicker}
-                      {staking.isAdria && (
-                        <span style={{ marginLeft: 8, fontSize: 11, padding: "2px 8px",
-                          borderRadius: 999, background: "#10b98120", color: "#10b981",
-                          border: "1px solid #10b98140" }}>ADRIA ⭐</span>
-                      )}
-                    </span>
-                  } />
-                  <InfoRow label="Pool name" value={staking.poolName} />
-                  <InfoRow label="Delegated" value={`${fmtAda(staking.delegatedAda)} ₳`} />
-                  <InfoRow label="Available rewards" value={
-                    <span style={{ color: "#10b981", fontWeight: 700 }}>
-                      {fmtAda(staking.availableRewards)} ₳
-                      {adaPrice > 0 && <span style={{ color: "var(--text-muted)", fontWeight: 400 }}> (≈${rewardsUsd.toFixed(2)})</span>}
-                    </span>
-                  } />
-                  <InfoRow label="Pool ROS" value={staking.ros > 0 ? `${staking.ros.toFixed(2)}%` : "—"} />
-                  {!staking.isAdria && (
-                    <div style={{ marginTop: 8, padding: "12px 16px", background: "#8b5cf610",
-                      borderRadius: 8, border: "1px solid #8b5cf630" }}>
-                      <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
-                        💡 Switch to ADRIA and support a community-focused SPO
-                      </p>
-                      <Link href="/" style={ctaBtn}>Stake with ADRIA →</Link>
-                    </div>
-                  )}
-                </div>
+              {staking && !staking.isAdria && (
+                <Link href="/" style={ctaBtn}>Switch to ADRIA →</Link>
+              )}
+              {staking?.isAdria && (
+                <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 999,
+                  background: "#10b98120", color: "#10b981", border: "1px solid #10b98140", fontWeight: 600 }}>
+                  ⭐ Staking with ADRIA
+                </span>
               )}
             </div>
 
-            {/* Native tokens */}
-            <div className="card" style={{ padding: 24 }}>
-              <h3 style={sectionTitle}>🪙 Token Balances</h3>
-              {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading tokens...</p>}
-              {!loading && tokens.length === 0 && (
-                <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No native tokens found in this wallet.</p>
-              )}
-              {tokens.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {tokens.map((t, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between",
-                      alignItems: "center", padding: "10px 0",
-                      borderBottom: "1px solid var(--border)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 8,
-                          background: "linear-gradient(135deg, #8b5cf620, #3b82f620)",
-                          border: "1px solid var(--border)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 14, fontWeight: 700, color: "#8b5cf6",
-                        }}>
-                          {t.ticker.slice(0, 2)}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>{t.ticker}</div>
-                          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                            {t.policyId.slice(0, 12)}...
-                          </div>
-                        </div>
+            {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading staking info...</p>}
+            {!loading && !staking && (
+              <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Not currently staking. Stake your ADA to earn rewards!</p>
+            )}
+            {staking && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 4 }}>
+                <StatPill label="Pool" value={`[${staking.poolTicker}] ${staking.poolName}`} />
+                <StatPill label="Delegated" value={`${fmtAda(staking.delegatedAda)} ₳`} />
+                <StatPill label="Available Rewards" value={`${fmtAda(staking.availableRewards)} ₳`} color="#10b981" />
+                <StatPill label="Pool ROS" value={staking.ros > 0 ? `${staking.ros.toFixed(2)}%` : "—"} />
+              </div>
+            )}
+          </div>
+
+          {/* Token Balances — full width */}
+          <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+            <h3 style={sectionTitle}>🪙 Token Balances</h3>
+            {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading tokens...</p>}
+            {!loading && tokens.length === 0 && (
+              <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No native tokens found in this wallet.</p>
+            )}
+            {tokens.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+                {tokens.map((t, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between",
+                    alignItems: "center", padding: "12px 16px", borderRadius: 10,
+                    background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                        background: "linear-gradient(135deg, #8b5cf620, #3b82f620)",
+                        border: "1px solid var(--border)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 13, fontWeight: 700, color: "#8b5cf6",
+                      }}>
+                        {t.ticker.slice(0, 3).toUpperCase()}
                       </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontWeight: 600, color: "var(--text-primary)", fontFamily: "monospace" }}>
-                          {fmtToken(t.amount, t.decimals)}
-                        </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>{t.ticker}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{t.policyId.slice(0, 10)}...</div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div style={{ fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace", fontSize: 14 }}>
+                      {fmtToken(t.amount, t.decimals)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* DeFi positions — coming soon */}
@@ -453,6 +459,17 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
       padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
       <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{label}</span>
       <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{value}</span>
+    </div>
+  );
+}
+
+function StatPill({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div style={{ padding: "12px 16px", borderRadius: 10,
+      background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+      <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600,
+        textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: color || "var(--text-primary)" }}>{value}</div>
     </div>
   );
 }
