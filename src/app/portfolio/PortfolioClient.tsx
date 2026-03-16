@@ -71,46 +71,20 @@ const TOKEN_META: Record<string, { ticker: string; decimals: number }> = {
 async function fetchStakingInfo(rewardAddress: string): Promise<StakingInfo | null> {
   if (!rewardAddress) return null;
   try {
-    // Use our server-side proxy which handles both bech32 and hex, avoids CORS
     const res = await fetch(`/api/staking?addr=${encodeURIComponent(rewardAddress)}`);
     if (!res.ok) return null;
-    const json = await res.json();
-    const acc = json?.accountInfo?.[0];
-    if (!acc) return null;
-
-    // Get pool info
-    let poolTicker = acc.delegated_pool || "";
-    let poolName = acc.delegated_pool || "Unknown Pool";
-    let ros = 0;
-
-    if (acc.delegated_pool) {
-      try {
-        const poolRes = await fetch(`${KOIOS}/pool_info`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "accept": "application/json" },
-          body: JSON.stringify({ _pool_bech32_ids: [acc.delegated_pool] }),
-        });
-        if (poolRes.ok) {
-          const poolData = await poolRes.json();
-          const pool = poolData?.[0];
-          if (pool) {
-            poolTicker = pool.meta_json?.ticker || acc.delegated_pool.slice(0, 8);
-            poolName = pool.meta_json?.name || poolTicker;
-            ros = parseFloat(pool.live_ros || "0") * 100;
-          }
-        }
-      } catch {}
-    }
+    const d = await res.json();
+    if (d.error || !d.poolId) return null;
 
     return {
-      poolId: acc.delegated_pool || "",
-      poolTicker,
-      poolName,
-      delegatedAda: parseInt(acc.controlled_amount || "0"),
-      availableRewards: parseInt(acc.rewards_available || "0"),
-      epoch: acc.epoch_no || 0,
-      ros,
-      isAdria: acc.delegated_pool === ADRIA_POOL_ID,
+      poolId: d.poolId,
+      poolTicker: d.poolTicker || d.poolId.slice(0, 8),
+      poolName: d.poolName || d.poolTicker || "Unknown Pool",
+      delegatedAda: d.delegatedLovelace || 0,
+      availableRewards: d.availableRewards || 0,
+      epoch: 0,
+      ros: d.ros || 0,
+      isAdria: d.poolId === ADRIA_POOL_ID,
     };
   } catch {
     return null;
