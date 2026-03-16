@@ -66,18 +66,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (!cardano?.[walletName]) throw new Error("Wallet not found. Please install it first.");
       const api = await cardano[walletName].enable();
 
-      // Get balance
+      // Get balance — CBOR decode
       const balHex = await api.getBalance();
-      // CBOR decode: simple parse for lovelace-only balance
       let balLovelace = 0;
       try {
-        // Try hex decode
         const { decode } = await import("cbor-x");
         const decoded = decode(Buffer.from(balHex, "hex"));
-        balLovelace = typeof decoded === "number" ? decoded : decoded?.[0] ?? 0;
+        // Decoded is either a number (lovelace only) or [lovelace, multiasset]
+        if (typeof decoded === "number" || typeof decoded === "bigint") {
+          balLovelace = Number(decoded);
+        } else if (Array.isArray(decoded)) {
+          balLovelace = Number(decoded[0]);
+        } else {
+          balLovelace = 0;
+        }
+        if (!isFinite(balLovelace)) balLovelace = 0;
       } catch {
-        // Fallback: treat as raw number
-        balLovelace = parseInt(balHex, 16) || 0;
+        balLovelace = 0;
       }
 
       // Get address
@@ -91,11 +96,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       } catch {}
 
-      // Get reward/stake address
+      // Get reward/stake address — CIP-30 returns hex-encoded address bytes
       let rewardAddress = "";
       try {
         const rewards = await api.getRewardAddresses();
-        rewardAddress = rewards?.[0] || "";
+        const raw = rewards?.[0] || "";
+        if (raw.startsWith("stake")) {
+          // Already bech32
+          rewardAddress = raw;
+        } else if (raw.length > 0) {
+          // Try MeshJS resolver
+          try {
+            const { resolveRewardAddress } = await import("@meshsdk/core");
+            // resolveRewardAddress takes a base address hex and returns stake1... bech32
+            const usedAddrs = await api.getUsedAddresses();
+            const firstAddr = usedAddrs?.[0] || "";
+            if (firstAddr) {
+              rewardAddress = resolveRewardAddress(firstAddr) || raw;
+            } else {
+              rewardAddress = raw;
+            }
+          } catch {
+            rewardAddress = raw;
+          }
+        }
       } catch {}
 
       const wInfo = SUPPORTED_WALLETS.find(w => w.name === walletName)!;

@@ -69,11 +69,14 @@ const TOKEN_META: Record<string, { ticker: string; decimals: number }> = {
 
 async function fetchStakingInfo(rewardAddress: string): Promise<StakingInfo | null> {
   if (!rewardAddress) return null;
+  // Koios needs bech32 stake address — skip if it looks like raw hex without stake prefix
+  const addr = rewardAddress.startsWith("stake") ? rewardAddress : null;
+  if (!addr) return null;
   try {
     const res = await fetch(`${KOIOS}/account_info`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "accept": "application/json" },
-      body: JSON.stringify({ _stake_addresses: [rewardAddress] }),
+      body: JSON.stringify({ _stake_addresses: [addr] }),
     });
     if (!res.ok) return null;
     const data = await res.json();
