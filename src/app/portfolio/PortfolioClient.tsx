@@ -27,6 +27,15 @@ interface StakingInfo {
   isAdria: boolean;
 }
 
+interface DefiPosition {
+  protocol: string;
+  type: "lp" | "lending";
+  pair: string;
+  quantity: number;
+  policyId: string;
+  assetName: string;
+}
+
 interface YieldOpportunity {
   project: string;
   symbol: string;
@@ -92,6 +101,17 @@ async function fetchStakingInfo(rewardAddress: string): Promise<StakingInfo | nu
 }
 
 // ── Fetch top yield opportunities ────────────────────────────────────────────
+
+async function fetchDefiPositions(stakeAddr: string): Promise<DefiPosition[]> {
+  try {
+    const res = await fetch(`/api/defi-positions?addr=${encodeURIComponent(stakeAddr)}`);
+    if (!res.ok) return [];
+    const d = await res.json();
+    return d.positions || [];
+  } catch {
+    return [];
+  }
+}
 
 async function fetchTopYields(): Promise<YieldOpportunity[]> {
   try {
@@ -160,6 +180,8 @@ export default function PortfolioClient() {
   const [loading, setLoading] = useState(false);
   const [adaPrice, setAdaPrice] = useState(0);
   const [tokenPrices, setTokenPrices] = useState<Record<string, { priceUsd: number; symbol: string; decimals: number }>>({});
+  const [defiPositions, setDefiPositions] = useState<DefiPosition[]>([]);
+  const [defiLoading, setDefiLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"tokens" | "nfts">("tokens");
   const [hideZero, setHideZero] = useState(true);
 
@@ -169,8 +191,9 @@ export default function PortfolioClient() {
   }, []);
 
   useEffect(() => {
-    if (!wallet) { setStaking(null); setTokens([]); return; }
+    if (!wallet) { setStaking(null); setTokens([]); setDefiPositions([]); return; }
     setLoading(true);
+    setDefiLoading(true);
     console.log("[Portfolio] rewardAddress:", wallet.rewardAddress);
     Promise.all([
       fetchStakingInfo(wallet.rewardAddress),
@@ -186,6 +209,14 @@ export default function PortfolioClient() {
           .then(r => r.json()).then(setTokenPrices).catch(() => {});
       }
     });
+    if (wallet.rewardAddress) {
+      fetchDefiPositions(wallet.rewardAddress).then(p => {
+        setDefiPositions(p);
+        setDefiLoading(false);
+      });
+    } else {
+      setDefiLoading(false);
+    }
   }, [wallet]);
 
   const adaBalance = wallet ? wallet.balanceLovelace / 1_000_000 : 0;
@@ -460,28 +491,52 @@ export default function PortfolioClient() {
             )}
           </div>
 
-          {/* DeFi positions — coming soon */}
+          {/* DeFi Positions */}
           <div className="card" style={{ padding: 24, marginBottom: 20 }}>
             <h3 style={sectionTitle}>📈 DeFi Positions</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-              {["Minswap LP positions", "WingRiders LP", "Liqwid lending", "Open DEX orders"].map(label => (
-                <div key={label} style={{ padding: "16px 20px", borderRadius: 10,
-                  background: "var(--bg-secondary)", border: "1px solid var(--border)",
-                  display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%",
-                    background: "#f59e0b", boxShadow: "0 0 6px #f59e0b", flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{label}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                      ⏳ Syncing on-chain data...
+            {defiLoading && (
+              <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Scanning on-chain positions...</p>
+            )}
+            {!defiLoading && defiPositions.length === 0 && (
+              <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No DeFi positions detected.</p>
+            )}
+            {!defiLoading && defiPositions.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 12,
+                  padding: "8px 16px", borderBottom: "1px solid var(--border)",
+                  fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
+                  textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <span>Protocol</span>
+                  <span>Position</span>
+                  <span style={{ textAlign: "right" }}>Quantity</span>
+                </div>
+                {defiPositions.map((p, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 12,
+                    alignItems: "center", padding: "12px 16px",
+                    borderBottom: "1px solid var(--border)", transition: "background 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-secondary)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                        background: p.type === "lending" ? "#06b6d4" : "#10b981",
+                        boxShadow: `0 0 6px ${p.type === "lending" ? "#06b6d4" : "#10b981"}` }} />
+                      <div>
+                        <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 14 }}>{p.protocol}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                          {p.type === "lending" ? "Lending" : "LP Token"}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 600, color: "var(--text-secondary)", fontSize: 14 }}>{p.pair}</div>
+                    <div style={{ textAlign: "right", fontFamily: "monospace", fontWeight: 600,
+                      color: "var(--text-primary)", fontSize: 13 }}>
+                      {p.quantity.toLocaleString()}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 16 }}>
-              🔄 On-chain position tracking requires our chain indexer to finish syncing (~2 days). Check back soon!
-            </p>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}
