@@ -1,4 +1,4 @@
-import { fetchDapp, fmt, fmtNum } from "@/lib/api";
+import { fetchDapp, fmt, fmtNum, toSlug } from "@/lib/api";
 import CategoryBadge from "@/components/CategoryBadge";
 import Link from "next/link";
 import DAppTabs from "@/components/DAppTabs";
@@ -16,11 +16,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: dapp.name,
       description: dapp.description ||
         `${dapp.name} on Cardano — ${dapp.category} DApp${tvlStr}${volStr}. View TVL, transactions, yield rates and smart contract scripts.`,
-      alternates: { canonical: `https://dappsoncardano.com/dapp/${encodeURIComponent(dapp.name)}` },
+      alternates: { canonical: `https://dappsoncardano.com/dapp/${dapp.slug ?? toSlug(dapp.name)}` },
       openGraph: {
         title: `${dapp.name} — Cardano DApp Analytics`,
         description: dapp.description || `Real-time data for ${dapp.name}${tvlStr}`,
-        url: `https://dappsoncardano.com/dapp/${encodeURIComponent(dapp.name)}`,
+        url: `https://dappsoncardano.com/dapp/${dapp.slug ?? toSlug(dapp.name)}`,
         type: "website",
       },
     };
@@ -53,7 +53,7 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
   }
 
   // JSON-LD structured data
-  const dappUrl = `https://dappsoncardano.com/dapp/${encodeURIComponent(dapp.name)}`;
+  const dappUrl = `https://dappsoncardano.com/dapp/${dapp.slug ?? toSlug(dapp.name)}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",

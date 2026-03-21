@@ -1,6 +1,10 @@
 // Server-side uses API_URL (not exposed to client), client-side uses NEXT_PUBLIC_API_URL
 const API_BASE = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28";
 
+export function toSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
 export async function fetchDapps(category?: string) {
   const url = category
     ? `${API_BASE}/dapps/list-dapps?category=${encodeURIComponent(category)}`
@@ -28,6 +32,12 @@ export async function fetchGlobalStats() {
 export async function fetchEcosystem() {
   const res = await fetch(`${API_BASE}/global/ecosystem`, { next: { revalidate: 300 } });
   if (!res.ok) throw new Error("Failed to fetch ecosystem");
+  return res.json();
+}
+
+export async function fetchSlugMap(): Promise<{ name: string; slug: string }[]> {
+  const res = await fetch(`${API_BASE}/dapps/slug-map`, { next: { revalidate: 86400 } });
+  if (!res.ok) throw new Error("Failed to fetch slug map");
   return res.json();
 }
 

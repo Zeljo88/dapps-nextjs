@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { toSlug } from "@/lib/api";
 
 const BASE = "https://dappsoncardano.com";
 const API  = "http://20.79.10.28";
@@ -19,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const res = await fetch(`${API}/dapps/list-dapps`, { next: { revalidate: 86400 } });
     const dapps = await res.json();
     dapp_pages = dapps.map((d: any) => ({
-      url: `${BASE}/dapp/${encodeURIComponent(d.name)}`,
+      url: `${BASE}/dapp/${d.slug ?? toSlug(d.name)}`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: d.tvl > 1_000_000 ? 0.9 : d.tvl > 0 ? 0.7 : 0.5,
