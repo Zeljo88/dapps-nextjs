@@ -5,12 +5,41 @@ import StakeButton from "@/components/StakeButton";
 
 export const revalidate = 300;
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://dappsoncardano.com/#website",
+      "url": "https://dappsoncardano.com",
+      "name": "DApps on Cardano",
+      "description": "Real-time analytics for Cardano DApps — TVL, volume, DEX transactions and yield rates. Track 94+ DApps, swap tokens at best rates.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://dappsoncardano.com/?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://dappsoncardano.com/#organization",
+      "name": "DApps on Cardano",
+      "url": "https://dappsoncardano.com",
+      "sameAs": ["https://twitter.com/dappsoncardano"],
+    },
+  ],
+};
+
 export default async function HomePage() {
   const [dapps, stats] = await Promise.all([fetchDapps(), fetchGlobalStats()]);
   const adaPrice = stats.adaPrice || 0;
 
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
 
       {/* Hero Banner */}
       <div className="hero-banner">

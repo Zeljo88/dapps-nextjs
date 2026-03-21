@@ -53,6 +53,7 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
   }
 
   // JSON-LD structured data
+  const dappUrl = `https://dappsoncardano.com/dapp/${encodeURIComponent(dapp.name)}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -69,9 +70,29 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
     } : undefined,
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "DApps on Cardano",
+        "item": "https://dappsoncardano.com",
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": dapp.name,
+        "item": dappUrl,
+      },
+    ],
+  };
+
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       {/* Breadcrumb */}
       <div style={{ marginBottom: 24, fontSize: 14, color: "var(--text-muted)" }}>
         <Link href="/" style={{ color: "var(--text-muted)", textDecoration: "none" }}>

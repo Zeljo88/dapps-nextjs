@@ -13,6 +13,26 @@ async function fetchYields() {
   return res.json();
 }
 
+const yieldsJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Cardano DeFi Yield Rates",
+  "description": "Best yield rates on Cardano — APY, TVL and pool data for Liqwid, Indigo, Minswap LP and 90+ more pools.",
+  "url": "https://dappsoncardano.com/yields",
+  "provider": {
+    "@type": "Organization",
+    "name": "DApps on Cardano",
+    "url": "https://dappsoncardano.com",
+  },
+  "variableMeasured": [
+    { "@type": "PropertyValue", "name": "APY", "description": "Annual Percentage Yield" },
+    { "@type": "PropertyValue", "name": "TVL", "description": "Total Value Locked in USD" },
+    { "@type": "PropertyValue", "name": "Base APY", "description": "Base annual yield rate" },
+    { "@type": "PropertyValue", "name": "Reward APY", "description": "Reward token yield rate" },
+  ],
+  "keywords": ["Cardano", "DeFi", "yield farming", "APY", "liquidity pools", "staking"],
+};
+
 export default async function YieldsPage() {
   const yields: any[] = await fetchYields();
 
@@ -21,6 +41,7 @@ export default async function YieldsPage() {
 
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(yieldsJsonLd) }} />
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>

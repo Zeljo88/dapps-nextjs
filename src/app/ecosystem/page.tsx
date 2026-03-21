@@ -9,11 +9,26 @@ export const metadata = {
   alternates: { canonical: "https://dappsoncardano.com/ecosystem" },
 };
 
+const ecosystemJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "DataCatalog",
+  "name": "Cardano DeFi Ecosystem",
+  "description": "Cardano DeFi ecosystem overview — total TVL, DEX volume, DApp categories and on-chain statistics.",
+  "url": "https://dappsoncardano.com/ecosystem",
+  "provider": {
+    "@type": "Organization",
+    "name": "DApps on Cardano",
+    "url": "https://dappsoncardano.com",
+  },
+  "keywords": ["Cardano", "DeFi", "TVL", "DEX", "blockchain analytics"],
+};
+
 export default async function EcosystemPage() {
   const [eco, stats] = await Promise.all([fetchEcosystem(), fetchGlobalStats()]);
 
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ecosystemJsonLd) }} />
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           Cardano Ecosystem

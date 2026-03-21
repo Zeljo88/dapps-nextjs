@@ -31,6 +31,10 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   verification: { google: "9E19dwMDP2glZXbKRGfp8uUmudJvY0boVxV2sZ3h_Fc" },
+  manifest: "/manifest.json",
+  icons: {
+    apple: "/apple-icon",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
