@@ -103,6 +103,7 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tvl")} className="cursor-pointer">
                   TVL <SortIcon k="tvl" />
                 </th>
+                <th style={{ ...th, textAlign: "right" }}>24h %</th>
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("volume30d")} className="cursor-pointer">
                   30d Volume <SortIcon k="volume30d" />
                 </th>
@@ -120,12 +121,23 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                   <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{i + 1}</td>
                   <td style={td}>
                     <Link href={`/dapp/${d.slug ?? toSlug(d.name)}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-                      {/* Logo placeholder */}
-                      <div style={{
+                      {d.logo ? (
+                        <img src={d.logo} alt={d.name} loading="lazy" width={36} height={36}
+                          style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
+                          onError={(e) => {
+                            const img = e.currentTarget;
+                            const parent = img.parentElement!;
+                            img.style.display = "none";
+                            const fb = parent.querySelector(".logo-fallback") as HTMLElement;
+                            if (fb) fb.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      <div className="logo-fallback" style={{
                         width: 36, height: 36, borderRadius: 10,
                         background: `${CATEGORY_COLORS[d.category] || "#6b7280"}25`,
                         border: `1px solid ${CATEGORY_COLORS[d.category] || "#6b7280"}35`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
+                        display: d.logo ? "none" : "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 16, fontWeight: 700,
                         color: CATEGORY_COLORS[d.category] || "#6b7280",
                         flexShrink: 0,
@@ -144,6 +156,10 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                   <td style={{ ...td, textAlign: "right", fontWeight: 600, fontFamily: "monospace",
                     color: d.tvl > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
                     {d.tvl > 0 ? format(d.tvl, adaPrice) : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace", fontWeight: 600,
+                    color: !d.change1d ? "var(--text-muted)" : d.change1d > 0 ? "#10b981" : "#ef4444" }}>
+                    {!d.change1d ? "—" : `${d.change1d > 0 ? "▲" : "▼"} ${Math.abs(d.change1d).toFixed(1)}%`}
                   </td>
                   <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
                     color: d.volume30d > 0 ? "#10b981" : "var(--text-muted)" }}>
