@@ -62,6 +62,51 @@ export function fmtNum(n: number | null | undefined): string {
   return `${n}`;
 }
 
+export const categorySlugMap: Record<string, string[]> = {
+  defi: ["DEFI"],
+  nft: ["COLLECTION"],
+  marketplace: ["MARKETPLACE"],
+  gaming: ["GAMING"],
+  community: ["COMMUNITY"],
+  stablecoin: ["STABLECOIN"],
+  wallet: ["SMART_WALLET"],
+  infrastructure: ["LAYER_2", "BLOCKCHAIN", "MOBILE_NETWORK"],
+  "nft-minting": ["NFT_MINTING_PLATFORM"],
+};
+
+export const categoryDisplayName: Record<string, string> = {
+  defi: "DeFi",
+  nft: "NFT & Collections",
+  marketplace: "Marketplace",
+  gaming: "Gaming",
+  community: "Community",
+  stablecoin: "Stablecoin",
+  wallet: "Smart Wallet",
+  infrastructure: "Infrastructure",
+  "nft-minting": "NFT Minting",
+};
+
+export const categoryToSlug: Record<string, string> = {
+  DEFI: "defi",
+  COLLECTION: "nft",
+  MARKETPLACE: "marketplace",
+  GAMING: "gaming",
+  COMMUNITY: "community",
+  STABLECOIN: "stablecoin",
+  SMART_WALLET: "wallet",
+  LAYER_2: "infrastructure",
+  BLOCKCHAIN: "infrastructure",
+  MOBILE_NETWORK: "infrastructure",
+  NFT_MINTING_PLATFORM: "nft-minting",
+};
+
+export async function fetchDappsByCategory(slug: string) {
+  const categories = categorySlugMap[slug];
+  if (!categories) throw new Error(`Unknown category slug: ${slug}`);
+  const results = await Promise.all(categories.map(cat => fetchDapps(cat)));
+  return results.flat();
+}
+
 export const CATEGORY_COLORS: Record<string, string> = {
   DEFI: "#8b5cf6",
   MARKETPLACE: "#3b82f6",

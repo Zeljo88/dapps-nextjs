@@ -9,7 +9,7 @@ const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMU
 
 type SortKey = "tvl" | "volume30d" | "trxCount" | "name";
 
-export default function DAppTable({ dapps, adaPrice }: { dapps: any[], adaPrice: number }) {
+export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any[], adaPrice: number, hideFilters?: boolean }) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("tvl");
@@ -63,23 +63,25 @@ export default function DAppTable({ dapps, adaPrice }: { dapps: any[], adaPrice:
           />
         </div>
 
-        {/* Category filters */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {CATEGORIES.map(c => {
-            const color = c === "ALL" ? "#8b5cf6" : (CATEGORY_COLORS[c] || "#6b7280");
-            const active = cat === c;
-            return (
-              <button key={c} onClick={() => setCat(c)} style={{
-                padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                cursor: "pointer", border: "1px solid",
-                background: active ? `${color}20` : "transparent",
-                borderColor: active ? `${color}60` : "var(--border)",
-                color: active ? color : "var(--text-secondary)",
-                transition: "all 0.15s",
-              }}>{c === "ALL" ? "All" : c === "COLLECTION" ? "NFT" : c.charAt(0) + c.slice(1).toLowerCase()}</button>
-            );
-          })}
-        </div>
+        {/* Category filters — hidden on category-specific pages */}
+        {!hideFilters && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {CATEGORIES.map(c => {
+              const color = c === "ALL" ? "#8b5cf6" : (CATEGORY_COLORS[c] || "#6b7280");
+              const active = cat === c;
+              return (
+                <button key={c} onClick={() => setCat(c)} style={{
+                  padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", border: "1px solid",
+                  background: active ? `${color}20` : "transparent",
+                  borderColor: active ? `${color}60` : "var(--border)",
+                  color: active ? color : "var(--text-secondary)",
+                  transition: "all 0.15s",
+                }}>{c === "ALL" ? "All" : c === "COLLECTION" ? "NFT" : c.charAt(0) + c.slice(1).toLowerCase()}</button>
+              );
+            })}
+          </div>
+        )}
 
         <div style={{ marginLeft: "auto", fontSize: 13, color: "var(--text-muted)" }}>
           {filtered.length} DApps

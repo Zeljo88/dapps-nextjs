@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { toSlug } from "@/lib/api";
+import { toSlug, categorySlugMap } from "@/lib/api";
 
 const BASE = "https://dappsoncardano.com";
 const API  = "http://20.79.10.28";
@@ -27,5 +27,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch {}
 
-  return [...static_pages, ...dapp_pages];
+  // Category pages
+  const category_pages: MetadataRoute.Sitemap = [
+    { url: `${BASE}/category`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    ...Object.keys(categorySlugMap).map(slug => ({
+      url: `${BASE}/category/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    })),
+  ];
+
+  return [...static_pages, ...category_pages, ...dapp_pages];
 }

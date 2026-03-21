@@ -64,6 +64,7 @@ body {
   transition: background 0.2s, border-color 0.2s;
 }
 .card:hover { border-color: var(--border-light); }
+.category-card:hover { background: var(--bg-card-hover); }
 
 .badge {
   display: inline-flex;

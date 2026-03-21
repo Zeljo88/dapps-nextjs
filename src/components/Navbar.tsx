@@ -9,6 +9,7 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
   const path = usePathname();
   const links = [
     { href: "/", label: "DApps" },
+    { href: "/category", label: "Categories" },
     { href: "/ecosystem", label: "Ecosystem" },
     { href: "/yields", label: "Yields" },
     { href: "/portfolio", label: "💼 Portfolio" },
@@ -42,7 +43,7 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
         {/* Nav links */}
         <div style={{ display: "flex", gap: 2 }}>
           {links.map(l => {
-            const active = path === l.href;
+            const active = l.href === "/" ? path === "/" : path.startsWith(l.href);
             return (
               <Link key={l.href} href={l.href} style={{
                 padding: "6px 14px", borderRadius: 8, fontSize: 14, fontWeight: 500,
