@@ -170,7 +170,18 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                     {d.trxCount > 0 ? fmtNum(d.trxCount) : "—"}
                   </td>
                   <td style={td}>
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {d.audits > 0 && (
+                        <a href={d.auditLinks?.[0] || "#"} target="_blank" rel="noopener noreferrer"
+                          title={`${d.audits} audit${d.audits > 1 ? "s" : ""}`}
+                          style={{ fontSize: 11, color: "#10b981", textDecoration: "none",
+                            padding: "3px 8px", borderRadius: 5, border: "1px solid #10b98140",
+                            background: "#10b98110", transition: "all 0.15s", whiteSpace: "nowrap" }}
+                          onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = "#10b981"; }}
+                          onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = "#10b98140"; }}>
+                          🛡️
+                        </a>
+                      )}
                       {d.link && (
                         <a href={d.link} target="_blank" rel="noopener noreferrer"
                           style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "none",
