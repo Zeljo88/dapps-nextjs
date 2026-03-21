@@ -10,16 +10,29 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   try {
     const dapp = await fetchDapp(id);
-    const tvlStr = dapp.tvl > 0 ? ` — TVL ${fmt(dapp.tvl)}` : "";
-    const volStr = dapp.volume30d > 0 ? `, 30d volume ${fmt(dapp.volume30d)}` : "";
+    const tvlStr = dapp.tvl > 0 ? ` with TVL ${fmt(dapp.tvl)}` : "";
+    const volStr = dapp.volume30d > 0 ? ` and 30d volume ${fmt(dapp.volume30d)}` : "";
+
+    const isThin =
+      dapp.tvl === 0 &&
+      dapp.trxCount === 0 &&
+      dapp.volume30d === 0 &&
+      !dapp.description;
+
+    const description = dapp.description
+      ? `${dapp.description} Track ${dapp.name} TVL, volume and transactions on DApps on Cardano.`
+      : `${dapp.name} is a ${dapp.category} DApp on Cardano${tvlStr}${volStr}. Track real-time TVL, volume, transactions and analytics.`;
+
     return {
-      title: dapp.name,
-      description: dapp.description ||
-        `${dapp.name} on Cardano — ${dapp.category} DApp${tvlStr}${volStr}. View TVL, transactions, yield rates and smart contract scripts.`,
+      title: `${dapp.name} on Cardano — DApp Analytics`,
+      description,
+      robots: isThin
+        ? { index: false, follow: true }
+        : { index: true, follow: true },
       alternates: { canonical: `https://dappsoncardano.com/dapp/${dapp.slug ?? toSlug(dapp.name)}` },
       openGraph: {
-        title: `${dapp.name} — Cardano DApp Analytics`,
-        description: dapp.description || `Real-time data for ${dapp.name}${tvlStr}`,
+        title: `${dapp.name} — Cardano ${dapp.category} DApp Analytics`,
+        description,
         url: `https://dappsoncardano.com/dapp/${dapp.slug ?? toSlug(dapp.name)}`,
         type: "website",
       },

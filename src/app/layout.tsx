@@ -9,14 +9,14 @@ import { fetchGlobalStats } from "@/lib/api";
 const GA_ID = "G-0YSY4YKKD0";
 
 export const metadata: Metadata = {
-  title: { default: "DApps on Cardano", template: "%s | DApps on Cardano" },
-  description: "Real-time analytics for Cardano DApps — TVL, volume, DEX transactions and yield rates. Track 94+ DApps, swap tokens at best rates.",
+  title: { default: "Cardano DApps Analytics — Track TVL, Volume & DeFi Projects", template: "%s | DApps on Cardano" },
+  description: "Explore Cardano DApps with real-time analytics for TVL, volume, transactions and yields. Discover DeFi, NFT, gaming and marketplace projects on Cardano.",
   keywords: ["Cardano", "DApps", "DeFi", "ADA", "TVL", "DEX", "swap", "yield", "analytics", "blockchain"],
   metadataBase: new URL("https://dappsoncardano.com"),
   alternates: { canonical: "https://dappsoncardano.com" },
   openGraph: {
-    title: "DApps on Cardano — Real-time DeFi Analytics",
-    description: "Track TVL, volume, yields and transactions for 94+ Cardano DApps. Swap tokens at best rates across 14+ DEXes.",
+    title: "Cardano DApps Analytics — Track TVL, Volume & DeFi Projects",
+    description: "Explore Cardano DApps with real-time analytics for TVL, volume, transactions and yields. Discover DeFi, NFT, gaming and marketplace projects on Cardano.",
     url: "https://dappsoncardano.com",
     siteName: "DApps on Cardano",
     type: "website",

@@ -47,7 +47,7 @@ export default async function HomePage() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 20 }}>
             <div>
               <h1 style={{ fontSize: 30, fontWeight: 800, marginBottom: 8, lineHeight: 1.2 }}>
-                Cardano DApp Store
+                Cardano DApps Analytics
               </h1>
               <p style={{ fontSize: 15, opacity: 0.85, maxWidth: 500 }}>
                 Real-time analytics for DApps on Cardano — TVL, volume, transactions and yields.
