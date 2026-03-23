@@ -100,6 +100,15 @@ export const categoryToSlug: Record<string, string> = {
   NFT_MINTING_PLATFORM: "nft-minting",
 };
 
+export async function fetchTvlHistory(slug: string): Promise<{ points: { date: number; tvl: number }[]; totalPoints: number }> {
+  const res = await fetch(`${API_BASE}/dapps/${encodeURIComponent(slug)}/tvl-history`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) return { points: [], totalPoints: 0 };
+  return res.json();
+}
+
 export async function fetchDappsByCategory(slug: string) {
   const categories = categorySlugMap[slug];
   if (!categories) throw new Error(`Unknown category slug: ${slug}`);

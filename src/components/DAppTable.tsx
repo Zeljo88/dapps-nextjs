@@ -7,7 +7,7 @@ import { useCurrency } from "@/lib/currency";
 
 const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMUNITY", "STABLECOIN"];
 
-type SortKey = "tvl" | "volume30d" | "trxCount" | "name";
+type SortKey = "tvl" | "volume30d" | "trxCount" | "tx24h" | "activeUsers24h" | "name";
 
 export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any[], adaPrice: number, hideFilters?: boolean }) {
   const [search, setSearch] = useState("");
@@ -110,6 +110,12 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("trxCount")} className="cursor-pointer">
                   Tx Count <SortIcon k="trxCount" />
                 </th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tx24h")} className="cursor-pointer">
+                  24h Txs <SortIcon k="tx24h" />
+                </th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("activeUsers24h")} className="cursor-pointer">
+                  Active Users <SortIcon k="activeUsers24h" />
+                </th>
                 <th style={th}>Links</th>
               </tr>
             </thead>
@@ -168,6 +174,14 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                   <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
                     color: d.trxCount > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
                     {d.trxCount > 0 ? fmtNum(d.trxCount) : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
+                    color: d.tx24h > 0 ? "#06b6d4" : "var(--text-muted)" }}>
+                    {d.tx24h > 0 ? fmtNum(d.tx24h) : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
+                    color: d.activeUsers24h > 0 ? "#ec4899" : "var(--text-muted)" }}>
+                    {d.activeUsers24h > 0 ? fmtNum(d.activeUsers24h) : "—"}
                   </td>
                   <td style={td}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

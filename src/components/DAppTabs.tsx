@@ -1,9 +1,15 @@
 "use client";
 import { useState } from "react";
 import { fmt } from "@/lib/api";
+import TvlChart from "./TvlChart";
 
 export default function DAppTabs({ dapp }: { dapp: any }) {
-  const tabs = ["Overview", ...(dapp.hasYields ? ["Yields"] : []), "Scripts"];
+  const tabs = [
+    "Overview",
+    ...(dapp.tvl > 0 ? ["TVL History"] : []),
+    ...(dapp.hasYields ? ["Yields"] : []),
+    "Scripts",
+  ];
   const [active, setActive] = useState("Overview");
 
   return (
@@ -23,6 +29,11 @@ export default function DAppTabs({ dapp }: { dapp: any }) {
       </div>
 
       {active === "Overview" && <OverviewTab dapp={dapp} />}
+      {active === "TVL History" && (
+        <div className="card" style={{ padding: 24 }}>
+          <TvlChart slug={dapp.slug} />
+        </div>
+      )}
       {active === "Yields" && <YieldsTab yields={dapp.yields} />}
       {active === "Scripts" && <ScriptsTab scripts={dapp.scripts} />}
     </div>

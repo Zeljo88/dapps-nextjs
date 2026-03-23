@@ -201,6 +201,11 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
         <MiniStat label="30d Volume" value={dapp.volume30d > 0 ? fmt(dapp.volume30d) : "—"} color="#10b981" />
         <MiniStat label="7d Volume" value={dapp.volume7d > 0 ? fmt(dapp.volume7d) : "—"} color="#06b6d4" />
         <MiniStat label="Tx Count" value={dapp.trxCount > 0 ? fmtNum(dapp.trxCount) : "—"} color="#3b82f6" />
+        <MiniStat label="24h Transactions" value={dapp.tx24h > 0 ? fmtNum(dapp.tx24h) : "—"} color="#06b6d4" />
+        <MiniStat label="7d Transactions" value={dapp.tx7d > 0 ? fmtNum(dapp.tx7d) : "—"} color="#0ea5e9" />
+        {dapp.activeUsers24h > 0 && (
+          <MiniStat label="Active Users (24h)" value={fmtNum(dapp.activeUsers24h)} color="#ec4899" />
+        )}
         <MiniStat label="Scripts" value={`${dapp.scriptCount}`} color="#f59e0b" />
         {dapp.hasYields && (
           <MiniStat label="Yield Pools" value={`${dapp.yields.length}`} color="#f97316" />

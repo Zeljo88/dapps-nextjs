@@ -27,6 +27,17 @@ export default function HomeStats({ stats, adaPrice }: { stats: any, adaPrice: n
         color="#06b6d4"
         icon="⚡"
       />
+      {stats.totalActiveUsers24h > 0 && (
+        <StatCard
+          label="Active Users (24h)"
+          value={stats.totalActiveUsers24h >= 1000
+            ? `${(stats.totalActiveUsers24h / 1000).toFixed(1)}K`
+            : `${stats.totalActiveUsers24h}`}
+          sub="Unique wallets today"
+          color="#ec4899"
+          icon="👥"
+        />
+      )}
     </div>
   );
 }
