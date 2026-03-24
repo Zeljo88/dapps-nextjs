@@ -96,27 +96,27 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 <th style={th}>#</th>
-                <th style={th} onClick={() => toggleSort("name")} className="cursor-pointer">
+                <th style={th} onClick={() => toggleSort("name")} className="cursor-pointer" title="DApp name — click to sort alphabetically">
                   Name <SortIcon k="name" />
                 </th>
-                <th style={th}>Category</th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tvl")} className="cursor-pointer">
+                <th style={th} title="Primary category: DeFi, NFT, Marketplace, Gaming, etc.">Category</th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tvl")} className="cursor-pointer" title="Total Value Locked — USD value of all assets deposited in the DApp's smart contracts">
                   TVL <SortIcon k="tvl" />
                 </th>
-                <th style={{ ...th, textAlign: "right" }}>24h %</th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("volume30d")} className="cursor-pointer">
+                <th style={{ ...th, textAlign: "right" }} title="TVL percentage change in the last 24 hours">24h %</th>
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("volume30d")} className="cursor-pointer" title="Total trading/transaction volume over the last 30 days in USD">
                   30d Volume <SortIcon k="volume30d" />
                 </th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("trxCount")} className="cursor-pointer">
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("trxCount")} className="cursor-pointer" title="Total on-chain smart contract transactions (script invocations) since launch">
                   Tx Count <SortIcon k="trxCount" />
                 </th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tx24h")} className="cursor-pointer">
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tx24h")} className="cursor-pointer" title="Number of on-chain transactions in the last 24 hours (updated every 2 hours via Koios)">
                   24h Txs <SortIcon k="tx24h" />
                 </th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("activeUsers24h")} className="cursor-pointer">
+                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("activeUsers24h")} className="cursor-pointer" title="Unique wallet addresses (stake keys) that interacted with this DApp in the last 24 hours">
                   Active Users <SortIcon k="activeUsers24h" />
                 </th>
-                <th style={th}>Links</th>
+                <th style={th} title="External links — website, Twitter, Discord, DeFiLlama">Links</th>
               </tr>
             </thead>
             <tbody>
