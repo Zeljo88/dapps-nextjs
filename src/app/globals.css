@@ -83,9 +83,20 @@ body {
   color: var(--hero-text);
   border-radius: 16px;
   padding: 40px 48px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   position: relative;
   overflow: hidden;
+}
+
+/* Home swap + stats responsive layout */
+@media (max-width: 860px) {
+  .home-swap-stats {
+    grid-template-columns: 1fr !important;
+  }
+  .home-swap-widget {
+    max-width: 400px;
+    margin: 0 auto;
+  }
 }
 
 .hero-banner::before {
