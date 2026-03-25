@@ -1,8 +1,7 @@
 import { fetchDapps, fetchGlobalStats, fmtNum, fmt } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
 import StakeButton from "@/components/StakeButton";
-import SwapWidget from "@/components/SwapWidget";
-import "@dexhunterio/swaps/lib/assets/style.css";
+import CustomSwap from "@/components/CustomSwap";
 
 export const revalidate = 300;
 
@@ -60,9 +59,9 @@ export default async function HomePage() {
       {/* Swap + Stats row */}
       <div className="home-swap-stats" style={{ display: "flex", gap: 16, marginBottom: 28, alignItems: "flex-start" }}>
 
-        {/* Left: Swap widget — wider */}
-        <div className="home-swap-widget" style={{ width: 480, flexShrink: 0 }}>
-          <SwapWidget />
+        {/* Left: Custom swap */}
+        <div className="home-swap-widget" style={{ width: 400, flexShrink: 0 }}>
+          <CustomSwap />
         </div>
 
         {/* Right: tight stat pills in 2 columns */}
