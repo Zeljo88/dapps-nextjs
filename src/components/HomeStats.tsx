@@ -1,22 +1,17 @@
 "use client";
 import { useCurrency } from "@/lib/currency";
 
-export default function HomeStats({ stats, adaPrice, compact }: { stats: any, adaPrice: number, compact?: boolean }) {
+export default function HomeStats({ stats, adaPrice }: { stats: any, adaPrice: number }) {
   const { format } = useCurrency();
 
-  const gridCols = compact
-    ? "repeat(auto-fit, minmax(140px, 1fr))"
-    : "repeat(auto-fit, minmax(200px, 1fr))";
-
   return (
-    <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: compact ? 12 : 16, marginBottom: compact ? 12 : 20 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 20 }}>
       <StatCard
         label="Total TVL"
         value={format(stats.totalTvl, adaPrice)}
         sub="Across all DApps"
         color="#8b5cf6"
         icon="💰"
-        compact={compact}
       />
       <StatCard
         label="30d Volume"
@@ -24,7 +19,6 @@ export default function HomeStats({ stats, adaPrice, compact }: { stats: any, ad
         sub="DEX trading volume"
         color="#10b981"
         icon="📊"
-        compact={compact}
       />
       <StatCard
         label="24h Volume"
@@ -32,7 +26,6 @@ export default function HomeStats({ stats, adaPrice, compact }: { stats: any, ad
         sub="Last 24 hours"
         color="#06b6d4"
         icon="⚡"
-        compact={compact}
       />
       {stats.totalActiveUsers24h > 0 && (
         <StatCard
@@ -43,41 +36,38 @@ export default function HomeStats({ stats, adaPrice, compact }: { stats: any, ad
           sub="Unique wallets today"
           color="#ec4899"
           icon="👥"
-          compact={compact}
         />
       )}
     </div>
   );
 }
 
-function StatCard({ label, value, sub, color, icon, compact }: {
-  label: string; value: string; sub?: string; color: string; icon?: string; compact?: boolean;
+function StatCard({ label, value, sub, color, icon }: {
+  label: string; value: string; sub?: string; color: string; icon?: string;
 }) {
   return (
-    <div className="card" style={{ padding: compact ? "12px 16px" : "20px 24px" }}>
+    <div className="card" style={{ padding: "20px 24px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: compact ? 10 : 12, color: "var(--text-muted)", fontWeight: 600,
-            textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: compact ? 4 : 8 }}>{label}</div>
-          <div style={{ fontSize: compact ? 20 : 26, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>{label}</div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>
             {value}
           </div>
-          {sub && <div style={{ fontSize: compact ? 11 : 12, color: "var(--text-secondary)", marginTop: compact ? 3 : 6 }}>{sub}</div>}
+          {sub && <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6 }}>{sub}</div>}
         </div>
         {icon && (
-          <div style={{ width: compact ? 32 : 40, height: compact ? 32 : 40, borderRadius: compact ? 8 : 10,
+          <div style={{ width: 40, height: 40, borderRadius: 10,
             background: `${color}22`, border: `1px solid ${color}44`,
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: compact ? 14 : 18 }}>
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
             {icon}
           </div>
         )}
       </div>
-      {!compact && (
-        <div style={{ marginTop: 16, height: 2, background: "var(--border)", borderRadius: 1 }}>
-          <div style={{ width: "100%", height: "100%",
-            background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1 }} />
-        </div>
-      )}
+      <div style={{ marginTop: 16, height: 2, background: "var(--border)", borderRadius: 1 }}>
+        <div style={{ width: "100%", height: "100%",
+          background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1 }} />
+      </div>
     </div>
   );
 }

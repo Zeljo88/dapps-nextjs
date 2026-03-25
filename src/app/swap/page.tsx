@@ -23,9 +23,7 @@ export default function SwapPage() {
       <div style={{ display: "grid", gridTemplateColumns: "450px 1fr", gap: 32, alignItems: "start" }}>
 
         {/* Swap widget */}
-        <div style={{ width: 450 }}>
-          <SwapWidget />
-        </div>
+        <SwapWidget />
 
         {/* Info sidebar */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

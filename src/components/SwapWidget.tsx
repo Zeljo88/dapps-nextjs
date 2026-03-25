@@ -23,7 +23,7 @@ export default function SwapWidget() {
         <DexHunterSwap
           partnerName={PARTNER_NAME}
           partnerCode={PARTNER_CODE}
-          width="100%"
+          width="450px"
           // Pass connected wallet name so DexHunter knows it's already connected
           selectedWallet={wallet?.name as any}
           // When user clicks "Connect Wallet" inside the widget → open OUR modal
@@ -51,7 +51,7 @@ export default function SwapWidget() {
 function SwapSkeleton() {
   return (
     <div style={{
-      width: "100%", height: 500, borderRadius: 16,
+      width: 450, height: 500, borderRadius: 16,
       background: "var(--bg-card)", border: "1px solid var(--border)",
       display: "flex", alignItems: "center", justifyContent: "center",
       flexDirection: "column", gap: 12,
