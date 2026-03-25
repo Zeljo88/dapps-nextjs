@@ -1,6 +1,5 @@
-import { fetchDapps, fetchGlobalStats, fmtNum } from "@/lib/api";
+import { fetchDapps, fetchGlobalStats, fmtNum, fmt } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
-import HomeStats from "@/components/HomeStats";
 import StakeButton from "@/components/StakeButton";
 import SwapWidget from "@/components/SwapWidget";
 import "@dexhunterio/swaps/lib/assets/style.css";
@@ -59,35 +58,67 @@ export default async function HomePage() {
       </div>
 
       {/* Swap + Stats row */}
-      <div className="home-swap-stats" style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 24, marginBottom: 28, alignItems: "start" }}>
+      <div className="home-swap-stats" style={{ display: "grid", gridTemplateColumns: "380px 1fr", gap: 20, marginBottom: 28, alignItems: "stretch" }}>
 
         {/* Left: Swap widget */}
         <div className="home-swap-widget">
           <SwapWidget />
         </div>
 
-        {/* Right: Stats grid */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <HomeStats stats={stats} adaPrice={adaPrice} compact />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-            {[
-              { label: "Transactions", value: fmtNum(stats.totalTxCount), sub: "Script interactions", color: "#3b82f6" },
-              { label: "Active DApps", value: `${stats.totalDapps}`, sub: `${stats.dappsWithTvl} with live TVL`, color: "#f59e0b" },
-              { label: "Current Epoch", value: `${stats.currentEpoch}`, sub: `Block #${(stats.blockHeight || 0).toLocaleString()}`, color: "#06b6d4" },
-            ].map(c => (
-              <div key={c.label} className="card" style={{ padding: "12px 16px" }}>
-                <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600,
-                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{c.label}</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: c.color }}>{c.value}</div>
-                <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 3 }}>{c.sub}</div>
-              </div>
-            ))}
-          </div>
+        {/* Right: All stats in a 2-col grid filling the height */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignContent: "start" }}>
+          <MiniStat label="Total TVL" value={stats.totalTvl} isCurrency adaPrice={adaPrice} color="#8b5cf6" icon="💰" />
+          <MiniStat label="30D Volume" value={stats.totalVolume30d} isCurrency adaPrice={adaPrice} color="#10b981" icon="📊" />
+          <MiniStat label="24H Volume" value={stats.totalVolume24h} isCurrency adaPrice={adaPrice} color="#06b6d4" icon="⚡" />
+          <MiniStat label="Active Users (24h)" value={stats.totalActiveUsers24h} color="#ec4899" icon="👥" />
+          <MiniStat label="Transactions" value={stats.totalTxCount} color="#3b82f6" icon="🔗" />
+          <MiniStat label="Active DApps" value={stats.totalDapps} sub={`${stats.dappsWithTvl} with live TVL`} color="#f59e0b" icon="📦" />
+          <MiniStat label="Current Epoch" value={stats.currentEpoch} sub={`Block #${(stats.blockHeight || 0).toLocaleString()}`} color="#06b6d4" icon="🧱" />
+          <MiniStat label="ADA Price" value={adaPrice} isPrice color="#8b5cf6" icon="₳" />
         </div>
       </div>
 
       {/* DApp Table */}
       <DAppTable dapps={dapps} adaPrice={adaPrice} />
     </main>
+  );
+}
+
+function MiniStat({ label, value, sub, color, icon, isCurrency, isPrice, adaPrice }: {
+  label: string; value: number; sub?: string; color: string; icon: string;
+  isCurrency?: boolean; isPrice?: boolean; adaPrice?: number;
+}) {
+  let display: string;
+  if (isPrice) {
+    display = `$${value.toFixed(4)}`;
+  } else if (isCurrency) {
+    display = fmt(value);
+  } else if (value >= 1_000_000) {
+    display = `${(value / 1_000_000).toFixed(1)}M`;
+  } else if (value >= 1_000) {
+    display = `${(value / 1_000).toFixed(1)}K`;
+  } else {
+    display = value?.toLocaleString() ?? "0";
+  }
+
+  return (
+    <div className="card" style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{
+        width: 38, height: 38, borderRadius: 10,
+        background: `${color}18`, border: `1px solid ${color}35`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 16, flexShrink: 0,
+      }}>
+        {icon}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600,
+          textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.1 }}>
+          {display}
+        </div>
+        {sub && <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{sub}</div>}
+      </div>
+    </div>
   );
 }
