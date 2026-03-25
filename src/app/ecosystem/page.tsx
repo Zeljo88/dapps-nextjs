@@ -4,8 +4,8 @@ import EcosystemCharts from "@/components/EcosystemCharts";
 export const revalidate = 300;
 
 export const metadata = {
-  title: "Cardano Ecosystem",
-  description: "Cardano DeFi ecosystem overview — total TVL, DEX volume, DApp categories and on-chain statistics.",
+  title: "Cardano Ecosystem Overview — TVL, DEX Volume & Category Breakdown",
+  description: "Cardano DeFi ecosystem at a glance — total TVL, DEX volume rankings, category breakdown and on-chain statistics for 107 DApps.",
   alternates: { canonical: "https://dappsoncardano.com/ecosystem" },
 };
 

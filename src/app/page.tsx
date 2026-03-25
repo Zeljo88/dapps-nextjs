@@ -13,7 +13,7 @@ const websiteJsonLd = {
       "@id": "https://dappsoncardano.com/#website",
       "url": "https://dappsoncardano.com",
       "name": "DApps on Cardano",
-      "description": "Real-time analytics for Cardano DApps — TVL, volume, DEX transactions and yield rates. Track 94+ DApps, swap tokens at best rates.",
+      "description": "Real-time analytics for 107 Cardano DApps — TVL, volume, DEX transactions and yield rates. Compare DeFi protocols and swap tokens at best rates.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {

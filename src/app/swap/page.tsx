@@ -2,8 +2,8 @@ import SwapWidget from "@/components/SwapWidget";
 import "@dexhunterio/swaps/lib/assets/style.css";
 
 export const metadata = {
-  title: "Swap Cardano Tokens",
-  description: "Swap ADA and Cardano tokens at the best rates — automatically routes across Minswap, SundaeSwap, WingRiders and 11 more DEXes.",
+  title: "Swap Cardano Tokens — Best Rates Across 14+ DEXes",
+  description: "Swap ADA and Cardano native tokens at the best rates. Aggregates Minswap, SundaeSwap, WingRiders and 11 more DEXes with split orders, limit orders and DCA.",
   alternates: { canonical: "https://dappsoncardano.com/swap" },
 };
 

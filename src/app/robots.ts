@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [],
+      disallow: ["/crafted/", "/api/"],
     },
     sitemap: "https://dappsoncardano.com/sitemap.xml",
   };

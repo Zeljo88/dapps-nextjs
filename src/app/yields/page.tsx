@@ -3,8 +3,8 @@ import { fmt } from "@/lib/api";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Cardano Yields",
-  description: "Best yield rates on Cardano — APY, TVL and pool data for Liqwid, Indigo, Minswap LP and 90+ more pools.",
+  title: "Cardano Yield Farming — Compare APY Across 90+ Pools",
+  description: "Find the best Cardano yields — compare APY, TVL and reward rates for Liqwid, Indigo, Minswap LP and 90+ DeFi pools. Updated hourly.",
   alternates: { canonical: "https://dappsoncardano.com/yields" },
 };
 
