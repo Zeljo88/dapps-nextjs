@@ -91,12 +91,10 @@ body {
 /* Home swap + stats responsive layout */
 @media (max-width: 960px) {
   .home-swap-stats {
-    grid-template-columns: 1fr !important;
-  }
-  .home-swap-stats > div:last-child {
-    grid-template-columns: repeat(4, 1fr) !important;
+    flex-direction: column !important;
   }
   .home-swap-widget {
+    width: 100% !important;
     max-width: 400px;
     margin: 0 auto;
   }

@@ -58,15 +58,15 @@ export default async function HomePage() {
       </div>
 
       {/* Swap + Stats row */}
-      <div className="home-swap-stats" style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: 20, marginBottom: 28 }}>
+      <div className="home-swap-stats" style={{ display: "flex", gap: 20, marginBottom: 28, alignItems: "flex-start" }}>
 
-        {/* Left: Swap widget (height-constrained) */}
-        <div className="home-swap-widget" style={{ maxHeight: 480, overflow: "hidden", borderRadius: 16 }}>
+        {/* Left: Swap widget */}
+        <div className="home-swap-widget" style={{ width: 360, flexShrink: 0 }}>
           <SwapWidget />
         </div>
 
-        {/* Right: compact 4-col stats grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridTemplateRows: "repeat(2, 1fr)", gap: 10, alignContent: "center" }}>
+        {/* Right: compact 4-col stats grid — auto height, no stretching */}
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
           <MiniStat label="Total TVL" value={stats.totalTvl} isCurrency color="#8b5cf6" icon="💰" />
           <MiniStat label="30D Volume" value={stats.totalVolume30d} isCurrency color="#10b981" icon="📊" />
           <MiniStat label="24H Volume" value={stats.totalVolume24h} isCurrency color="#06b6d4" icon="⚡" />
