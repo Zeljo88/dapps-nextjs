@@ -58,22 +58,22 @@ export default async function HomePage() {
       </div>
 
       {/* Swap + Stats row */}
-      <div className="home-swap-stats" style={{ display: "grid", gridTemplateColumns: "380px 1fr", gap: 20, marginBottom: 28, alignItems: "stretch" }}>
+      <div className="home-swap-stats" style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: 20, marginBottom: 28 }}>
 
-        {/* Left: Swap widget */}
-        <div className="home-swap-widget">
+        {/* Left: Swap widget (height-constrained) */}
+        <div className="home-swap-widget" style={{ maxHeight: 480, overflow: "hidden", borderRadius: 16 }}>
           <SwapWidget />
         </div>
 
-        {/* Right: All stats in a 2-col grid filling the height */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignContent: "start" }}>
-          <MiniStat label="Total TVL" value={stats.totalTvl} isCurrency adaPrice={adaPrice} color="#8b5cf6" icon="💰" />
-          <MiniStat label="30D Volume" value={stats.totalVolume30d} isCurrency adaPrice={adaPrice} color="#10b981" icon="📊" />
-          <MiniStat label="24H Volume" value={stats.totalVolume24h} isCurrency adaPrice={adaPrice} color="#06b6d4" icon="⚡" />
-          <MiniStat label="Active Users (24h)" value={stats.totalActiveUsers24h} color="#ec4899" icon="👥" />
-          <MiniStat label="Transactions" value={stats.totalTxCount} color="#3b82f6" icon="🔗" />
-          <MiniStat label="Active DApps" value={stats.totalDapps} sub={`${stats.dappsWithTvl} with live TVL`} color="#f59e0b" icon="📦" />
-          <MiniStat label="Current Epoch" value={stats.currentEpoch} sub={`Block #${(stats.blockHeight || 0).toLocaleString()}`} color="#06b6d4" icon="🧱" />
+        {/* Right: compact 4-col stats grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridTemplateRows: "repeat(2, 1fr)", gap: 10, alignContent: "center" }}>
+          <MiniStat label="Total TVL" value={stats.totalTvl} isCurrency color="#8b5cf6" icon="💰" />
+          <MiniStat label="30D Volume" value={stats.totalVolume30d} isCurrency color="#10b981" icon="📊" />
+          <MiniStat label="24H Volume" value={stats.totalVolume24h} isCurrency color="#06b6d4" icon="⚡" />
+          <MiniStat label="Active Users" value={stats.totalActiveUsers24h || 0} color="#ec4899" icon="👥" />
+          <MiniStat label="Transactions" value={stats.totalTxCount || 0} color="#3b82f6" icon="🔗" />
+          <MiniStat label="Active DApps" value={stats.totalDapps || 0} color="#f59e0b" icon="📦" />
+          <MiniStat label="Epoch" value={stats.currentEpoch || 0} color="#06b6d4" icon="🧱" />
           <MiniStat label="ADA Price" value={adaPrice} isPrice color="#8b5cf6" icon="₳" />
         </div>
       </div>
@@ -84,9 +84,9 @@ export default async function HomePage() {
   );
 }
 
-function MiniStat({ label, value, sub, color, icon, isCurrency, isPrice, adaPrice }: {
-  label: string; value: number; sub?: string; color: string; icon: string;
-  isCurrency?: boolean; isPrice?: boolean; adaPrice?: number;
+function MiniStat({ label, value, color, icon, isCurrency, isPrice }: {
+  label: string; value: number; color: string; icon: string;
+  isCurrency?: boolean; isPrice?: boolean;
 }) {
   let display: string;
   if (isPrice) {
@@ -102,22 +102,19 @@ function MiniStat({ label, value, sub, color, icon, isCurrency, isPrice, adaPric
   }
 
   return (
-    <div className="card" style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 }}>
+    <div className="card" style={{ padding: "12px 14px", textAlign: "center" }}>
       <div style={{
-        width: 38, height: 38, borderRadius: 10,
+        width: 30, height: 30, borderRadius: 8, margin: "0 auto 6px",
         background: `${color}18`, border: `1px solid ${color}35`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 16, flexShrink: 0,
+        fontSize: 14,
       }}>
         {icon}
       </div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600,
-          textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.1 }}>
-          {display}
-        </div>
-        {sub && <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{sub}</div>}
+      <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 600,
+        textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.1 }}>
+        {display}
       </div>
     </div>
   );

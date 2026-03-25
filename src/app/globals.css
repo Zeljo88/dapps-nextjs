@@ -89,13 +89,21 @@ body {
 }
 
 /* Home swap + stats responsive layout */
-@media (max-width: 860px) {
+@media (max-width: 960px) {
   .home-swap-stats {
     grid-template-columns: 1fr !important;
+  }
+  .home-swap-stats > div:last-child {
+    grid-template-columns: repeat(4, 1fr) !important;
   }
   .home-swap-widget {
     max-width: 400px;
     margin: 0 auto;
+  }
+}
+@media (max-width: 600px) {
+  .home-swap-stats > div:last-child {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
