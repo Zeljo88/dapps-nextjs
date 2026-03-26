@@ -1,4 +1,13 @@
 import CustomSwap from "@/components/CustomSwap";
+import SwapFAQ from "@/components/SwapFAQ";
+
+const SWAP_FAQS = [
+  { q: "How does the Cardano token swap work?", a: "Our swap aggregator routes your trade across 14 Cardano DEXes including Minswap, SundaeSwap, WingRiders, and Splash to find the best rate. Connect any CIP-30 compatible wallet, enter your amount, and the aggregator automatically splits orders across multiple pools for optimal pricing." },
+  { q: "What are the fees for swapping?", a: "The aggregator charges a 0.5% fee on each swap. Additionally, each DEX charges its own liquidity provider fee (typically 0.05-0.3%) and Cardano network fees are approximately 0.17 ADA per transaction." },
+  { q: "Which wallets are supported?", a: "Any CIP-30 compatible Cardano wallet works with our swap, including Eternl, Nami, Flint, Lace, Typhon, and GeroWallet. Simply click Connect Wallet and select your preferred wallet." },
+  { q: "Is the swap non-custodial?", a: "Yes, all swaps are fully non-custodial. Your funds never leave your wallet until you sign the transaction. We never have access to your private keys." },
+  { q: "Which DEXes are aggregated?", a: "We aggregate 14 Cardano DEXes: Minswap V1, Minswap V2, Minswap Stable, SundaeSwap, SundaeSwap V3, WingRiders, WingRiders V2, WingRiders Stable, Splash, Splash Stable, VyFinance, CSWAP, MuesliSwap, and Spectrum." },
+];
 
 export const metadata = {
   title: "Swap Cardano Tokens — Best Rates Across 14+ DEXes",
@@ -7,8 +16,19 @@ export const metadata = {
 };
 
 export default function SwapPage() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": SWAP_FAQS.map(f => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  };
+
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       {/* Header */}
       <div style={{ marginBottom: 32, textAlign: "center" }}>
         <h1 style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
@@ -99,6 +119,14 @@ export default function SwapPage() {
           </div>
 
         </div>
+      </div>
+
+      {/* Visible FAQ section */}
+      <div style={{ marginTop: 48 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
+          Frequently Asked Questions
+        </h2>
+        <SwapFAQ faqs={SWAP_FAQS} />
       </div>
     </main>
   );

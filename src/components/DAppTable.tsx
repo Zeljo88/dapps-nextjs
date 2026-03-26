@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { fmtNum, toSlug, CATEGORY_COLORS } from "@/lib/api";
 import CategoryBadge from "./CategoryBadge";
@@ -14,6 +14,8 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
   const [cat, setCat] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("tvl");
   const [asc, setAsc] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 25;
   const { format } = useCurrency();
 
   const filtered = useMemo(() => {
@@ -30,6 +32,14 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
     });
     return d;
   }, [dapps, search, cat, sort, asc]);
+
+  // Reset to page 1 when search or category changes
+  useEffect(() => { setPage(1); }, [search, cat]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const showFrom = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const showTo = Math.min(page * PAGE_SIZE, filtered.length);
 
   const toggleSort = (key: SortKey) => {
     if (sort === key) setAsc(!asc);
@@ -120,11 +130,11 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
               </tr>
             </thead>
             <tbody>
-              {filtered.map((d, i) => (
+              {paginated.map((d, i) => (
                 <tr key={d.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-card-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                  <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{i + 1}</td>
+                  <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
                   <td style={td}>
                     <Link href={`/dapp/${d.slug ?? toSlug(d.name)}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
                       {d.logo ? (
@@ -224,8 +234,71 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginTop: 16, padding: "12px 16px", background: "var(--bg-card)",
+          border: "1px solid var(--border)", borderRadius: 10, flexWrap: "wrap", gap: 12,
+        }}>
+          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            Showing {showFrom}–{showTo} of {filtered.length}
+          </span>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+              style={paginationBtn(page === 1)}>
+              ← Prev
+            </button>
+            {getPageNumbers(page, totalPages).map((p, i) =>
+              p === "..." ? (
+                <span key={`e${i}`} style={{ padding: "0 6px", color: "var(--text-muted)", fontSize: 13 }}>…</span>
+              ) : (
+                <button key={p} onClick={() => setPage(p as number)}
+                  style={{
+                    ...paginationBtn(false),
+                    background: page === p ? "var(--accent)" : "transparent",
+                    color: page === p ? "#fff" : "var(--text-secondary)",
+                    borderColor: page === p ? "var(--accent)" : "var(--border)",
+                    fontWeight: page === p ? 700 : 500,
+                  }}>
+                  {p}
+                </button>
+              )
+            )}
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+              style={paginationBtn(page === totalPages)}>
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function paginationBtn(disabled: boolean): React.CSSProperties {
+  return {
+    padding: "6px 12px", borderRadius: 6, fontSize: 13, fontWeight: 500,
+    cursor: disabled ? "default" : "pointer",
+    border: "1px solid var(--border)",
+    background: "transparent",
+    color: disabled ? "var(--text-muted)" : "var(--text-secondary)",
+    opacity: disabled ? 0.5 : 1,
+    transition: "all 0.15s",
+  };
+}
+
+function getPageNumbers(current: number, total: number): (number | string)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | string)[] = [1];
+  if (current > 3) pages.push("...");
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+    pages.push(i);
+  }
+  if (current < total - 2) pages.push("...");
+  pages.push(total);
+  return pages;
 }
 
 const th: React.CSSProperties = {

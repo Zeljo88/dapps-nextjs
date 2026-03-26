@@ -10,6 +10,7 @@ import {
   categoryToSlug,
 } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
+import CategoryFAQ from "@/components/CategoryFAQ";
 
 export const revalidate = 300;
 
@@ -124,6 +125,29 @@ const CATEGORY_META: Record<string, {
   },
 };
 
+const CATEGORY_FAQ: Record<string, { q: string; a: string }[]> = {
+  defi: [
+    { q: "What is Cardano DeFi?", a: "Cardano DeFi (Decentralized Finance) encompasses protocols built on the Cardano blockchain that offer financial services like token swapping, lending, borrowing, and yield farming — all without centralized intermediaries. Cardano's eUTXO model provides deterministic transaction fees and enhanced security for DeFi interactions." },
+    { q: "How do I track TVL on Cardano DeFi protocols?", a: "Total Value Locked (TVL) represents the dollar value of all assets deposited in a protocol's smart contracts. On DApps on Cardano, you can view real-time TVL for every DeFi protocol, along with 24h and 7d percentage changes, giving you a clear picture of capital flows across the ecosystem." },
+    { q: "Which are the top DeFi DApps on Cardano?", a: "Leading Cardano DeFi protocols include Minswap and SundaeSwap for decentralized trading, Liqwid Finance for lending and borrowing, and various yield aggregators. You can sort by TVL, volume, or transaction count on this page to see the current rankings." },
+  ],
+  nft: [
+    { q: "What makes Cardano NFTs unique?", a: "Cardano NFTs are native assets on the blockchain, meaning they don't require smart contracts for basic minting and transfers. This results in lower fees and simpler on-chain representation compared to token-standard-based NFTs on other chains." },
+    { q: "How do I buy Cardano NFTs?", a: "You can purchase Cardano NFTs on marketplaces like JPG.store using any CIP-30 compatible wallet such as Eternl, Nami, or Lace. Simply connect your wallet, browse collections, and complete your purchase — all transactions are settled on-chain." },
+    { q: "How are Cardano NFT collections tracked?", a: "DApps on Cardano tracks NFT collections with on-chain data including trading volume, transaction counts, and holder activity. Collections are ranked by activity metrics updated in real time." },
+  ],
+  marketplace: [
+    { q: "What are Cardano NFT marketplaces?", a: "Cardano NFT marketplaces are platforms where users can list, buy, sell, and trade native Cardano NFTs in a peer-to-peer manner. They leverage Cardano's eUTXO model for trustless trades without wrapping or bridging assets." },
+    { q: "Which is the largest Cardano NFT marketplace?", a: "JPG.store is currently the dominant Cardano NFT marketplace by trading volume. You can compare all marketplaces by volume, transaction count, and user activity on this page." },
+    { q: "What fees do Cardano marketplaces charge?", a: "Marketplace fees on Cardano typically range from 2-2.5% per sale, plus Cardano network fees of approximately 0.17 ADA per transaction. Some marketplaces also support creator royalties enforced on-chain." },
+  ],
+};
+
+const DEFAULT_FAQ = (categoryName: string): { q: string; a: string }[] => [
+  { q: `What are ${categoryName} DApps on Cardano?`, a: `${categoryName} DApps on Cardano are decentralized applications in the ${categoryName.toLowerCase()} category built on the Cardano blockchain. They leverage Cardano's secure and scalable infrastructure to provide services without centralized intermediaries.` },
+  { q: `How do I find the best ${categoryName} DApps?`, a: `You can sort and filter ${categoryName.toLowerCase()} DApps by TVL, trading volume, transaction count, and active users on this page. All data is sourced on-chain and updated every 5 minutes.` },
+];
+
 export async function generateStaticParams() {
   return Object.keys(categorySlugMap).map(slug => ({ slug }));
 }
@@ -196,6 +220,15 @@ export default async function CategorySlugPage(
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": (CATEGORY_FAQ[slug] || DEFAULT_FAQ(meta.h1)).map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": { "@type": "Answer", "text": f.a },
+        })),
+      }) }} />
 
       {/* Breadcrumb */}
       <div style={{ marginBottom: 24, fontSize: 14, color: "var(--text-muted)" }}>
@@ -226,6 +259,14 @@ export default async function CategorySlugPage(
 
       {/* DApp table — category pre-filtered, no redundant filter buttons */}
       <DAppTable dapps={dapps} adaPrice={adaPrice} hideFilters />
+
+      {/* FAQ section */}
+      <div style={{ marginTop: 48 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
+          Frequently Asked Questions
+        </h2>
+        <CategoryFAQ faqs={CATEGORY_FAQ[slug] || DEFAULT_FAQ(meta.h1)} />
+      </div>
 
       {/* Explore more categories */}
       <div style={{ marginTop: 56 }}>

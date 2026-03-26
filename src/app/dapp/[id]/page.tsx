@@ -1,4 +1,4 @@
-import { fetchDapp, fmt, fmtNum, toSlug } from "@/lib/api";
+import { fetchDapp, fetchDapps, fmt, fmtNum, toSlug, CATEGORY_COLORS } from "@/lib/api";
 import CategoryBadge from "@/components/CategoryBadge";
 import Link from "next/link";
 import DAppTabs from "@/components/DAppTabs";
@@ -214,7 +214,67 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
 
       {/* Tabs: Overview / Yields / Scripts */}
       <DAppTabs dapp={dapp} />
+
+      {/* Related DApps */}
+      <RelatedDApps currentDapp={dapp} />
     </main>
+  );
+}
+
+async function RelatedDApps({ currentDapp }: { currentDapp: any }) {
+  let allDapps: any[];
+  try {
+    allDapps = await fetchDapps();
+  } catch {
+    return null;
+  }
+
+  const related = allDapps
+    .filter(d => d.category === currentDapp.category && d.name !== currentDapp.name)
+    .sort((a, b) => (b.tvl || 0) - (a.tvl || 0))
+    .slice(0, 6);
+
+  if (related.length === 0) return null;
+
+  const catColor = CATEGORY_COLORS[currentDapp.category] || "#6b7280";
+
+  return (
+    <div style={{ marginTop: 48 }}>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
+        Related DApps
+        <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-muted)", marginLeft: 10 }}>
+          in {currentDapp.category.charAt(0) + currentDapp.category.slice(1).toLowerCase()}
+        </span>
+      </h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+        {related.map(d => (
+          <Link key={d.name} href={`/dapp/${d.slug ?? toSlug(d.name)}`} style={{ textDecoration: "none" }}>
+            <div className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s" }}>
+              {d.logo ? (
+                <img src={d.logo} alt={d.name} width={40} height={40} style={{ borderRadius: 10, objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: `${CATEGORY_COLORS[d.category] || "#6b7280"}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: CATEGORY_COLORS[d.category] || "#6b7280" }}>
+                  {d.name.charAt(0)}
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>{d.name}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: `${catColor}15`, color: catColor, border: `1px solid ${catColor}30` }}>
+                    {d.category}
+                  </span>
+                  {d.tvl > 0 && (
+                    <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "monospace" }}>
+                      TVL {fmt(d.tvl)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 
