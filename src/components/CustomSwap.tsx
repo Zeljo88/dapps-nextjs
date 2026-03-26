@@ -18,7 +18,7 @@ import {
 // ── Popular tokens for quick select ─────────────────────────────────────
 
 // Tickers to fetch from API on mount (so we get real logos + metadata)
-const POPULAR_TICKERS = ["MIN", "SNEK", "iBTC", "DJED", "LQ", "SUNDAE", "INDY", "LENFI", "IAG", "WRT"];
+const POPULAR_TICKERS = ["MIN", "SNEK", "iBTC", "DJED", "LQ", "SUNDAE", "INDY", "LENFI", "IAG", "WRT", "NIGHT"];
 
 // ── Debounce hook ───────────────────────────────────────────────────────
 
