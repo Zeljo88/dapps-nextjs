@@ -88,7 +88,18 @@ body {
   overflow: hidden;
 }
 
-/* Home swap + stats responsive layout */
+/* ── Navbar responsive ── */
+@media (max-width: 860px) {
+  .nav-links-desktop { display: none !important; }
+  .nav-controls-desktop { display: none !important; }
+  .nav-hamburger { display: flex !important; }
+}
+@media (min-width: 861px) {
+  .nav-mobile-menu { display: none !important; }
+  .nav-mobile-overlay { display: none !important; }
+}
+
+/* ── Home swap + stats responsive layout ── */
 @media (max-width: 960px) {
   .home-swap-stats {
     flex-direction: column !important;
@@ -99,9 +110,32 @@ body {
     margin: 0 auto;
   }
 }
+
+/* ── Mobile general ── */
 @media (max-width: 600px) {
   .home-swap-stats > div:last-child {
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .hero-banner {
+    padding: 16px 18px !important;
+    border-radius: 12px !important;
+  }
+  .hero-banner h1 {
+    font-size: 20px !important;
+  }
+  main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  /* Make table horizontally scrollable */
+  table {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-swap-widget {
+    max-width: 100% !important;
   }
 }
 
