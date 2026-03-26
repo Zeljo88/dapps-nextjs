@@ -585,9 +585,9 @@ export default function CustomSwap() {
         {/* Footer */}
         <div style={{
           marginTop: 10, textAlign: "center",
-          fontSize: 10, color: "var(--text-muted)", opacity: 0.7,
+          fontSize: 11, color: "var(--accent)", opacity: 0.85, fontWeight: 600,
         }}>
-          Best rates across 14 Cardano DEXes
+          ⚡ Best swap rates on Cardano — 14 DEXes, one click
         </div>
       </div>
 

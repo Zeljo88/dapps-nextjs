@@ -49,7 +49,7 @@ export default async function HomePage() {
               Cardano DApps Analytics
             </h1>
             <p style={{ fontSize: 14, opacity: 0.85, maxWidth: 500 }}>
-              Real-time TVL, volume, transactions and yields for 107 DApps.
+              Real-time TVL, volume, transactions and yields across the Cardano ecosystem.
             </p>
           </div>
           <StakeButton />
