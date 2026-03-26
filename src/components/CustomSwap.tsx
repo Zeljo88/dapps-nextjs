@@ -17,18 +17,8 @@ import {
 
 // ── Popular tokens for quick select ─────────────────────────────────────
 
-const POPULAR_TOKENS = [
-  ADA_TOKEN,
-  { token_id: "29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c64d494e", ticker: "MIN", logo: null, is_verified: true, price_by_ada: null, project_name: "Minswap", decimals: 6 } as Token,
-  { token_id: "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f534e454b", ticker: "SNEK", logo: null, is_verified: true, price_by_ada: null, project_name: "Snek", decimals: 0 } as Token,
-  { token_id: "f66d78b4a3cb3d37afa0ec36461e51ecbde00f26c8f0a68f94b6988069425443", ticker: "iBTC", logo: null, is_verified: true, price_by_ada: null, project_name: "Indigo", decimals: 6 } as Token,
-  { token_id: "8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61446a65644d6963726f555344", ticker: "DJED", logo: null, is_verified: true, price_by_ada: null, project_name: "Djed", decimals: 6 } as Token,
-  { token_id: "533bb94a8850ee3ccbe483106489399112b74c905342cb1f14571868004f5054", ticker: "OPT", logo: null, is_verified: true, price_by_ada: null, project_name: "Optim", decimals: 6 } as Token,
-  { token_id: "da8c30857834c6ae7203935b89278c532b3995245295456f993e1d244c51", ticker: "LQ", logo: null, is_verified: true, price_by_ada: null, project_name: "Liqwid", decimals: 6 } as Token,
-  { token_id: "9a9693a9a37912a5097918f97918d15240c92ab729a0b7c4aa144d7753554e444145", ticker: "SUNDAE", logo: null, is_verified: true, price_by_ada: null, project_name: "SundaeSwap", decimals: 6 } as Token,
-  { token_id: "c0ee29a85b13209423b10447d3c2e6a50641a15c57770e27cb9d507357696e67526964657273", ticker: "WRT", logo: null, is_verified: true, price_by_ada: null, project_name: "WingRiders", decimals: 6 } as Token,
-  { token_id: "edfd7a1d77bcb8b884c474bdc92a16002d1571b0270b21e7c22ae820494e4459", ticker: "INDY", logo: null, is_verified: true, price_by_ada: null, project_name: "Indigo Protocol", decimals: 6 } as Token,
-];
+// Tickers to fetch from API on mount (so we get real logos + metadata)
+const POPULAR_TICKERS = ["MIN", "SNEK", "iBTC", "DJED", "LQ", "SUNDAE", "INDY", "LENFI", "IAG", "WRT"];
 
 // ── Debounce hook ───────────────────────────────────────────────────────
 
@@ -58,13 +48,34 @@ function TokenSelector({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Token[]>([]);
   const [loading, setLoading] = useState(false);
+  const [popularTokens, setPopularTokens] = useState<Token[]>([ADA_TOKEN]);
   const debouncedQuery = useDebounce(query, 300);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Fetch popular tokens with real logos on first open
+  useEffect(() => {
+    if (!open || popularTokens.length > 1) return;
+    (async () => {
+      try {
+        const allResults = await Promise.all(
+          POPULAR_TICKERS.map((t) => searchTokens(t, true).catch(() => []))
+        );
+        const tokens: Token[] = [ADA_TOKEN];
+        for (let i = 0; i < POPULAR_TICKERS.length; i++) {
+          const match = allResults[i].find(
+            (r) => r.ticker?.toUpperCase() === POPULAR_TICKERS[i].toUpperCase()
+          );
+          if (match) tokens.push(match);
+        }
+        setPopularTokens(tokens);
+      } catch { /* keep ADA only fallback */ }
+    })();
+  }, [open, popularTokens.length]);
 
   useEffect(() => {
     if (!open) return;
     if (!debouncedQuery) {
-      setResults(POPULAR_TOKENS.filter((t) => t.token_id !== exclude));
+      setResults(popularTokens.filter((t) => t.token_id !== exclude));
       return;
     }
     setLoading(true);
@@ -74,7 +85,7 @@ function TokenSelector({
       })
       .catch(() => setResults([]))
       .finally(() => setLoading(false));
-  }, [debouncedQuery, open, exclude]);
+  }, [debouncedQuery, open, exclude, popularTokens]);
 
   // Click outside to close
   useEffect(() => {
@@ -98,8 +109,12 @@ function TokenSelector({
           fontSize: 15, fontWeight: 600, minWidth: 120,
         }}
       >
-        {selected.logo && (
+        {selected.logo ? (
           <img src={selected.logo} alt="" width={22} height={22} style={{ borderRadius: "50%" }} />
+        ) : (
+          <span style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>
+            {(selected.ticker || "?")[0]}
+          </span>
         )}
         {selected.ticker || "Select"}
         <span style={{ fontSize: 10, opacity: 0.5, marginLeft: "auto" }}>▼</span>
@@ -143,8 +158,12 @@ function TokenSelector({
               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-secondary)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              {token.logo && (
+              {token.logo ? (
                 <img src={token.logo} alt="" width={24} height={24} style={{ borderRadius: "50%" }} />
+              ) : (
+                <span style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+                  {(token.ticker || "?")[0]}
+                </span>
               )}
               <div>
                 <div style={{ fontWeight: 600 }}>{token.ticker || token.token_id.slice(0, 8)}</div>
@@ -176,7 +195,11 @@ export default function CustomSwap() {
   const [showWalletModal, setShowWalletModal] = useState(false);
 
   const [tokenIn, setTokenIn] = useState<Token>(ADA_TOKEN);
-  const [tokenOut, setTokenOut] = useState<Token>(POPULAR_TOKENS[1]); // MIN
+  const [tokenOut, setTokenOut] = useState<Token>({
+    token_id: "29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c64d494e",
+    ticker: "MIN", logo: null, is_verified: true, price_by_ada: null,
+    project_name: "Minswap", decimals: 6,
+  });
   const [amountIn, setAmountIn] = useState("");
   const [slippage, setSlippage] = useState(0.5);
   const [showSlippage, setShowSlippage] = useState(false);
@@ -192,6 +215,17 @@ export default function CustomSwap() {
   const [walletBalance, setWalletBalance] = useState<WalletBalance | null>(null);
 
   const debouncedAmount = useDebounce(amountIn, 500);
+
+  // Fetch logo for default tokenOut (MIN) on mount
+  useEffect(() => {
+    if (tokenOut.logo) return;
+    searchTokens(tokenOut.ticker || "MIN", true)
+      .then((results) => {
+        const match = results.find((r) => r.ticker === (tokenOut.ticker || "MIN"));
+        if (match?.logo) setTokenOut((prev) => ({ ...prev, logo: match.logo }));
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch wallet balance when connected
   useEffect(() => {
@@ -549,6 +583,12 @@ export default function CustomSwap() {
         )}
 
         {/* Footer */}
+        <div style={{
+          marginTop: 10, textAlign: "center",
+          fontSize: 10, color: "var(--text-muted)", opacity: 0.7,
+        }}>
+          Best rates across 14 Cardano DEXes
+        </div>
       </div>
 
       {showWalletModal && <WalletModal onClose={() => setShowWalletModal(false)} />}
