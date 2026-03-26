@@ -263,6 +263,7 @@ export default async function CategorySlugPage(
         tvl: d.tvl, volume30d: d.volume30d, trxCount: d.trxCount, tx24h: d.tx24h,
         activeUsers24h: d.activeUsers24h, change1d: d.change1d, logo: d.logo,
         link: d.link, twitter: d.twitter, audits: d.audits, auditLinks: d.auditLinks,
+        github: d.github,
       }))} adaPrice={adaPrice} hideFilters />
 
       {/* FAQ section */}
