@@ -13,7 +13,7 @@ const websiteJsonLd = {
       "@id": "https://dappsoncardano.com/#website",
       "url": "https://dappsoncardano.com",
       "name": "DApps on Cardano",
-      "description": "Real-time analytics for 107 Cardano DApps — TVL, volume, DEX transactions and yield rates. Compare DeFi protocols and swap tokens at best rates.",
+      "description": "Real-time analytics for Cardano DApps — TVL, volume, DEX transactions and yield rates. Compare DeFi protocols and swap tokens at best rates.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -36,6 +36,15 @@ const websiteJsonLd = {
 export default async function HomePage() {
   const [dapps, stats] = await Promise.all([fetchDapps(), fetchGlobalStats()]);
   const adaPrice = stats.adaPrice || 0;
+
+  // Slim down DApp data for the table — only send fields the client component uses
+  // This reduces the RSC payload from ~168KB to ~30KB
+  const slimDapps = dapps.map((d: any) => ({
+    id: d.id, name: d.name, slug: d.slug, category: d.category, subCategory: d.subCategory,
+    tvl: d.tvl, volume30d: d.volume30d, trxCount: d.trxCount, tx24h: d.tx24h,
+    activeUsers24h: d.activeUsers24h, change1d: d.change1d, logo: d.logo,
+    link: d.link, twitter: d.twitter, audits: d.audits, auditLinks: d.auditLinks,
+  }));
 
   return (
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px" }}>
@@ -78,7 +87,7 @@ export default async function HomePage() {
       </div>
 
       {/* DApp Table */}
-      <DAppTable dapps={dapps} adaPrice={adaPrice} />
+      <DAppTable dapps={slimDapps} adaPrice={adaPrice} />
     </main>
   );
 }

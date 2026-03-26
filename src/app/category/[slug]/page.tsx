@@ -258,7 +258,12 @@ export default async function CategorySlugPage(
       </div>
 
       {/* DApp table — category pre-filtered, no redundant filter buttons */}
-      <DAppTable dapps={dapps} adaPrice={adaPrice} hideFilters />
+      <DAppTable dapps={dapps.map((d: any) => ({
+        id: d.id, name: d.name, slug: d.slug, category: d.category, subCategory: d.subCategory,
+        tvl: d.tvl, volume30d: d.volume30d, trxCount: d.trxCount, tx24h: d.tx24h,
+        activeUsers24h: d.activeUsers24h, change1d: d.change1d, logo: d.logo,
+        link: d.link, twitter: d.twitter, audits: d.audits, auditLinks: d.auditLinks,
+      }))} adaPrice={adaPrice} hideFilters />
 
       {/* FAQ section */}
       <div style={{ marginTop: 48 }}>
