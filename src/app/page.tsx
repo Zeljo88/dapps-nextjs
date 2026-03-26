@@ -57,15 +57,15 @@ export default async function HomePage() {
       </div>
 
       {/* Swap + Stats row */}
-      <div className="home-swap-stats" style={{ display: "flex", gap: 16, marginBottom: 28, alignItems: "flex-start" }}>
+      <div className="home-swap-stats" style={{ display: "flex", gap: 16, marginBottom: 28, alignItems: "stretch" }}>
 
         {/* Left: Custom swap */}
-        <div className="home-swap-widget" style={{ width: 400, flexShrink: 0 }}>
+        <div className="home-swap-widget" style={{ width: 380, flexShrink: 0 }}>
           <CustomSwap />
         </div>
 
-        {/* Right: tight stat pills in 2 columns */}
-        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {/* Right: tight stat pills in 2 columns, stretch to fill swap height */}
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, alignContent: "stretch" }}>
           <MiniStat label="Total TVL" value={stats.totalTvl} isCurrency color="#8b5cf6" />
           <MiniStat label="30D Volume" value={stats.totalVolume30d} isCurrency color="#10b981" />
           <MiniStat label="24H Volume" value={stats.totalVolume24h} isCurrency color="#06b6d4" />
@@ -102,8 +102,9 @@ function MiniStat({ label, value, color, isCurrency, isPrice }: {
 
   return (
     <div className="card" style={{
-      padding: "10px 14px",
+      padding: "12px 16px",
       display: "flex", alignItems: "center", justifyContent: "space-between",
+      height: "100%", boxSizing: "border-box",
     }}>
       <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600,
         textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</span>

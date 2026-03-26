@@ -22,6 +22,12 @@ const POPULAR_TOKENS = [
   { token_id: "29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c64d494e", ticker: "MIN", logo: null, is_verified: true, price_by_ada: null, project_name: "Minswap", decimals: 6 } as Token,
   { token_id: "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f534e454b", ticker: "SNEK", logo: null, is_verified: true, price_by_ada: null, project_name: "Snek", decimals: 0 } as Token,
   { token_id: "f66d78b4a3cb3d37afa0ec36461e51ecbde00f26c8f0a68f94b6988069425443", ticker: "iBTC", logo: null, is_verified: true, price_by_ada: null, project_name: "Indigo", decimals: 6 } as Token,
+  { token_id: "8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61446a65644d6963726f555344", ticker: "DJED", logo: null, is_verified: true, price_by_ada: null, project_name: "Djed", decimals: 6 } as Token,
+  { token_id: "533bb94a8850ee3ccbe483106489399112b74c905342cb1f14571868004f5054", ticker: "OPT", logo: null, is_verified: true, price_by_ada: null, project_name: "Optim", decimals: 6 } as Token,
+  { token_id: "da8c30857834c6ae7203935b89278c532b3995245295456f993e1d244c51", ticker: "LQ", logo: null, is_verified: true, price_by_ada: null, project_name: "Liqwid", decimals: 6 } as Token,
+  { token_id: "9a9693a9a37912a5097918f97918d15240c92ab729a0b7c4aa144d7753554e444145", ticker: "SUNDAE", logo: null, is_verified: true, price_by_ada: null, project_name: "SundaeSwap", decimals: 6 } as Token,
+  { token_id: "c0ee29a85b13209423b10447d3c2e6a50641a15c57770e27cb9d507357696e67526964657273", ticker: "WRT", logo: null, is_verified: true, price_by_ada: null, project_name: "WingRiders", decimals: 6 } as Token,
+  { token_id: "edfd7a1d77bcb8b884c474bdc92a16002d1571b0270b21e7c22ae820494e4459", ticker: "INDY", logo: null, is_verified: true, price_by_ada: null, project_name: "Indigo Protocol", decimals: 6 } as Token,
 ];
 
 // ── Debounce hook ───────────────────────────────────────────────────────
@@ -298,12 +304,12 @@ export default function CustomSwap() {
     <>
       <div style={{
         background: "var(--bg-card)", border: "1px solid var(--border)",
-        borderRadius: 16, padding: "20px", width: "100%",
+        borderRadius: 16, padding: "16px", width: "100%",
       }}>
         {/* Header */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginBottom: 16,
+          marginBottom: 12,
         }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
             Swap
@@ -543,12 +549,6 @@ export default function CustomSwap() {
         )}
 
         {/* Footer */}
-        <div style={{
-          marginTop: 12, textAlign: "center",
-          fontSize: 11, color: "var(--text-muted)",
-        }}>
-          Powered by Minswap Aggregator · 14 DEXes · Best rates
-        </div>
       </div>
 
       {showWalletModal && <WalletModal onClose={() => setShowWalletModal(false)} />}
