@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme";
 import { WalletProvider } from "@/lib/wallet";
-import { fetchGlobalStats } from "@/lib/api";
+import { fetchGlobalStats } from "@/lib/backend";
 
 const GA_ID = "G-0YSY4YKKD0";
 
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   description: "Track Cardano DApps with real-time TVL, DEX volume, transaction counts and yield rates. Compare Minswap, Liqwid, SundaeSwap and more — updated every 5 minutes.",
   keywords: ["Cardano", "DApps", "DeFi", "ADA", "TVL", "DEX", "swap", "yield", "analytics", "blockchain"],
   metadataBase: new URL("https://dappsoncardano.com"),
-  alternates: { canonical: "https://dappsoncardano.com" },
   openGraph: {
     title: "DApps on Cardano — Track DApps, TVL, Volume & Yields",
     description: "Track Cardano DApps with real-time TVL, DEX volume, transaction counts and yield rates. Compare Minswap, Liqwid, SundaeSwap and more.",

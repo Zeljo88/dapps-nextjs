@@ -1,13 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { fetchDappsByCategory, fetchGlobalStats } from "@/lib/backend";
 import {
-  fetchDappsByCategory,
-  fetchGlobalStats,
   fmt,
   categorySlugMap,
   categoryDisplayName,
-  categoryToSlug,
 } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
 import CategoryFAQ from "@/components/CategoryFAQ";
@@ -25,7 +23,7 @@ const CATEGORY_META: Record<string, {
   icon: string;
 }> = {
   defi: {
-    title: "Cardano DeFi DApps — TVL, Volume & Analytics | DApps on Cardano",
+    title: "Cardano DeFi DApps — TVL, Volume & Analytics",
     description:
       "Explore DeFi DApps on Cardano with real-time TVL, volume and transaction data. Track Minswap, Liqwid Finance, SundaeSwap and more.",
     h1: "Cardano DeFi DApps",
@@ -36,7 +34,7 @@ const CATEGORY_META: Record<string, {
     icon: "📊",
   },
   nft: {
-    title: "Cardano NFT Collections — Analytics & Volume | DApps on Cardano",
+    title: "Cardano NFT Collections — Analytics & Volume",
     description:
       "Browse NFT collections and projects on Cardano. Discover top collections with real-time trading volume and on-chain analytics.",
     h1: "Cardano NFT & Collections",
@@ -47,7 +45,7 @@ const CATEGORY_META: Record<string, {
     icon: "🖼️",
   },
   marketplace: {
-    title: "Cardano NFT Marketplaces — Volume & Listings | DApps on Cardano",
+    title: "Cardano NFT Marketplaces — Volume & Listings",
     description:
       "Discover Cardano NFT marketplaces with real-time trading volume, listings and transaction data. Compare JPG.store, CNFT.io and more.",
     h1: "Cardano NFT Marketplaces",
@@ -58,7 +56,7 @@ const CATEGORY_META: Record<string, {
     icon: "🏪",
   },
   gaming: {
-    title: "Cardano Blockchain Games — Play-to-Earn & Analytics | DApps on Cardano",
+    title: "Cardano Blockchain Games — Play-to-Earn & Analytics",
     description:
       "Discover blockchain games on Cardano with true on-chain asset ownership and play-to-earn mechanics. Track activity and volume.",
     h1: "Cardano Blockchain Games",
@@ -69,7 +67,7 @@ const CATEGORY_META: Record<string, {
     icon: "🎮",
   },
   community: {
-    title: "Cardano Community DApps — Governance & Social | DApps on Cardano",
+    title: "Cardano Community DApps — Governance & Social",
     description:
       "Explore community-driven DApps on Cardano powering governance, social platforms, and decentralized organizations.",
     h1: "Cardano Community DApps",
@@ -80,7 +78,7 @@ const CATEGORY_META: Record<string, {
     icon: "🤝",
   },
   stablecoin: {
-    title: "Cardano Stablecoins — Supply & Analytics | DApps on Cardano",
+    title: "Cardano Stablecoins — Supply & Analytics",
     description:
       "Track Cardano native stablecoins with real-time supply, TVL and adoption data. Includes DJED, USDA and more.",
     h1: "Cardano Stablecoins",
@@ -91,7 +89,7 @@ const CATEGORY_META: Record<string, {
     icon: "💵",
   },
   wallet: {
-    title: "Cardano Smart Wallets — Non-Custodial & Analytics | DApps on Cardano",
+    title: "Cardano Smart Wallets — Non-Custodial & Analytics",
     description:
       "Discover smart wallet DApps on Cardano with advanced features like multi-sig, spending limits, and social recovery.",
     h1: "Cardano Smart Wallets",
@@ -102,7 +100,7 @@ const CATEGORY_META: Record<string, {
     icon: "👛",
   },
   infrastructure: {
-    title: "Cardano Infrastructure — Layer 2, Blockchain & Network | DApps on Cardano",
+    title: "Cardano Infrastructure — Layer 2, Blockchain & Network",
     description:
       "Explore Cardano infrastructure projects including Layer 2 scaling solutions, blockchain services, and mobile network integrations.",
     h1: "Cardano Infrastructure",
@@ -113,7 +111,7 @@ const CATEGORY_META: Record<string, {
     icon: "⚙️",
   },
   "nft-minting": {
-    title: "Cardano NFT Minting Platforms — Launch & Analytics | DApps on Cardano",
+    title: "Cardano NFT Minting Platforms — Launch & Analytics",
     description:
       "Discover NFT minting platforms on Cardano. Launch collections, set royalties, and distribute digital assets with low fees.",
     h1: "Cardano NFT Minting Platforms",
@@ -157,7 +155,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const meta = CATEGORY_META[slug];
-  if (!meta) return { title: "Category Not Found" };
+  if (!meta) notFound();
   return {
     title: meta.title,
     description: meta.description,
@@ -258,7 +256,7 @@ export default async function CategorySlugPage(
       </div>
 
       {/* DApp table — category pre-filtered, no redundant filter buttons */}
-      <DAppTable dapps={dapps.map((d: any) => ({
+      <DAppTable dapps={dapps.map(d => ({
         id: d.id, name: d.name, slug: d.slug, category: d.category, subCategory: d.subCategory,
         tvl: d.tvl, volume30d: d.volume30d, trxCount: d.trxCount, tx24h: d.tx24h,
         activeUsers24h: d.activeUsers24h, change1d: d.change1d, logo: d.logo,

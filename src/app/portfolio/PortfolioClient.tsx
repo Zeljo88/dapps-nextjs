@@ -48,7 +48,6 @@ interface YieldOpportunity {
 
 // Use relative path so it works on both HTTP and HTTPS (avoids mixed content)
 const API = "/api";
-const KOIOS = "https://api.koios.rest/api/v1";
 const ADRIA_POOL_ID = "pool1we9umarzn0l6jp8mcm98y28lxuuzcurzpjldnjwtgdhgw068mnr";
 
 function fmtAda(lovelace: number) {
@@ -117,7 +116,7 @@ async function fetchTopYields(): Promise<YieldOpportunity[]> {
   try {
     const res = await fetch(`${API}/yields`);
     if (!res.ok) return [];
-    const yields: any[] = await res.json();
+    const yields = await res.json() as YieldOpportunity[];
     return yields
       .filter(y => y.apy > 0 && y.tvlUsd > 100_000)
       .sort((a, b) => b.apy - a.apy)
@@ -143,7 +142,7 @@ async function parseTokens(walletName: string): Promise<TokenBalance[]> {
     const assets = await meshWallet.getAssets();
     if (!assets?.length) return [];
 
-    return assets.slice(0, 20).map((a: any) => {
+    return assets.slice(0, 20).map(a => {
       const policyId = a.unit?.slice(0, 56) || "";
       const meta = TOKEN_META[policyId] || null;
       // Decode hex asset name to readable string
@@ -191,9 +190,18 @@ export default function PortfolioClient() {
   }, []);
 
   useEffect(() => {
-    if (!wallet) { setStaking(null); setTokens([]); setDefiPositions([]); return; }
-    setLoading(true);
-    setDefiLoading(true);
+    if (!wallet) {
+      const reset = window.setTimeout(() => {
+        setStaking(null);
+        setTokens([]);
+        setDefiPositions([]);
+      }, 0);
+      return () => window.clearTimeout(reset);
+    }
+    const loadingTimer = window.setTimeout(() => {
+      setLoading(true);
+      setDefiLoading(Boolean(wallet.rewardAddress));
+    }, 0);
     console.log("[Portfolio] rewardAddress:", wallet.rewardAddress);
     Promise.all([
       fetchStakingInfo(wallet.rewardAddress),
@@ -214,9 +222,8 @@ export default function PortfolioClient() {
         setDefiPositions(p);
         setDefiLoading(false);
       });
-    } else {
-      setDefiLoading(false);
     }
+    return () => window.clearTimeout(loadingTimer);
   }, [wallet]);
 
   const adaBalance = wallet ? wallet.balanceLovelace / 1_000_000 : 0;
@@ -597,16 +604,6 @@ function SummaryCard({ label, value, sub, color, icon }: {
       </div>
       <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{sub}</div>}
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
-      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{label}</span>
-      <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{value}</span>
     </div>
   );
 }

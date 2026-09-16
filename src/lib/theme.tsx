@@ -15,7 +15,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
-    if (saved) setTheme(saved);
+    // Synchronize the client-only persisted preference after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saved === "dark" || saved === "light") setTheme(saved);
   }, []);
 
   useEffect(() => {

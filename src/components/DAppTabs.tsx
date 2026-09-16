@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
-import { fmt } from "@/lib/api";
+import { fmt, toSlug } from "@/lib/api";
+import type { DappRecord, DappScript, YieldRecord } from "@/lib/api";
 import TvlChart from "./TvlChart";
 
-export default function DAppTabs({ dapp }: { dapp: any }) {
+export default function DAppTabs({ dapp }: { dapp: DappRecord }) {
   const tabs = [
     "Overview",
     ...(dapp.tvl > 0 ? ["TVL History"] : []),
@@ -31,7 +32,7 @@ export default function DAppTabs({ dapp }: { dapp: any }) {
       {active === "Overview" && <OverviewTab dapp={dapp} />}
       {active === "TVL History" && (
         <div className="card" style={{ padding: 24 }}>
-          <TvlChart slug={dapp.slug} />
+          <TvlChart slug={dapp.slug ?? toSlug(dapp.name)} />
         </div>
       )}
       {active === "Yields" && <YieldsTab yields={dapp.yields} />}
@@ -74,7 +75,7 @@ function FeatureBadge({ feature }: { feature: string }) {
   );
 }
 
-function OverviewTab({ dapp }: { dapp: any }) {
+function OverviewTab({ dapp }: { dapp: DappRecord }) {
   const releases = dapp.releases || [];
   const features: string[] = dapp.features || [];
   return (
@@ -112,7 +113,7 @@ function OverviewTab({ dapp }: { dapp: any }) {
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No release info.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {releases.map((r: any) => (
+            {releases.map(r => (
               <div key={r.releaseKey} style={{ padding: "12px 16px", background: "var(--bg-secondary)",
                 borderRadius: 8, border: "1px solid var(--border)" }}>
                 <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14 }}>
@@ -130,7 +131,7 @@ function OverviewTab({ dapp }: { dapp: any }) {
   );
 }
 
-function YieldsTab({ yields }: { yields: any[] }) {
+function YieldsTab({ yields }: { yields: YieldRecord[] }) {
   if (!yields?.length) return <p style={{ color: "var(--text-muted)" }}>No yield pools.</p>;
   return (
     <div className="card" style={{ overflow: "hidden" }}>
@@ -182,7 +183,7 @@ function YieldsTab({ yields }: { yields: any[] }) {
   );
 }
 
-function ScriptsTab({ scripts }: { scripts: any[] }) {
+function ScriptsTab({ scripts }: { scripts: DappScript[] }) {
   if (!scripts?.length) return <p style={{ color: "var(--text-muted)" }}>No scripts.</p>;
   return (
     <div className="card" style={{ overflow: "hidden" }}>

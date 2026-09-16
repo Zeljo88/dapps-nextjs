@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 
-const BACKEND = process.env.API_URL || "http://20.79.10.28";
+import { fetchYields } from "@/lib/backend";
 
 export async function GET() {
   try {
-    const res = await fetch(`${BACKEND}/yields`, { next: { revalidate: 3600 } });
-    const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(await fetchYields());
   } catch {
-    return NextResponse.json([], { status: 500 });
+    return NextResponse.json([], { status: 502 });
   }
 }

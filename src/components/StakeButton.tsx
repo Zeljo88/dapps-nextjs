@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useWallet, ADRIA_POOL_ID } from "@/lib/wallet";
+import { useWallet } from "@/lib/wallet";
 import WalletModal from "./WalletModal";
 
 type Status = "idle" | "building" | "signing" | "submitting" | "success" | "error";

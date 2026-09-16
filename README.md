@@ -1,20 +1,25 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Backend configuration
+
+All application backend requests are server-side. Configure:
+
+- `API_URL` — the backend origin. `npm run build` requires it. Release builds must use an HTTPS URL, for example `https://api.example.com`; loopback HTTP is accepted only for local build verification.
+- When `API_URL` is unset in local development, the app uses `http://127.0.0.1:8000`.
+
+Do not expose the backend through a `NEXT_PUBLIC_*` variable. Set `API_URL` in the deployment platform for Production, Preview, and Development as appropriate.
+
+The build intentionally fails before Next.js compilation when `API_URL` is missing, malformed, or uses insecure HTTP for a non-loopback host. This prevents deployment of prerendered pages or a sitemap built from absent/bogus data. Backend request failures also fail prerendering instead of producing indexable empty pages.
+
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+API_URL=http://127.0.0.1:8000 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser. With a running production build, `npm run test:seo` checks status codes, canonical and robots metadata, title composition, sitemap coverage, the removed debug route, and the www redirect.
+
+Run `npm run test:config` to verify the release-time `API_URL` policy.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

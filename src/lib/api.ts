@@ -1,50 +1,5 @@
-// Server-side uses API_URL (not exposed to client), client-side uses NEXT_PUBLIC_API_URL
-const API_BASE = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28";
-
 export function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
-export async function fetchDapps(category?: string) {
-  const url = category
-    ? `${API_BASE}/dapps/list-dapps?category=${encodeURIComponent(category)}`
-    : `${API_BASE}/dapps/list-dapps`;
-  const res = await fetch(url, { next: { revalidate: 300 } });
-  if (!res.ok) throw new Error("Failed to fetch dapps");
-  return res.json();
-}
-
-export async function fetchDapp(nameOrId: string) {
-  const res = await fetch(`${API_BASE}/dapps/find-dapp/${encodeURIComponent(nameOrId)}`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) throw new Error(`DApp not found (${res.status})`);
-  return res.json();
-}
-
-export async function fetchGlobalStats() {
-  const res = await fetch(`${API_BASE}/global/stats`, { next: { revalidate: 60 } });
-  if (!res.ok) throw new Error("Failed to fetch stats");
-  return res.json();
-}
-
-export async function fetchEcosystem() {
-  const res = await fetch(`${API_BASE}/global/ecosystem`, { next: { revalidate: 300 } });
-  if (!res.ok) throw new Error("Failed to fetch ecosystem");
-  return res.json();
-}
-
-export async function fetchSlugMap(): Promise<{ name: string; slug: string }[]> {
-  const res = await fetch(`${API_BASE}/dapps/slug-map`, { next: { revalidate: 86400 } });
-  if (!res.ok) throw new Error("Failed to fetch slug map");
-  return res.json();
-}
-
-export async function fetchCategories() {
-  const res = await fetch(`${API_BASE}/dapps/categories`, { next: { revalidate: 3600 } });
-  if (!res.ok) throw new Error("Failed to fetch categories");
-  return res.json();
 }
 
 export function fmt(n: number | null | undefined, decimals = 2): string {
@@ -100,20 +55,99 @@ export const categoryToSlug: Record<string, string> = {
   NFT_MINTING_PLATFORM: "nft-minting",
 };
 
-export async function fetchTvlHistory(slug: string): Promise<{ points: { date: number; tvl: number }[]; totalPoints: number }> {
-  const res = await fetch(`${API_BASE}/dapps/${encodeURIComponent(slug)}/tvl-history`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) return { points: [], totalPoints: 0 };
-  return res.json();
+export interface DappSeoRecord {
+  name?: string;
+  slug?: string;
+  tvl?: number;
+  trxCount?: number;
+  volume30d?: number;
+  description?: string;
 }
 
-export async function fetchDappsByCategory(slug: string) {
-  const categories = categorySlugMap[slug];
-  if (!categories) throw new Error(`Unknown category slug: ${slug}`);
-  const results = await Promise.all(categories.map(cat => fetchDapps(cat)));
-  return results.flat();
+export interface YieldRecord {
+  project: string;
+  symbol: string;
+  tvlUsd: number;
+  apy: number;
+  apyBase: number;
+  apyReward: number;
+  stablecoin: boolean;
+}
+
+export interface DappRelease {
+  releaseKey: string;
+  releaseName?: string;
+  releaseNumber: number;
+}
+
+export interface DappScript {
+  name?: string;
+  purpose?: string;
+  scriptHash?: string;
+  contractAddress?: string;
+  plutusVersion?: string;
+  txCount: number;
+  cardanoscanUrl?: string;
+}
+
+export interface DappRecord extends DappSeoRecord {
+  id?: string | number;
+  name: string;
+  category: string;
+  subCategory?: string;
+  tvl: number;
+  volume30d: number;
+  volume7d: number;
+  trxCount: number;
+  tx24h: number;
+  tx7d: number;
+  activeUsers24h: number;
+  change1d: number;
+  change7d: number;
+  logo?: string;
+  link?: string;
+  twitter?: string;
+  discord?: string;
+  llamaUrl?: string;
+  audits: number;
+  auditLinks?: string[];
+  github?: string;
+  scriptCount: number;
+  hasYields: boolean;
+  yields: YieldRecord[];
+  scripts: DappScript[];
+  releases: DappRelease[];
+  features: string[];
+}
+
+export interface GlobalStats {
+  adaPrice: number;
+  totalTvl: number;
+  totalVolume30d: number;
+  totalVolume24h: number;
+  totalActiveUsers24h: number;
+  totalTxCount: number;
+  totalDapps: number;
+  currentEpoch: number;
+}
+
+export interface EcosystemData {
+  tvlLeaderboard: Array<{ name: string; category: string; tvl: number }>;
+  volumeLeaderboard: Array<{ name: string; volume30d: number }>;
+  categoryBreakdown: Array<{ category: string; count: number }>;
+}
+
+export function isIndexableDapp(dapp: unknown): dapp is DappSeoRecord {
+  if (!dapp || typeof dapp !== "object") return false;
+  const record = dapp as DappSeoRecord;
+  return Boolean(
+    typeof record.name === "string" &&
+    record.name.trim() &&
+    ((record.tvl || 0) > 0 ||
+      (record.trxCount || 0) > 0 ||
+      (record.volume30d || 0) > 0 ||
+      (typeof record.description === "string" && record.description.trim()))
+  );
 }
 
 export const CATEGORY_COLORS: Record<string, string> = {

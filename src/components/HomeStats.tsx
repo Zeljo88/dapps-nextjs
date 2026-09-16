@@ -1,7 +1,8 @@
 "use client";
 import { useCurrency } from "@/lib/currency";
+import type { GlobalStats } from "@/lib/api";
 
-export default function HomeStats({ stats, adaPrice, compact }: { stats: any, adaPrice: number, compact?: boolean }) {
+export default function HomeStats({ stats, adaPrice, compact }: { stats: GlobalStats, adaPrice: number, compact?: boolean }) {
   const { format } = useCurrency();
 
   const gridCols = compact

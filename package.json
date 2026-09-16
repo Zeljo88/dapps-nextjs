@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/validate-build-env.mjs && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:config": "node scripts/config-regression.mjs",
+    "test:seo": "node scripts/seo-regression.mjs"
   },
   "dependencies": {
     "@dexhunterio/swaps": "^2.0.4",

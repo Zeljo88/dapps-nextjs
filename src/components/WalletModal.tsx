@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useWallet, SUPPORTED_WALLETS } from "@/lib/wallet";
 

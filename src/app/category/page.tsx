@@ -1,12 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { fetchDapps } from "@/lib/backend";
 import {
-  fetchDapps,
-  fetchCategories,
   fmt,
   categorySlugMap,
   categoryDisplayName,
-  categoryToSlug,
   CATEGORY_COLORS,
 } from "@/lib/api";
 
@@ -39,7 +37,7 @@ const CATEGORY_DESC: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: "Cardano DApp Categories | DApps on Cardano",
+  title: "Cardano DApp Categories",
   description:
     "Browse all Cardano DApp categories — DeFi, NFT, Marketplace, Gaming, and more. Find the best DApps by category with real-time TVL and volume data.",
   alternates: { canonical: `${BASE}/category` },
@@ -59,13 +57,13 @@ export default async function CategoryIndexPage() {
   const slugStats: Record<string, { count: number; tvl: number }> = {};
   for (const [slug, apiCats] of Object.entries(categorySlugMap)) {
     const matching = allDapps.filter(
-      (d: any) =>
+      d =>
         apiCats.includes(d.category) &&
         (d.tvl > 0 || d.trxCount > 0 || d.volume30d > 0)
     );
     slugStats[slug] = {
       count: matching.length,
-      tvl: matching.reduce((s: number, d: any) => s + (d.tvl || 0), 0),
+      tvl: matching.reduce((sum, dapp) => sum + (dapp.tvl || 0), 0),
     };
   }
 

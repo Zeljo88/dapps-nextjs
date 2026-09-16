@@ -1,6 +1,7 @@
 "use client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 import { fmt, CATEGORY_COLORS } from "@/lib/api";
+import type { EcosystemData } from "@/lib/api";
 
 const DARK_TOOLTIP = {
   contentStyle: { background: "#16161f", border: "1px solid #2a2a3a", borderRadius: 8, fontSize: 13 },
@@ -8,10 +9,10 @@ const DARK_TOOLTIP = {
   itemStyle: { color: "#9999b0" },
 };
 
-export default function EcosystemCharts({ eco }: { eco: any }) {
+export default function EcosystemCharts({ eco }: { eco: EcosystemData }) {
   const tvlData = eco.tvlLeaderboard.slice(0, 12);
   const volData = eco.volumeLeaderboard.slice(0, 8);
-  const catData = eco.categoryBreakdown.filter((c: any) => c.count > 0);
+  const catData = eco.categoryBreakdown.filter(c => c.count > 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
@@ -27,9 +28,9 @@ export default function EcosystemCharts({ eco }: { eco: any }) {
               angle={-40} textAnchor="end" interval={0} />
             <YAxis tickFormatter={(v) => `$${(v/1e6).toFixed(0)}M`}
               tick={{ fill: "#9999b0", fontSize: 12 }} />
-            <Tooltip {...DARK_TOOLTIP} formatter={(v: any) => [fmt(v), "TVL"]} />
+            <Tooltip {...DARK_TOOLTIP} formatter={value => [fmt(Number(value)), "TVL"]} />
             <Bar dataKey="tvl" radius={[4, 4, 0, 0]}>
-              {tvlData.map((entry: any, i: number) => (
+              {tvlData.map((entry, i) => (
                 <Cell key={i} fill={CATEGORY_COLORS[entry.category] || "#8b5cf6"} />
               ))}
             </Bar>
@@ -50,7 +51,7 @@ export default function EcosystemCharts({ eco }: { eco: any }) {
               <XAxis type="number" tickFormatter={(v) => `$${(v/1e6).toFixed(0)}M`}
                 tick={{ fill: "#9999b0", fontSize: 11 }} />
               <YAxis type="category" dataKey="name" tick={{ fill: "#9999b0", fontSize: 12 }} width={80} />
-              <Tooltip {...DARK_TOOLTIP} formatter={(v: any) => [fmt(v), "30d Volume"]} />
+              <Tooltip {...DARK_TOOLTIP} formatter={value => [fmt(Number(value)), "30d Volume"]} />
               <Bar dataKey="volume30d" fill="#10b981" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -71,22 +72,22 @@ export default function EcosystemCharts({ eco }: { eco: any }) {
                 outerRadius={90}
                 innerRadius={50}
                 paddingAngle={2}
-                label={({ name, percent }: any) =>
+                label={({ name, percent }) =>
                   (percent || 0) > 0.05 ? `${String(name).charAt(0) + String(name).slice(1).toLowerCase()} ${((percent || 0) * 100).toFixed(0)}%` : ""
                 }
                 labelLine={false}
               >
-                {catData.map((entry: any, i: number) => (
+                {catData.map((entry, i) => (
                   <Cell key={i} fill={CATEGORY_COLORS[entry.category] || "#6b7280"} />
                 ))}
               </Pie>
-              <Tooltip {...DARK_TOOLTIP} formatter={(v: any, name: any) => [v, name]} />
+              <Tooltip {...DARK_TOOLTIP} formatter={(value, name) => [value, String(name)]} />
             </PieChart>
           </ResponsiveContainer>
 
           {/* Legend */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-            {catData.slice(0, 8).map((c: any) => (
+            {catData.slice(0, 8).map(c => (
               <div key={c.category} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }}>
                 <div style={{ width: 8, height: 8, borderRadius: 2, background: CATEGORY_COLORS[c.category] || "#6b7280" }} />
                 <span style={{ color: "var(--text-secondary)" }}>{c.category.charAt(0) + c.category.slice(1).toLowerCase()} ({c.count})</span>

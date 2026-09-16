@@ -8,10 +8,9 @@ import WalletConnect from "./WalletConnect";
 
 export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
   const path = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  // Close menu on route change
-  useEffect(() => { setMenuOpen(false); }, [path]);
+  const [menuState, setMenuState] = useState({ path, open: false });
+  const menuOpen = menuState.path === path && menuState.open;
+  const setMenuOpen = (open: boolean) => setMenuState({ path, open });
 
   // Prevent body scroll when menu is open
   useEffect(() => {

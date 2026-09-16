@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  env: {
-    NEXT_PUBLIC_API_URL: "http://20.79.10.28",
-  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "icons.llama.fi" },

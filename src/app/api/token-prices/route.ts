@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const result: Record<string, { priceUsd: number; symbol: string; decimals: number }> = {};
     for (const [key, val] of Object.entries(data.coins || {})) {
       const unit = key.replace("cardano:", "");
-      const v = val as any;
+      const v = val as { price?: number; symbol?: string; decimals?: number };
       result[unit] = {
         priceUsd: v.price || 0,
         symbol: v.symbol || "",

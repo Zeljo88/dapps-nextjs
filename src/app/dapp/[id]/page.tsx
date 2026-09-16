@@ -1,6 +1,9 @@
-import { fetchDapp, fetchDapps, fmt, fmtNum, toSlug, CATEGORY_COLORS } from "@/lib/api";
+import { DappNotFoundError, fetchDapp, fetchDapps } from "@/lib/backend";
+import { fmt, fmtNum, isIndexableDapp, toSlug, CATEGORY_COLORS } from "@/lib/api";
+import type { DappRecord } from "@/lib/api";
 import CategoryBadge from "@/components/CategoryBadge";
 import Link from "next/link";
+import { notFound, permanentRedirect } from "next/navigation";
 import DAppTabs from "@/components/DAppTabs";
 import type { Metadata } from "next";
 
@@ -13,11 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const tvlStr = dapp.tvl > 0 ? ` with TVL ${fmt(dapp.tvl)}` : "";
     const volStr = dapp.volume30d > 0 ? ` and 30d volume ${fmt(dapp.volume30d)}` : "";
 
-    const isThin =
-      dapp.tvl === 0 &&
-      dapp.trxCount === 0 &&
-      dapp.volume30d === 0 &&
-      !dapp.description;
+    const isThin = !isIndexableDapp(dapp);
 
     const description = dapp.description
       ? `${dapp.description} Track ${dapp.name} TVL, volume and transactions on DApps on Cardano.`
@@ -37,8 +36,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         type: "website",
       },
     };
-  } catch {
-    return { title: "DApp Not Found" };
+  } catch (error) {
+    if (error instanceof DappNotFoundError) notFound();
+    throw error;
   }
 }
 
@@ -47,26 +47,16 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
   let dapp;
   try {
     dapp = await fetchDapp(id);
-  } catch (e) {
-    console.error(`[DApp page] Failed to fetch dapp ${id}:`, e);
-    return (
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
-        <div className="card" style={{ padding: 48, textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-          <h2 style={{ color: "var(--text-primary)", marginBottom: 8 }}>DApp Not Found</h2>
-          <p style={{ color: "var(--text-secondary)", marginBottom: 24 }}>
-            We couldn&apos;t find a DApp with that ID.
-          </p>
-          <Link href="/" style={{ color: "var(--accent)", textDecoration: "none" }}>
-            ← Back to DApps
-          </Link>
-        </div>
-      </main>
-    );
+  } catch (error) {
+    if (error instanceof DappNotFoundError) notFound();
+    throw error;
   }
 
+  const canonicalSlug = dapp.slug ?? toSlug(dapp.name);
+  if (id !== canonicalSlug) permanentRedirect(`/dapp/${canonicalSlug}`);
+
   // JSON-LD structured data
-  const dappUrl = `https://dappsoncardano.com/dapp/${dapp.slug ?? toSlug(dapp.name)}`;
+  const dappUrl = `https://dappsoncardano.com/dapp/${canonicalSlug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -120,6 +110,8 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
         <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
           {/* Logo */}
           {dapp.logo ? (
+            // DApp logos are dynamic third-party URLs not constrained to a stable host allowlist.
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={dapp.logo} alt={dapp.name} width={64} height={64}
               style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover", flexShrink: 0 }}
             />
@@ -152,7 +144,7 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
                   border: "1px solid #10b98140", borderRadius: 999, background: "#10b98110",
                   display: "inline-flex", alignItems: "center", gap: 4 }}>
                   🛡️ Audited
-                  {dapp.auditLinks?.length > 0 && dapp.auditLinks.map((url: string, i: number) => (
+                  {dapp.auditLinks?.map((url: string, i: number) => (
                     <a key={i} href={url} target="_blank" rel="noopener noreferrer"
                       style={{ color: "#10b981", fontSize: 11, opacity: 0.8 }}>
                       [{i + 1}]
@@ -239,8 +231,8 @@ export default async function DAppPage({ params }: { params: Promise<{ id: strin
   );
 }
 
-async function RelatedDApps({ currentDapp }: { currentDapp: any }) {
-  let allDapps: any[];
+async function RelatedDApps({ currentDapp }: { currentDapp: DappRecord }) {
+  let allDapps: DappRecord[];
   try {
     allDapps = await fetchDapps();
   } catch {
@@ -269,6 +261,8 @@ async function RelatedDApps({ currentDapp }: { currentDapp: any }) {
           <Link key={d.name} href={`/dapp/${d.slug ?? toSlug(d.name)}`} style={{ textDecoration: "none" }}>
             <div className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s" }}>
               {d.logo ? (
+                // DApp logos are dynamic third-party URLs not constrained to a stable host allowlist.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={d.logo} alt={d.name} width={40} height={40} style={{ borderRadius: 10, objectFit: "cover" }} />
               ) : (
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: `${CATEGORY_COLORS[d.category] || "#6b7280"}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: CATEGORY_COLORS[d.category] || "#6b7280" }}>

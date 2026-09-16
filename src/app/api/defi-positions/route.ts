@@ -83,7 +83,8 @@ export async function GET(req: NextRequest) {
       body: JSON.stringify({ _stake_addresses: [stakeAddr] }),
     });
     const d = await r.json();
-    addresses = (d || []).map((a: any) => a.address).filter(Boolean);
+    const rows = Array.isArray(d) ? d as Array<{ address?: string }> : [];
+    addresses = rows.map(a => a.address).filter((address): address is string => Boolean(address));
   } catch {
     return NextResponse.json({ error: "failed to fetch addresses" }, { status: 502 });
   }

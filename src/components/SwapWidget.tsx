@@ -5,6 +5,7 @@ import WalletModal from "./WalletModal";
 
 const PARTNER_NAME = "dappsoncardano";
 const PARTNER_CODE = "doc6164647231713972747a353239376177656567763334383973656c73337865353766766d3372377a396a633968307a3968366d356a67797837783977393868707a30707672617a3463666d6e3832726a3334356e6371787478677463667936787332367a766835da39a3ee5e6b4b0d3255bfef95601890afd80709";
+type SelectedWallet = "nami" | "eternl" | "flint" | "gerowallet" | "typhoncip30" | "nufi" | "lace" | "vespr" | "begin" | "yoroi";
 
 // Dynamic import to avoid SSR issues with the Swap component
 import dynamic from "next/dynamic";
@@ -25,7 +26,7 @@ export default function SwapWidget() {
           partnerCode={PARTNER_CODE}
           width="100%"
           // Pass connected wallet name so DexHunter knows it's already connected
-          selectedWallet={wallet?.name as any}
+          selectedWallet={wallet?.name as SelectedWallet | undefined}
           // When user clicks "Connect Wallet" inside the widget → open OUR modal
           onClickWalletConnect={() => setShowModal(true)}
           // Theme sync

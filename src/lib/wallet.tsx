@@ -22,7 +22,24 @@ export interface ConnectedWallet {
   address: string;
   rewardAddress: string;
   balanceLovelace: number;
-  api: any; // CIP-30 API object
+  api: Cip30Api;
+}
+
+export interface Cip30Api {
+  getUsedAddresses: () => Promise<string[]>;
+  signTx: (transaction: string, partialSign?: boolean) => Promise<string>;
+}
+
+interface CardanoWalletProvider {
+  enable: () => Promise<Cip30Api>;
+}
+
+type CardanoWindow = Window & {
+  cardano?: Record<string, CardanoWalletProvider | undefined>;
+};
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }
 
 interface WalletCtx {
@@ -49,8 +66,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const detect = () => {
-      if (typeof window !== "undefined" && (window as any).cardano) {
-        setInstalledWallets(SUPPORTED_WALLETS.filter(w => !!(window as any).cardano[w.name]));
+      const cardano = (window as CardanoWindow).cardano;
+      if (cardano) {
+        setInstalledWallets(SUPPORTED_WALLETS.filter(w => Boolean(cardano[w.name])));
       }
     };
     detect();
@@ -90,7 +108,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       } catch {}
 
       // Raw CIP-30 API (needed for token balances and delegation tx)
-      const cardano = (window as any).cardano;
+      const cardano = (window as CardanoWindow).cardano;
       const api = cardano?.[walletName] ? await cardano[walletName].enable() : null;
 
       const wInfo = SUPPORTED_WALLETS.find(w => w.name === walletName)!;
@@ -100,11 +118,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         address: address ? `${address.slice(0, 12)}...${address.slice(-6)}` : "Connected",
         rewardAddress,
         balanceLovelace: balLovelace,
-        api: api || meshWallet,
+        api: (api || meshWallet) as Cip30Api,
       });
       if (typeof window !== "undefined") localStorage.setItem("connectedWallet", walletName);
-    } catch (e: any) {
-      setError(e.message || "Connection failed");
+    } catch (error: unknown) {
+      setError(errorMessage(error, "Connection failed"));
     }
     setConnecting(false);
   }, []);
@@ -133,8 +151,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const signedTx = await meshWallet.signTx(unsignedTx);
       const txHash = await meshWallet.submitTx(signedTx);
       return { txHash };
-    } catch (e: any) {
-      return { error: e.message || "Delegation failed" };
+    } catch (error: unknown) {
+      return { error: errorMessage(error, "Delegation failed") };
     }
   }, [wallet]);
 

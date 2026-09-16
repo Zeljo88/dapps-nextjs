@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { fetchTvlHistory } from "@/lib/api";
 
 type Point = { date: number; tvl: number };
 
@@ -39,7 +38,11 @@ export default function TvlChart({ slug }: { slug: string }) {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetchTvlHistory(slug)
+    fetch(`/api/dapps/${encodeURIComponent(slug)}/tvl-history`)
+      .then(res => {
+        if (!res.ok) throw new Error(`TVL history request failed (${res.status})`);
+        return res.json();
+      })
       .then(d => { setAllPoints(d.points || []); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
   }, [slug]);

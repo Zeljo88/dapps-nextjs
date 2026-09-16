@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { fmtNum, toSlug, CATEGORY_COLORS } from "@/lib/api";
 import CategoryBadge from "./CategoryBadge";
@@ -9,7 +9,27 @@ const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMU
 
 type SortKey = "tvl" | "volume30d" | "trxCount" | "tx24h" | "activeUsers24h" | "name";
 
-export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any[], adaPrice: number, hideFilters?: boolean }) {
+interface TableDapp {
+  id?: string | number;
+  name: string;
+  slug?: string;
+  category: string;
+  subCategory?: string;
+  tvl: number;
+  volume30d: number;
+  trxCount: number;
+  tx24h: number;
+  activeUsers24h: number;
+  change1d: number;
+  logo?: string;
+  link?: string;
+  twitter?: string;
+  audits: number;
+  auditLinks?: string[];
+  github?: string;
+}
+
+export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: TableDapp[], adaPrice: number, hideFilters?: boolean }) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("tvl");
@@ -25,32 +45,24 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
     if (search) d = d.filter(x => x.name.toLowerCase().includes(search.toLowerCase()));
     if (cat !== "ALL") d = d.filter(x => x.category === cat);
     d = [...d].sort((a, b) => {
-      const av = sort === "name" ? a.name : (a[sort] || 0);
-      const bv = sort === "name" ? b.name : (b[sort] || 0);
-      if (typeof av === "string") return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+      if (sort === "name") return asc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+      const av = a[sort] || 0;
+      const bv = b[sort] || 0;
       return asc ? av - bv : bv - av;
     });
     return d;
   }, [dapps, search, cat, sort, asc]);
 
-  // Reset to page 1 when search or category changes
-  useEffect(() => { setPage(1); }, [search, cat]);
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const showFrom = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-  const showTo = Math.min(page * PAGE_SIZE, filtered.length);
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const showFrom = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const showTo = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
   const toggleSort = (key: SortKey) => {
     if (sort === key) setAsc(!asc);
     else { setSort(key); setAsc(false); }
   };
-
-  const SortIcon = ({ k }: { k: SortKey }) => (
-    <span style={{ marginLeft: 4, color: sort === k ? "var(--accent)" : "var(--text-muted)", fontSize: 11 }}>
-      {sort === k ? (asc ? "↑" : "↓") : "↕"}
-    </span>
-  );
 
   return (
     <div>
@@ -62,7 +74,7 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
             color: "var(--text-muted)", fontSize: 15 }}>🔍</span>
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search DApps..."
             style={{
               width: "100%", paddingLeft: 36, paddingRight: 12, height: 40,
@@ -80,7 +92,7 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
               const color = c === "ALL" ? "#8b5cf6" : (CATEGORY_COLORS[c] || "#6b7280");
               const active = cat === c;
               return (
-                <button key={c} onClick={() => setCat(c)} style={{
+                <button key={c} onClick={() => { setCat(c); setPage(1); }} style={{
                   padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
                   cursor: "pointer", border: "1px solid",
                   background: active ? `${color}20` : "transparent",
@@ -107,24 +119,24 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 <th style={th}>#</th>
                 <th style={th} onClick={() => toggleSort("name")} className="cursor-pointer" title="DApp name — click to sort alphabetically">
-                  Name <SortIcon k="name" />
+                  Name <SortIcon column="name" sort={sort} ascending={asc} />
                 </th>
                 <th style={th} title="Primary category: DeFi, NFT, Marketplace, Gaming, etc.">Category</th>
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tvl")} className="cursor-pointer" title="Total Value Locked — value of all assets deposited in the DApp's smart contracts">
-                  TVL <SortIcon k="tvl" />
+                  TVL <SortIcon column="tvl" sort={sort} ascending={asc} />
                 </th>
                 <th style={{ ...th, textAlign: "right" }} title="TVL percentage change in the last 24 hours">24h %</th>
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("volume30d")} className="cursor-pointer" title="Total trading and transaction volume over the last 30 days">
-                  30d Volume <SortIcon k="volume30d" />
+                  30d Volume <SortIcon column="volume30d" sort={sort} ascending={asc} />
                 </th>
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("trxCount")} className="cursor-pointer" title="Total on-chain smart contract transactions (script invocations) since launch">
-                  Tx Count <SortIcon k="trxCount" />
+                  Tx Count <SortIcon column="trxCount" sort={sort} ascending={asc} />
                 </th>
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tx24h")} className="cursor-pointer" title="Number of on-chain transactions in the last 24 hours">
-                  24h Txs <SortIcon k="tx24h" />
+                  24h Txs <SortIcon column="tx24h" sort={sort} ascending={asc} />
                 </th>
                 <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("activeUsers24h")} className="cursor-pointer" title="Unique wallet addresses (stake keys) that interacted with this DApp in the last 24 hours">
-                  Active Users <SortIcon k="activeUsers24h" />
+                  Active Users <SortIcon column="activeUsers24h" sort={sort} ascending={asc} />
                 </th>
                 <th style={th} title="External links — website, Twitter, Discord, DeFiLlama">Links</th>
               </tr>
@@ -134,10 +146,12 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
                 <tr key={d.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-card-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                  <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
+                  <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{(currentPage - 1) * PAGE_SIZE + i + 1}</td>
                   <td style={td}>
                     <Link href={`/dapp/${d.slug ?? toSlug(d.name)}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
                       {d.logo ? (
+                        // Dynamic logos come from many third-party hosts and retain a local fallback.
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={d.logo} alt={d.name} loading="lazy" width={36} height={36}
                           style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
                           onError={(e) => {
@@ -259,34 +273,42 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: any
             Showing {showFrom}–{showTo} of {filtered.length}
           </span>
           <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              style={paginationBtn(page === 1)}>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+              style={paginationBtn(currentPage === 1)}>
               ← Prev
             </button>
-            {getPageNumbers(page, totalPages).map((p, i) =>
+            {getPageNumbers(currentPage, totalPages).map((p, i) =>
               p === "..." ? (
                 <span key={`e${i}`} style={{ padding: "0 6px", color: "var(--text-muted)", fontSize: 13 }}>…</span>
               ) : (
                 <button key={p} onClick={() => setPage(p as number)}
                   style={{
                     ...paginationBtn(false),
-                    background: page === p ? "var(--accent)" : "transparent",
-                    color: page === p ? "#fff" : "var(--text-secondary)",
-                    borderColor: page === p ? "var(--accent)" : "var(--border)",
-                    fontWeight: page === p ? 700 : 500,
+                    background: currentPage === p ? "var(--accent)" : "transparent",
+                    color: currentPage === p ? "#fff" : "var(--text-secondary)",
+                    borderColor: currentPage === p ? "var(--accent)" : "var(--border)",
+                    fontWeight: currentPage === p ? 700 : 500,
                   }}>
                   {p}
                 </button>
               )
             )}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-              style={paginationBtn(page === totalPages)}>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+              style={paginationBtn(currentPage === totalPages)}>
               Next →
             </button>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+function SortIcon({ column, sort, ascending }: { column: SortKey; sort: SortKey; ascending: boolean }) {
+  return (
+    <span style={{ marginLeft: 4, color: sort === column ? "var(--accent)" : "var(--text-muted)", fontSize: 11 }}>
+      {sort === column ? (ascending ? "↑" : "↓") : "↕"}
+    </span>
   );
 }
 

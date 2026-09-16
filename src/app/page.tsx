@@ -1,9 +1,17 @@
-import { fetchDapps, fetchGlobalStats, fmtNum, fmt } from "@/lib/api";
+import type { Metadata } from "next";
+
+import { fetchDapps, fetchGlobalStats } from "@/lib/backend";
+import { fmt } from "@/lib/api";
+import type { DappRecord } from "@/lib/api";
 import DAppTable from "@/components/DAppTable";
 import StakeButton from "@/components/StakeButton";
 import CustomSwap from "@/components/CustomSwap";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "https://dappsoncardano.com" },
+};
 
 const websiteJsonLd = {
   "@context": "https://schema.org",
@@ -39,7 +47,7 @@ export default async function HomePage() {
 
   // Slim down DApp data for the table — only send fields the client component uses
   // This reduces the RSC payload from ~168KB to ~30KB
-  const slimDapps = dapps.map((d: any) => ({
+  const slimDapps = dapps.map((d: DappRecord) => ({
     id: d.id, name: d.name, slug: d.slug, category: d.category, subCategory: d.subCategory,
     tvl: d.tvl, volume30d: d.volume30d, trxCount: d.trxCount, tx24h: d.tx24h,
     activeUsers24h: d.activeUsers24h, change1d: d.change1d, logo: d.logo,

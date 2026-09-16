@@ -1,4 +1,6 @@
+import { fetchYields } from "@/lib/backend";
 import { fmt } from "@/lib/api";
+import type { YieldRecord } from "@/lib/api";
 
 export const revalidate = 3600;
 
@@ -7,11 +9,6 @@ export const metadata = {
   description: "Find the best Cardano yields — compare APY, TVL and reward rates for Liqwid, Indigo, Minswap LP and 90+ DeFi pools. Updated hourly.",
   alternates: { canonical: "https://dappsoncardano.com/yields" },
 };
-
-async function fetchYields() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://20.79.10.28"}/yields`, { next: { revalidate: 3600 } });
-  return res.json();
-}
 
 const yieldsJsonLd = {
   "@context": "https://schema.org",
@@ -34,7 +31,7 @@ const yieldsJsonLd = {
 };
 
 export default async function YieldsPage() {
-  const yields: any[] = await fetchYields();
+  const yields: YieldRecord[] = await fetchYields();
 
   const totalTvl = yields.reduce((s, y) => s + (y.tvlUsd || 0), 0);
   const avgApy = yields.filter(y => y.apy > 0).reduce((s, y) => s + y.apy, 0) / (yields.filter(y => y.apy > 0).length || 1);

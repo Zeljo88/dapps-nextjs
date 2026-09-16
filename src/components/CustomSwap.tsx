@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/lib/wallet";
 import WalletModal from "./WalletModal";
 import {
@@ -11,7 +11,6 @@ import {
   ADA_TOKEN,
   type Token,
   type EstimateResponse,
-  type EstimateRequest,
   type WalletBalance,
 } from "@/lib/minswap";
 
@@ -100,6 +99,7 @@ function TokenSelector({
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button
+        aria-label={label}
         onClick={() => { setOpen(!open); setQuery(""); }}
         style={{
           display: "flex", alignItems: "center", gap: 8,
@@ -110,6 +110,8 @@ function TokenSelector({
         }}
       >
         {selected.logo ? (
+          // Token logos are dynamic third-party URLs and are non-critical UI decoration.
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={selected.logo} alt="" width={22} height={22} style={{ borderRadius: "50%" }} />
         ) : (
           <span style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>
@@ -159,6 +161,8 @@ function TokenSelector({
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {token.logo ? (
+                // Token logos are dynamic third-party URLs and are non-critical UI decoration.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={token.logo} alt="" width={24} height={24} style={{ borderRadius: "50%" }} />
               ) : (
                 <span style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
@@ -313,8 +317,8 @@ export default function CustomSwap() {
       setTxHash(tx_id);
       setAmountIn("");
       setEstimate(null);
-    } catch (err: any) {
-      setSwapError(err.message || "Swap failed");
+    } catch (error: unknown) {
+      setSwapError(error instanceof Error ? error.message : "Swap failed");
     } finally {
       setSwapping(false);
     }

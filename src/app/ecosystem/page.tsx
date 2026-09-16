@@ -1,4 +1,5 @@
-import { fetchEcosystem, fetchGlobalStats, fmt } from "@/lib/api";
+import { fetchEcosystem, fetchGlobalStats } from "@/lib/backend";
+import { fmt } from "@/lib/api";
 import EcosystemCharts from "@/components/EcosystemCharts";
 
 export const revalidate = 300;
