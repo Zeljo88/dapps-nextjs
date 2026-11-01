@@ -1,7 +1,18 @@
 import Link from "next/link";
 import { count, dateTime, type IndexerStatus, type TrackedDapp } from "@/lib/analytics";
 
-export function CoverageNotice({ status }: { status: IndexerStatus }) {
+export function CoverageNotice({ status, compact = false }: { status: IndexerStatus; compact?: boolean }) {
+  if (compact) return <aside className="card" aria-label="Data coverage" style={{ padding: "12px 16px", margin: "0 0 20px", fontSize: 12, lineHeight: 1.7, color: "var(--text-secondary)" }}>
+    <div style={{ display: "flex", gap: "6px 16px", alignItems: "center", flexWrap: "wrap" }}>
+      <strong className={status.fresh ? "feed-live" : "feed-stale"}>{status.fresh ? "● Feed current" : "● Feed delayed"}</strong>
+      <span><strong>Partial contract coverage.</strong> Since {dateTime(status.startedAt)}</span>
+      <Link href="/methodology" style={{ color: "var(--accent)" }}>Methodology & coverage ↗</Link>
+    </div>
+    <details style={{ marginTop: 4 }}><summary style={{ cursor: "pointer", color: "var(--text-muted)" }}>Data availability and collection details</summary>
+      <p style={{ marginTop: 8 }}>Observed transactions create tracked outputs or spend tracked outputs seen after collection began. DApp counters count each transaction once and wait for three subsequent blocks; chain rollbacks can still remove them. The 24h figure covers only the available collection period. TVL, volume, prices and user counts are unavailable.</p>
+      <p>Last block: {dateTime(status.lastReceivedAt)} · Block {count(status.checkpoint?.height ?? null)} · {status.lagBlocks ?? "—"} blocks behind the reported tip. Refresh for current data.</p>
+    </details>
+  </aside>;
   return <aside className="coverage-notice" aria-label="Data coverage">
     <div className="coverage-line"><strong className={status.fresh ? "feed-live" : "feed-stale"}>{status.fresh ? "● Feed current" : "● Feed delayed"}</strong><span>Mainnet · Epoch {status.checkpoint?.epoch ?? "—"} · Block {count(status.checkpoint?.height ?? null)}</span></div>
     <p><strong>Partial contract coverage.</strong> Recording since {dateTime(status.startedAt)}. Counts include transactions creating tracked outputs or spending outputs observed after that checkpoint. A transaction counts once per DApp. Counts wait for 3 subsequent blocks and remain subject to chain rollbacks.</p>

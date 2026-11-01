@@ -11,6 +11,10 @@ this feed. The existing swap widget obtains quotes independently from DexHunter.
 
 Visitors can inspect script mappings and recent transaction evidence on each
 DApp page. `/methodology` explains coverage, freshness and confirmations.
+The original interface is retained. Directory tables, related DApps and category
+cards show only projects with a positive confirmed observation count. Projects
+with no recorded activity appear automatically after their first confirmed
+observation. Their registry entries and direct profiles remain available.
 
 ## Development
 

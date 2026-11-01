@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 
 export interface TrackedDapp {
-  slug: string; name: string; category: string; description: string; website: string;
+  slug: string; name: string; category: string; subCategory?: string; description: string; website: string;
   coverage: "partial"; source: string; sourceDocumentation?: string; mappingReviewedOn?: string;
   scripts: { role: string; hash: string }[];
   observedTransactions: number | null; observedTx24h: number | null;

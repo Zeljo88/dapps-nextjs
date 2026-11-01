@@ -87,6 +87,13 @@ console.log(`SEO regression checks passed: ${locations.length} sitemap URLs, ${d
 const home = await get("/");
 assert.match(home.body, /Partial contract coverage/, "Coverage must be disclosed");
 assert.match(home.body, /Observed tx since start/, "Counters must describe observations");
-assert.doesNotMatch(home.body, />Total TVL</, "Do not present unknown financial data as totals");
+assert.match(home.body, /aria-label="Total TVL: Unavailable"/, "Unknown TVL must remain unavailable in the original UI");
+const registryResponse = await fetch(`${process.env.API_URL || "https://api.dappsoncardano.com"}/v1/dapps`);
+assert.ok(registryResponse.ok, "Registry should be available for the data-visibility check");
+for (const dapp of await registryResponse.json()) {
+  if (dapp.observedTransactions === null || dapp.observedTransactions === 0) {
+    assert.ok(!home.body.includes(`href="/dapp/${dapp.slug}"`), `${dapp.name} should stay hidden without recorded activity`);
+  }
+}
 const stats = await get("/api/stats");
 assert.equal(JSON.parse(stats.body).adaPrice, null, "Unknown price must remain null");

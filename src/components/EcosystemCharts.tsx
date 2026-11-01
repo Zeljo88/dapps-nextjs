@@ -22,7 +22,7 @@ export default function EcosystemCharts({ eco }: { eco: EcosystemData }) {
         <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 24 }}>
           TVL by DApp
         </h2>
-        <ResponsiveContainer width="100%" height={320}>
+        {tvlData.length === 0 ? <p style={{ color: "var(--text-muted)", fontSize: 14, padding: "40px 0" }}>TVL data is unavailable in the current validated feed.</p> : <ResponsiveContainer width="100%" height={320}>
           <BarChart data={tvlData} margin={{ top: 0, right: 20, bottom: 60, left: 20 }}>
             <XAxis dataKey="name" tick={{ fill: "#9999b0", fontSize: 12 }}
               angle={-40} textAnchor="end" interval={0} />
@@ -35,18 +35,18 @@ export default function EcosystemCharts({ eco }: { eco: EcosystemData }) {
               ))}
             </Bar>
           </BarChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer>}
       </div>
 
       {/* Volume + Categories row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+      <div className="dapp-overview-grid" style={{ gap: 24 }}>
 
         {/* DEX Volume */}
         <div className="card" style={{ padding: 28 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 24 }}>
             30d DEX Volume
           </h2>
-          <ResponsiveContainer width="100%" height={280}>
+          {volData.length === 0 ? <p style={{ color: "var(--text-muted)", fontSize: 14, padding: "40px 0" }}>Volume data is unavailable in the current validated feed.</p> : <ResponsiveContainer width="100%" height={280}>
             <BarChart data={volData} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 80 }}>
               <XAxis type="number" tickFormatter={(v) => `$${(v/1e6).toFixed(0)}M`}
                 tick={{ fill: "#9999b0", fontSize: 11 }} />
@@ -54,13 +54,13 @@ export default function EcosystemCharts({ eco }: { eco: EcosystemData }) {
               <Tooltip {...DARK_TOOLTIP} formatter={value => [fmt(Number(value)), "30d Volume"]} />
               <Bar dataKey="volume30d" fill="#10b981" radius={[0, 4, 4, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer>}
         </div>
 
         {/* Category pie */}
         <div className="card" style={{ padding: 28 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 24 }}>
-            DApps by Category
+            DApps with Data by Category
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
