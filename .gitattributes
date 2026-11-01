@@ -1,0 +1,2 @@
+# Preserve the byte-level digest of reviewed source and validation snapshots.
+backend/analytics/sources/*.json -text whitespace=cr-at-eol

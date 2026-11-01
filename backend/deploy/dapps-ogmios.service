@@ -1,0 +1,20 @@
+[Unit]
+Description=DappsOnCardano private Ogmios reader
+After=cnode.service
+Requires=cnode.service
+
+[Service]
+User=azureuser
+WorkingDirectory=/home/azureuser/dapps-analytics
+ExecStart=/home/azureuser/dapps-analytics/bin/ogmios --host 127.0.0.1 --port 1337 --max-in-flight 4 --log-level Warning --node-socket /opt/cardano/cnode/sockets/node.socket --node-config /opt/cardano/cnode/files/config.json
+Restart=on-failure
+RestartSec=10
+MemoryMax=1G
+CPUQuota=100%
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

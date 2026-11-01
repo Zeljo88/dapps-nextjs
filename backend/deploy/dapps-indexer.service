@@ -1,0 +1,26 @@
+[Unit]
+Description=DappsOnCardano selective observation indexer
+After=dapps-ogmios.service
+Requires=dapps-ogmios.service
+
+[Service]
+User=azureuser
+WorkingDirectory=/home/azureuser/dapps-analytics/backend
+Environment=PYTHONPATH=/home/azureuser/dapps-analytics/vendor
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=ANALYTICS_DB=/mnt/cardano-data/dapps-analytics/analytics-v2.sqlite3
+Environment=OGMIOS_URL=ws://127.0.0.1:1337
+Environment=ANALYTICS_MAX_DB_MB=2048
+ExecStart=/usr/bin/python3 -m analytics.worker
+Restart=on-failure
+RestartSec=10
+MemoryMax=512M
+CPUQuota=50%
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/mnt/cardano-data/dapps-analytics
+
+[Install]
+WantedBy=multi-user.target

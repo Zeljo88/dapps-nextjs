@@ -112,7 +112,7 @@ export default function Navbar({ adaPrice = 0 }: { adaPrice?: number }) {
         width: 280, background: "var(--bg-card)", borderLeft: "1px solid var(--border)",
         transform: menuOpen ? "translateX(0)" : "translateX(100%)",
         transition: "transform 0.25s ease",
-        display: "flex", flexDirection: "column",
+        display: menuOpen ? "flex" : "none", flexDirection: "column",
         overflowY: "auto",
       }}>
         {/* Nav links */}

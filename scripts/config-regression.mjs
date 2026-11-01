@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const script = new URL("./validate-build-env.mjs", import.meta.url);
 
@@ -7,7 +8,7 @@ function validate(apiUrl) {
   const env = { ...process.env };
   if (apiUrl === undefined) delete env.API_URL;
   else env.API_URL = apiUrl;
-  return spawnSync(process.execPath, [script.pathname], { env, encoding: "utf8" });
+  return spawnSync(process.execPath, [fileURLToPath(script)], { env, encoding: "utf8" });
 }
 
 const missing = validate(undefined);

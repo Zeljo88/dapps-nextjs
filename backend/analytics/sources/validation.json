@@ -1,0 +1,97 @@
+{
+  "checkedAt": "2026-11-01T12:54:02.365314+00:00",
+  "checkpoint": {
+    "slot": 201971333,
+    "hash": "c6f816df48e28fff1f2055b1ad3f67dcfc9b807a9e5f01f82a47959ce2f04268",
+    "height": 14144123
+  },
+  "sqliteIntegrity": "ok",
+  "foreignKeys": "ok",
+  "eventAttributionChecks": 273,
+  "independentSource": "https://api.koios.rest/api/v1/tx_info",
+  "sampledTransactions": 10,
+  "evidence": [
+    {
+      "tx": "18c637e63d73efbf1d5759bef78c98dc16f82f17f4336aa2b7e0d90645996550",
+      "blockHeight": 14144120,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "36fd5a455e80e1c6855cb51ca27719340bdc5262c1e168ff2ab0c6a3ae53e388",
+      "blockHeight": 14144116,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 3
+    },
+    {
+      "tx": "3bb91b999682d820007cd49486205f2bf85dfeee75f9d7cc6cdede5954eb56dd",
+      "blockHeight": 14144114,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 2
+    },
+    {
+      "tx": "57852b75e03e72b5de0228f2e823215057d294fb50235b20351880e1c0666c4e",
+      "blockHeight": 14144120,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "5b106609bf728e5b0bc3d7f32a9c907fb3b6ba12856c676ca8a9e6168f436ad4",
+      "blockHeight": 14144115,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 4
+    },
+    {
+      "tx": "79174a844355f3172a8a19da72faddbe15880b43f1641b0ed594a11200ca271c",
+      "blockHeight": 14144119,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 2
+    },
+    {
+      "tx": "79a0a66841ccc04f550a90208e650e1855ea95a1b4287dcdc855a1e151a09f43",
+      "blockHeight": 14144119,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 4
+    },
+    {
+      "tx": "8f602aafa7acb1f03212799404690d7b0d84ccb78f60e397455c61ad9e1c1be3",
+      "blockHeight": 14144120,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "b258964073373d72dddb4db29152c6b9a2ae2795efe62cbe65867394220a78d6",
+      "blockHeight": 14144115,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "c8004d0620180f1040409a347657dd7d6ce99be2705e66e860531cf8dfc7fb9f",
+      "blockHeight": 14144115,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 1
+    }
+  ],
+  "coverage": "partial",
+  "limitations": "Sample validation does not prove complete protocol coverage. Historical spends before the anchor and unregistered contracts can be missed."
+}

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "DApps on Cardano — Real-time DeFi Analytics";
+export const alt = "DApps on Cardano — Observed Contract Activity";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -99,7 +99,7 @@ export default function Image() {
               fontWeight: 500,
             }}
           >
-            Real-time DeFi Analytics
+            Observed Contract Activity
           </div>
 
           {/* Stats row */}
@@ -112,13 +112,13 @@ export default function Image() {
               fontSize: 20,
             }}
           >
-            <span>TVL Tracking</span>
+            <span>Our Mainnet Node</span>
             <span style={{ color: "#4b5563" }}>·</span>
-            <span>Yield Rates</span>
+            <span>Published Coverage</span>
             <span style={{ color: "#4b5563" }}>·</span>
-            <span>DEX Volumes</span>
+            <span>Transaction Evidence</span>
             <span style={{ color: "#4b5563" }}>·</span>
-            <span>94+ DApps</span>
+            <span>Open Methodology</span>
           </div>
         </div>
 

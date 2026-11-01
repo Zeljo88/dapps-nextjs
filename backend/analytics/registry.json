@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "network": "mainnet",
+  "projects": [
+    {
+      "slug": "minswap",
+      "name": "Minswap",
+      "category": "DEFI",
+      "subCategory": "AMM_DEX",
+      "website": "https://minswap.org",
+      "description": "Pilot coverage of Minswap V2 order and pool payment credentials. Other versions and protocol actions are not yet covered.",
+      "coverage": "partial",
+      "source": "https://github.com/minswap/sdk/blob/main/src/types/constants.ts",
+      "sourceFileSha": "e73b6f49b19c6edddf35189652a94c3fcb3915d5",
+      "scripts": [
+        {
+          "role": "V2 order",
+          "hash": "c3e28c36c3447315ba5a56f33da6a6ddc1770a876a8d9f0cb3a97c4c"
+        },
+        {
+          "role": "V2 pool",
+          "hash": "ea07b733d932129c378af627436e7cbc2ef0bf96e0036bb51b3bde6b"
+        }
+      ],
+      "mappingReviewedOn": "2026-11-01"
+    },
+    {
+      "slug": "sundaeswap",
+      "name": "SundaeSwap",
+      "category": "DEFI",
+      "subCategory": "AMM_DEX",
+      "website": "https://sundae.fi",
+      "coverage": "partial",
+      "description": "Observed activity at the V1, V3, V4 and Stableswaps pool and order payment credentials published by SundaeSwap. Staking, governance and other protocol actions are not included.",
+      "source": "https://api.sundae.fi/graphql",
+      "sourceDocumentation": "https://github.com/SundaeSwap-finance/sundae-sdk/blob/e32b6e2d8a2329468c82e32d20a942dbc6d40601/packages/core/src/QueryProviders/QueryProviderSundaeSwap.ts",
+      "sourceSnapshotSha256": "c536c4f893c4b1651668e8d1d14cb07865c0f58453f83be416b6ed38a80aac93",
+      "scripts": [
+        {
+          "role": "Stableswaps order.spend",
+          "hash": "6ab62945d0d8d6288e243b3b6437ff9c099a38e088288f5a6b7c5e8b"
+        },
+        {
+          "role": "Stableswaps pool.spend",
+          "hash": "4de79a0c17180030bff4c36825cb6e99caa007bc632f789561a26d56"
+        },
+        {
+          "role": "V4 pool.spend",
+          "hash": "21c9b7b965646069f9becebf8b4c3cedaf84c19b109eaa5980a14a26"
+        },
+        {
+          "role": "V4 order.spend",
+          "hash": "07eb2fb09d9dd6603870ce6f84c8f8506249152173ddf0c77f1f07ec"
+        },
+        {
+          "role": "V3 order.spend",
+          "hash": "fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077"
+        },
+        {
+          "role": "V3 pool.spend",
+          "hash": "e0302560ced2fdcbfcb2602697df970cd0d6a38f94b32703f51c312b"
+        },
+        {
+          "role": "V1 escrow.spend",
+          "hash": "ba158766c1bae60e2117ee8987621441fac66a5e0fb9c7aca58cf20a"
+        },
+        {
+          "role": "V1 pool.spend",
+          "hash": "4020e7fc2de75a0729c3cc3af715b34d98381e0cdbcfa99c950bc3ac"
+        }
+      ],
+      "mappingReviewedOn": "2026-11-01"
+    },
+    {
+      "slug": "wingriders",
+      "name": "WingRiders",
+      "category": "DEFI",
+      "subCategory": "AMM_DEX",
+      "website": "https://www.wingriders.com",
+      "coverage": "partial",
+      "description": "Observed activity at WingRiders V1 constant-product and stableswap request payment credentials. Pool, V2, farming and governance contracts are not yet covered.",
+      "source": "https://github.com/WingRiders/dex-blockfrost-adapter/blob/main/src/constants.ts",
+      "sourceFileSha": "5ff762895f4ee5a61628df4f69052234537a1100",
+      "scripts": [
+        {
+          "role": "V1 request",
+          "hash": "86ae9eebd8b97944a45201e4aec1330a72291af2d071644bba015959"
+        },
+        {
+          "role": "V1 stableswap request",
+          "hash": "c5e0385012d5f010b1dc7ab42ba632944052de232051ec6ce3bfd72e"
+        }
+      ],
+      "mappingReviewedOn": "2026-11-01"
+    }
+  ]
+}

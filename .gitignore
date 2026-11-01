@@ -41,3 +41,15 @@ yarn-error.log*
 next-env.d.ts
 .next/
 node_modules/
+
+# Fresh analytics backend: local environments, chain data and deployment bundles
+backend/.venv/
+backend/.vendor/
+backend/.wheels/
+backend/.deploy/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm

@@ -4,18 +4,17 @@ import Navbar from "@/components/Navbar";
 import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme";
 import { WalletProvider } from "@/lib/wallet";
-import { fetchGlobalStats } from "@/lib/backend";
 
 const GA_ID = "G-0YSY4YKKD0";
 
 export const metadata: Metadata = {
-  title: { default: "DApps on Cardano — Track DApps, TVL, Volume & Yields", template: "%s | DApps on Cardano" },
-  description: "Track Cardano DApps with real-time TVL, DEX volume, transaction counts and yield rates. Compare Minswap, Liqwid, SundaeSwap and more — updated every 5 minutes.",
+  title: { default: "DApps on Cardano — Observed Contract Activity", template: "%s | DApps on Cardano" },
+  description: "Explore observed Cardano DApp contract activity from our own mainnet node, with published script mappings, collection dates and transaction evidence.",
   keywords: ["Cardano", "DApps", "DeFi", "ADA", "TVL", "DEX", "swap", "yield", "analytics", "blockchain"],
   metadataBase: new URL("https://dappsoncardano.com"),
   openGraph: {
-    title: "DApps on Cardano — Track DApps, TVL, Volume & Yields",
-    description: "Track Cardano DApps with real-time TVL, DEX volume, transaction counts and yield rates. Compare Minswap, Liqwid, SundaeSwap and more.",
+    title: "DApps on Cardano — Observed Contract Activity",
+    description: "Explore Cardano contract activity with transparent coverage and transaction evidence.",
     url: "https://dappsoncardano.com",
     siteName: "DApps on Cardano",
     type: "website",
@@ -26,7 +25,7 @@ export const metadata: Metadata = {
     site: "@dappsoncardano",
     creator: "@AdriaStakePool",
     title: "DApps on Cardano — Real-time Cardano DeFi Analytics",
-    description: "Track TVL, volume, yields and transactions for Cardano DApps. Updated every 5 minutes.",
+    description: "Observe Cardano DApp contract activity with transparent coverage and transaction evidence.",
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   verification: { google: "9E19dwMDP2glZXbKRGfp8uUmudJvY0boVxV2sZ3h_Fc" },
@@ -37,8 +36,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let adaPrice = 0;
-  try { adaPrice = (await fetchGlobalStats()).adaPrice || 0; } catch {}
+  const adaPrice = 0;
 
   return (
     <html lang="en" data-theme="dark">
@@ -73,7 +71,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   {" "}· Real-time Cardano DApp analytics
                 </div>
                 <div style={{ display: "flex", gap: 20 }}>
-                  <span>Data: DeFiLlama · Blockfrost · Koios</span>
+                  <a href="/methodology">Data: our Cardano node · Coverage & methodology</a>
                   <a href="https://adriapool.net" target="_blank" rel="noopener noreferrer"
                     style={{ color: "var(--accent)", textDecoration: "none" }}>
                     Powered by ADRIA Pool

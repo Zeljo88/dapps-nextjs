@@ -308,9 +308,9 @@ export default function PortfolioClient() {
               icon="🎁"
             />
             <SummaryCard
-              label="Total Portfolio"
+              label={adaPrice > 0 ? "Total Portfolio" : "ADA + staking rewards"}
               value={totalAda > 0 ? `${totalAda >= 1000 ? `${(totalAda/1000).toFixed(2)}K` : totalAda.toFixed(2)} ₳` : loading ? "..." : "—"}
-              sub={totalUsd > 0 ? `≈ $${totalUsd.toFixed(2)}` : ""}
+              sub={adaPrice > 0 && totalUsd > 0 ? `≈ $${totalUsd.toFixed(2)}` : "USD total unavailable · ADA price unavailable"}
               color="#f59e0b"
               icon="📊"
             />

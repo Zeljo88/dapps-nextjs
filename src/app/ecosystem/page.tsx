@@ -1,45 +1,5 @@
-import { fetchEcosystem, fetchGlobalStats } from "@/lib/backend";
-import { fmt } from "@/lib/api";
-import EcosystemCharts from "@/components/EcosystemCharts";
-
-export const revalidate = 300;
-
-export const metadata = {
-  title: "Cardano Ecosystem Overview — TVL, DEX Volume & Category Breakdown",
-  description: "Cardano DeFi ecosystem at a glance — total TVL, DEX volume rankings, category breakdown and on-chain statistics for 107 DApps.",
-  alternates: { canonical: "https://dappsoncardano.com/ecosystem" },
-};
-
-const ecosystemJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "DataCatalog",
-  "name": "Cardano DeFi Ecosystem",
-  "description": "Cardano DeFi ecosystem overview — total TVL, DEX volume, DApp categories and on-chain statistics.",
-  "url": "https://dappsoncardano.com/ecosystem",
-  "provider": {
-    "@type": "Organization",
-    "name": "DApps on Cardano",
-    "url": "https://dappsoncardano.com",
-  },
-  "keywords": ["Cardano", "DeFi", "TVL", "DEX", "blockchain analytics"],
-};
-
-export default async function EcosystemPage() {
-  const [eco, stats] = await Promise.all([fetchEcosystem(), fetchGlobalStats()]);
-
-  return (
-    <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ecosystemJsonLd) }} />
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
-          Cardano Ecosystem
-        </h1>
-        <p style={{ fontSize: 16, color: "var(--text-secondary)" }}>
-          {fmt(stats.totalTvl)} TVL · {fmt(stats.totalVolume30d)} 30d volume · Epoch {stats.currentEpoch}
-        </p>
-      </div>
-
-      <EcosystemCharts eco={eco} />
-    </main>
-  );
-}
+import { fetchAnalytics } from "@/lib/analytics";
+import { AnalyticsMetrics, ContractTable, CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Cardano Ecosystem — Tracked Contract Coverage", description: "View the coverage of our selective Cardano mainnet contract activity indexer.", alternates: {canonical:"https://dappsoncardano.com/ecosystem"} };
+export default async function Ecosystem() { const data = await fetchAnalytics().catch(() => null); if (!data) return <FeedUnavailable />; return <main className="analytics-page"><h1>Our view of the Cardano ecosystem</h1><p className="analytics-intro">The figures below describe our tracked registry. They are not totals for the entire Cardano ecosystem.</p><CoverageNotice status={data.status} /><AnalyticsMetrics {...data} /><ContractTable dapps={data.dapps} /></main>; }

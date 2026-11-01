@@ -41,7 +41,7 @@ function robots(body) {
   return body.match(/<meta name="robots" content="([^"]+)"/i)?.[1] || "";
 }
 
-const canonicalPaths = ["/", "/category", "/category/defi", "/ecosystem", "/yields", "/swap", "/portfolio", "/dapp/ada-blobs"];
+const canonicalPaths = ["/", "/category", "/category/defi", "/ecosystem", "/yields", "/swap", "/portfolio", "/methodology", "/dapp/minswap", "/dapp/sundaeswap", "/dapp/wingriders"];
 for (const path of canonicalPaths) {
   const { response, body } = await get(path);
   assert.equal(response.status, 200, `${path} should return 200`);
@@ -61,7 +61,7 @@ assert.equal(debug.response.status, 404, "Debug API route should not exist");
 
 const category = await get("/category/defi");
 const categoryTitle = matchContent(category.body, /<title>([^<]+)<\/title>/i, "category title");
-assert.equal(categoryTitle, "Cardano DeFi DApps — TVL, Volume &amp; Analytics | DApps on Cardano");
+assert.equal(categoryTitle, "Cardano DeFi DApps | DApps on Cardano");
 assert.equal((categoryTitle.match(/DApps on Cardano/g) || []).length, 1, "Category title should contain branding once");
 
 const categoryIndex = await get("/category");
@@ -72,9 +72,9 @@ const sitemap = await get("/sitemap.xml");
 assert.equal(sitemap.response.status, 200, "Sitemap should return 200");
 const locations = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
 const dappLocations = locations.filter(url => url.startsWith(`${canonicalOrigin}/dapp/`));
-assert.equal(dappLocations.length, 107, "Sitemap should include all 107 current indexable DApps");
+assert.equal(dappLocations.length, 3, "Sitemap should include the three reviewed DApps");
 assert.ok(locations.includes(`${canonicalOrigin}/category/defi`), "Sitemap should include category pages");
-assert.ok(locations.includes(`${canonicalOrigin}/dapp/ada-blobs`), "Sitemap should include DApp detail pages");
+assert.ok(locations.includes(`${canonicalOrigin}/dapp/minswap`), "Sitemap should include DApp detail pages");
 assert.ok(locations.every(url => url === canonicalOrigin || url.startsWith(`${canonicalOrigin}/`)), "Sitemap URLs should use the canonical origin");
 assert.doesNotMatch(sitemap.body, /<lastmod>/, "Sitemap should omit synthetic modification timestamps");
 
@@ -83,3 +83,10 @@ assert.equal(www.statusCode, 308, "www should permanently redirect");
 assert.equal(www.headers.location, `${canonicalOrigin}/category/defi`, "www should preserve the path");
 
 console.log(`SEO regression checks passed: ${locations.length} sitemap URLs, ${dappLocations.length} DApp URLs.`);
+
+const home = await get("/");
+assert.match(home.body, /Partial contract coverage/, "Coverage must be disclosed");
+assert.match(home.body, /Observed tx since start/, "Counters must describe observations");
+assert.doesNotMatch(home.body, />Total TVL</, "Do not present unknown financial data as totals");
+const stats = await get("/api/stats");
+assert.equal(JSON.parse(stats.body).adaPrice, null, "Unknown price must remain null");
