@@ -15,6 +15,8 @@ The original interface is retained. Directory tables, related DApps and category
 cards show only projects with a positive confirmed observation count. Projects
 with no recorded activity appear automatically after their first confirmed
 observation. Their registry entries and direct profiles remain available.
+Validated historical periods appear in each DApp's History tab, with epoch and
+UTC-day views. Historical imports run separately from the live database.
 
 ## Development
 

@@ -1,0 +1,23 @@
+[Unit]
+Description=Read-only validated DApp history API
+After=network.target
+
+[Service]
+User=azureuser
+WorkingDirectory=/home/azureuser/dapps-analytics/backend
+Environment=PYTHONPATH=/home/azureuser/dapps-analytics/vendor
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=ANALYTICS_HISTORY=/mnt/cardano-data/dapps-analytics/history
+ExecStart=/usr/bin/python3 -m uvicorn analytics.history:create_app --factory --host 127.0.0.1 --port 8001 --workers 1
+Restart=on-failure
+RestartSec=10
+MemoryMax=128M
+CPUQuota=25%
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=/mnt/cardano-data/dapps-analytics/history
+
+[Install]
+WantedBy=multi-user.target

@@ -18,6 +18,13 @@ export interface IndexerStatus {
 export interface ContractEvent {
   tx: string; slot: number; height: number; time: number; script: string; kind: string; ref: string;
 }
+export interface HistoryData {
+  dayTimezone: string;
+  coverage: "partial";
+  epochs: { epoch: number; startTime: number; endTime: number; dapps: { slug: string; name: string; transactions: number }[];
+    validation: { passed: boolean; checkedAt: string; blocksReplayed: number; independentTransactionSamples: number } }[];
+  daily: { date: string; partialDay: boolean; coverageSeconds: number; dapps: { slug: string; name: string; transactions: number }[] }[];
+}
 async function read<T>(path: string): Promise<T> {
   const origin = process.env.API_URL?.trim() || "http://127.0.0.1:8000";
   const url = new URL(origin);
@@ -33,6 +40,7 @@ export const fetchAnalytics = cache(async () => {
   return { status, dapps };
 });
 export function fetchEvents(slug: string) { return read<{ events: ContractEvent[] }>(`/v1/dapps/${encodeURIComponent(slug)}/events?limit=30`); }
+export function fetchHistory() { return read<HistoryData>("/v1/history"); }
 export function dateTime(value: number | null): string {
   return value === null ? "Not available" : new Date(value * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
 }

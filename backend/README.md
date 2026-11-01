@@ -106,14 +106,67 @@ pages show `/v1/dapps/{slug}/events`. Unknown TVL, volume, price, yield and wall
 counts are explicitly unavailable. The existing DexHunter widget uses its own
 quote provider independently of this indexer.
 
-## Next data improvements
+## Historical imports and aggregation
 
-1. Bootstrap initial tracked UTXOs or replay history, then validate attribution
-   against actual transaction inputs and contract versions.
-2. Test normal load, reconnects and rollback handling over an extended period.
-3. Update the frontend to render unknown metrics as unavailable and expose
-   coverage, recorded-since dates and stale ingestion.
+Imports run **one completed epoch at a time**, with durable block checkpoints,
+in a separate database per epoch under
+`/mnt/cardano-data/dapps-analytics/history`. The live database is not replaced.
+The requested six completed epochs are 659 through 664, inclusive.
+
+`python -m analytics.backfill --root HISTORY_DIRECTORY --epochs 664 --rate 100`
+runs the trial. `deploy/dapps-backfill.service` uses an isolated runtime, a
+one-core CPU quota, a 1 GiB memory cap and low scheduling priority. After the
+trial passes, `deploy/dapps-backfill-expand.conf` runs epochs 663–659. The reader
+stops on low available RAM (<4 GiB), low disk space (<20 GiB), >85% host CPU,
+>20% I/O wait, or an unhealthy/delayed live feed. A stopped job resumes from its
+last saved block; validated epoch reports are not silently overwritten.
+Build that runtime with `python deploy/package-backfill.py`, upload
+`.deploy/backfill.zip` to the existing application folder, and extract it into
+`backfill-runtime`. Install the trial unit and start it with
+`systemctl start --no-block dapps-backfill`. Install the expansion drop-in only
+after the trial report passes and its load is reviewed, then daemon-reload and
+start the same unit. The history directory must be writable by `azureuser`.
+The rate is an upper limit: replay starts at 50 blocks/s and adjusts toward the
+configured cap when resources allow. It slows when I/O wait exceeds 8% or host
+CPU exceeds 60%, before reaching the hard stop thresholds. The historical WAL
+checkpoints every 10,000 pages; final checkpoint work is included in load checks.
+
+Validation checks independent first/last block hashes, complete block and chain
+transaction totals, chain ancestry, every stored attribution event, exact
+per-DApp transaction sets from paginated Koios payment-credential history, and
+independent samples from the beginning, middle and end of the epoch. A candidate
+is excluded only when failure or reference-only use is explained. Transactions
+spending older outputs are recovered using the actual node transaction and
+retained independent source-output evidence, without inventing creation events
+inside the epoch. This reconciles transaction counts, not a complete starting
+UTXO snapshot suitable for TVL calculations.
+
+The historical database keeps a persistent WAL connection with synchronous
+NORMAL. Block transactions remain atomic and consistent; after an OS/power
+failure, recent uncheckpointed work can be replayed from the node. The live
+database's durability settings are unchanged. The historical reader limits
+source API requests and caches immutable responses for reproducibility.
+
+Store timestamps in UTC and derive **both epoch and daily views**. Daily buckets
+split at UTC midnight, while epochs split at Cardano's actual epoch boundary.
+Edge days with incomplete coverage are marked partial. The publication layer
+combines adjacent epoch fragments and verifies coverage does not exceed 24h.
+
+Only passed reports matching the active registry digest are exposed by
+`GET /v1/history`. In production, a separate loopback reader on port 8001 serves
+this exact nginx path, allowing historical publication without restarting the
+live API or collector. `dapps-history-api.service` is read-only and capped at
+128 MiB. DApp detail pages show a History tab with Per epoch / Per day controls
+when validated periods are available. Existing live counters retain their
+original collection date and scope.
+
+## Remaining data improvements
+
+1. Bootstrap a complete starting UTXO set before implementing historical balances
+   or TVL; boundary transaction recovery alone is not a balance snapshot.
+2. Add external alerting for prolonged live-feed delays and disk limits.
+3. Expand reviewed protocol/version mappings with a new, validated registry replay.
 4. Add verified external financial feeds separately with provenance and expiry.
-5. Configure production HTTPS, backups and alerts; review the resulting site.
+5. Add off-server backups; the existing daily recovery copies share the node disk.
 6. Add full protocol coverage only after its contracts and initial UTXOs have
    been independently checked; do not relabel observations as complete totals.

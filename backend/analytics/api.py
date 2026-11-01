@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 from .store import Store
+from .history import history_data
 
 DIRECTORY = Path(__file__).resolve().parent
 
@@ -45,6 +46,11 @@ def create_app(db_path=None):
     @app.get("/v1/dapps")
     def projects():
         return store.dapps()
+
+    @app.get("/v1/history")
+    def history():
+        directory = os.environ.get("ANALYTICS_HISTORY", "/mnt/cardano-data/dapps-analytics/history")
+        return history_data(directory, store.status()["registryDigest"])
 
     @app.get("/v1/dapps/{slug}/events")
     def events(slug: str, limit: int = Query(30, ge=1, le=100)):

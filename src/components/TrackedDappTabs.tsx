@@ -1,20 +1,22 @@
 "use client";
 import { useState } from "react";
-import type { ContractEvent, TrackedDapp } from "@/lib/analytics";
+import type { ContractEvent, HistoryData, TrackedDapp } from "@/lib/analytics";
 
 function time(value: number | null) {
   return value === null ? "Unavailable" : new Date(value * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
 }
+import DappHistory from "./DappHistory";
 const heading = { fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 16 };
 const cell = { padding: "14px 16px", borderBottom: "1px solid var(--border)", fontSize: 13, whiteSpace: "nowrap" as const };
 
-export default function TrackedDappTabs({ dapp, events }: { dapp: TrackedDapp; events: ContractEvent[] | null }) {
+export default function TrackedDappTabs({ dapp, events, history }: { dapp: TrackedDapp; events: ContractEvent[] | null; history: HistoryData | null }) {
   const [active, setActive] = useState("Overview");
   return <div>
     <div role="tablist" aria-label="DApp details" style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1px solid var(--border)", overflowX: "auto" }}>
-      {["Overview", "Scripts", "Transactions"].map(tab => <button key={tab} type="button" role="tab" id={`tab-${tab}`} aria-selected={active === tab} aria-controls={`panel-${tab}`} onClick={() => setActive(tab)} style={{ padding: "10px 20px", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: active === tab ? "var(--accent)" : "var(--text-muted)", borderBottom: active === tab ? "2px solid var(--accent)" : "2px solid transparent", whiteSpace: "nowrap" }}>{tab}</button>)}
+      {["Overview", ...(history?.epochs.length ? ["History"] : []), "Scripts", "Transactions"].map(tab => <button key={tab} type="button" role="tab" id={`tab-${tab}`} aria-selected={active === tab} aria-controls={`panel-${tab}`} onClick={() => setActive(tab)} style={{ padding: "10px 20px", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: active === tab ? "var(--accent)" : "var(--text-muted)", borderBottom: active === tab ? "2px solid var(--accent)" : "2px solid transparent", whiteSpace: "nowrap" }}>{tab}</button>)}
     </div>
     <div role="tabpanel" id={`panel-${active}`} aria-labelledby={`tab-${active}`}>
+      {active === "History" && history && <DappHistory slug={dapp.slug} history={history} />}
       {active === "Overview" && <div className="dapp-overview-grid">
         <div className="card" style={{ padding: 24 }}><h2 style={heading}>About</h2><p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>{dapp.description}</p>
           <div style={{ marginTop: 20, display: "grid", gap: 12, fontSize: 13 }}><p>Category: {dapp.category}</p><p>Tracked scripts: {dapp.scripts.length}</p><p>Last observed activity: {time(dapp.lastObservedActivity)}</p></div>
@@ -34,4 +36,3 @@ export default function TrackedDappTabs({ dapp, events }: { dapp: TrackedDapp; e
     </div>
   </div>;
 }
-

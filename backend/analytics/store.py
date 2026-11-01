@@ -137,8 +137,12 @@ class Store:
                 db.executemany("UPDATE outputs SET spent_slot=? WHERE ref=?", [(slot, ref) for ref in spends])
                 db.executemany("INSERT INTO outputs(ref,dapp,script,address,lovelace,value_json,created_slot) VALUES(?,?,?,?,?,?,?)", creates)
                 db.executemany("INSERT INTO events VALUES(?,?,?,?,?)", events)
+            self.after_ingest(db, block)
             for key, value in {"last_received_at": time.time(), "tip_height": tip_height, "phase": "running", "last_error": None}.items():
                 self.put(db, key, value)
+
+    def after_ingest(self, db, block):
+        """Extension point inside the block transaction for historical evidence."""
 
     def rollback(self, point):
         # If a fork crosses the initial anchor we must explicitly rebootstrap, not silently
