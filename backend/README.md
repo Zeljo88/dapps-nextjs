@@ -147,6 +147,15 @@ failure, recent uncheckpointed work can be replayed from the node. The live
 database's durability settings are unchanged. The historical reader limits
 source API requests and caches immutable responses for reproducibility.
 
+When independent API queries dominate elapsed time, `deploy/prefetch-history.py`
+can prepare reference inventories for an explicitly bounded list of completed
+epochs while node replay remains sequential. It uses at most two source workers,
+a 1.5-second minimum request interval per worker, separate working caches, and
+unique atomic cache publication files. It applies the same host/live-feed guards
+and never writes a historical database or publishes a validated epoch. The main
+importer still performs every reconciliation and validation check. The one-off
+server run for epochs 660 and 659 is capped at 25% of one core and 256 MiB RAM.
+
 Store timestamps in UTC and derive **both epoch and daily views**. Daily buckets
 split at UTC midnight, while epochs split at Cardano's actual epoch boundary.
 Edge days with incomplete coverage are marked partial. The publication layer
