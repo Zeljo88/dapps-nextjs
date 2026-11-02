@@ -156,7 +156,7 @@ and never writes a historical database or publishes a validated epoch. The main
 importer still performs every reconciliation and validation check. The one-off
 server run for epochs 660 and 659 is capped at 25% of one core and 256 MiB RAM.
 
-Historical publication uses epoch totals only, with one bar per completed epoch.
+Historical publication uses epoch totals only, with one point per completed epoch on a line chart.
 The API omits daily aggregation. Original validation reports and transaction
 records remain intact as evidence; their existing internal daily checks are not
 separate daily databases. Missing epochs remain gaps rather than zero activity.
