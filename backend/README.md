@@ -262,6 +262,9 @@ and its reviewed version in `wallet_methods.ADAPTER_VERSIONS`. Extend the method
 contract if another DApp needs a different activity definition; never label all
 contract recipients or batchers as users. The API and chart consume optional
 validated counts by slug and require no Minswap-specific chart code.
+Once their adapters are reviewed, pass several slugs to `--dapps` to calculate
+them together during one replay of each epoch. Deduplication remains separate
+per DApp; the same wallet can participate in several protocols.
 
 Every enrichment replays the complete epoch, checks the previously validated
 boundaries/block totals/chain ancestry and independently samples ownership via

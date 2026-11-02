@@ -9,7 +9,7 @@ import cbor2
 
 from analytics.adapters.minswap import MinswapWalletAdapter
 from analytics.backfill import HistoricalStore
-from analytics.wallets import aggregate, constructor, decode, SCHEMA
+from analytics.wallets import aggregate, constructor, decode, SCHEMA, WalletCollector
 from analytics.wallet_backfill import discard_details
 from test_analytics import REGISTRY, ORDER, POOL, block, tx, output
 
@@ -93,6 +93,15 @@ class WalletTests(unittest.TestCase):
         owner = MinswapWalletAdapter(REGISTRY).participant('V2', datum('V2', recipient=address(b'z'*28, b's'*28)))
         self.assertEqual(owner.payment, (b'a'*28).hex())
         self.assertIsNone(owner.stake)
+
+    def test_non_sdk_stake_address_shape_remains_explicitly_unrecognized(self):
+        # An observed datum omitted the StakingHash wrapper. Do not guess its
+        # interpretation or silently attach a stake identity to its owner.
+        address_without_staking_hash = c(0,c(0,b'a'*28),c(0,c(0,b's'*28)))
+        raw = cbor2.dumps(datum('V2',recipient=address_without_staking_hash)).hex()
+        result = WalletCollector.identify(MinswapWalletAdapter(REGISTRY),'V2',raw)
+        self.assertEqual(result.status,'unrecognized_datum')
+        self.assertIsNone(result.payment)
 
     def test_v1_trailing_extension_matches_official_sdk_prefix_decoding(self):
         original = datum('V1')
