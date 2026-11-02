@@ -39,11 +39,13 @@ export function epochMetrics(slug: string, period: EpochPeriod | null) {
   const previous = period?.previous?.dapps.find(dapp => dapp?.slug === slug);
   const epochTransactions = count(current?.transactions);
   const epochWallets = count(current?.activeWallets);
+  const previousTransactions = count(previous?.transactions);
+  const previousWallets = count(previous?.activeWallets);
   const attribution = current?.walletActivity?.attributionPercent;
   return {
-    epochTransactions, epochWallets,
-    txGrowth: percentageChange(epochTransactions, count(previous?.transactions)),
-    walletGrowth: percentageChange(epochWallets, count(previous?.activeWallets)),
+    epochTransactions, epochWallets, previousTransactions, previousWallets,
+    txGrowth: percentageChange(epochTransactions, previousTransactions),
+    walletGrowth: percentageChange(epochWallets, previousWallets),
     attributionPercent: epochWallets !== null && typeof attribution === "number" && Number.isFinite(attribution) && attribution >= 0 && attribution <= 100 ? attribution : null,
   };
 }
@@ -66,10 +68,9 @@ export function sixEpochMetrics(slug: string, period: EpochPeriod | null) {
   };
 }
 
-export function directoryPeriod(period: EpochPeriod | null, liveEpoch: number | null, liveSince: number | null) {
+export function directoryPeriod(period: EpochPeriod | null) {
   return {
-    liveEpoch, liveSince, completedEpoch: period?.current.epoch ?? null, previousEpoch: period?.previous?.epoch ?? null,
-    windowStartEpoch: period?.window[0]?.epoch ?? null, windowEndEpoch: period?.window[5]?.epoch ?? null,
-    windowStartTime: period?.window[0]?.startTime ?? null, windowEndTime: period?.window[5]?.endTime ?? null,
+    completedEpoch: period?.current.epoch ?? null, previousEpoch: period?.previous?.epoch ?? null,
+    startTime: period?.current.startTime ?? null, endTime: period?.current.endTime ?? null,
   };
 }

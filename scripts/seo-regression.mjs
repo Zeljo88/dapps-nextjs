@@ -86,12 +86,13 @@ console.log(`SEO regression checks passed: ${locations.length} sitemap URLs, ${d
 
 const home = await get("/");
 assert.match(home.body, /Partial contract coverage/, "Coverage must be disclosed");
-assert.match(home.body, /Last 6 completed epochs/, "Directory must identify its historical period");
-assert.match(home.body, /This epoch/, "Current partial observations must have a separate period view");
-assert.match(home.body, /Avg wallets \/ epoch/, "Six-epoch wallets must be an average rather than a sum of unique counts");
-assert.match(home.body, /Completed growth/, "Growth must use completed epochs");
-assert.match(home.body, /owner attribution/, "Coverage must identify what it measures");
-assert.match(home.body, /aria-label="Total TVL: Unavailable"/, "Unknown TVL must remain unavailable in the original UI");
+assert.match(home.body, /Latest validated completed epoch/, "Directory must identify its completed reporting epoch");
+assert.match(home.body, /Active wallets/, "Wallets must be labelled as wallets rather than people");
+assert.doesNotMatch(home.body, /data-period="(?:current|six)"/, "Do not mix periods using the old selector");
+assert.doesNotMatch(home.body, /data-metric="coverage"/, "Owner identification must not appear as a directory column");
+assert.match(home.body, /TVL · near epoch end/, "Daily TVL must not claim exact epoch-boundary accuracy");
+assert.match(home.body, /DefiLlama/, "External TVL source must be disclosed");
+assert.match(home.body, /6-epoch charts/, "Keep the route to historical charts");
 const registryResponse = await fetch(`${process.env.API_URL || "https://api.dappsoncardano.com"}/v1/dapps`);
 assert.ok(registryResponse.ok, "Registry should be available for the data-visibility check");
 for (const dapp of await registryResponse.json()) {

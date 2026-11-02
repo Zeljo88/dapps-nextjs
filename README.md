@@ -6,8 +6,9 @@ Next.js website backed by our selective Cardano mainnet indexer at
 The reviewed registry covers Minswap V1/V2 and published stableswap order/pool
 scripts, selected SundaeSwap scripts, and WingRiders V1 request scripts. Counts describe observed contract transactions from
 a known collection checkpoint. They are lower bounds, not lifetime protocol
-totals, trades or users. TVL, volume, price and yield figures are unavailable in
-this feed. The existing swap widget obtains quotes independently from DexHunter.
+totals, trades or users. The node feed does not calculate TVL, volume, prices or
+yields. Directory TVL comes separately from reviewed DefiLlama Cardano mappings.
+The existing swap widget obtains quotes independently from DexHunter.
 
 Visitors can inspect script mappings and validated epoch activity on each
 DApp page. `/methodology` explains coverage, freshness and confirmations.
@@ -31,12 +32,28 @@ SundaeSwap uses its V1/V3/V4/stableswap owner authorization keys; WingRiders use
 the explicit owners of tracked V1 constant-product/stableswap requests. Each
 protocol keeps its own validation proof and attribution coverage.
 
-Directory and category tables separate current-epoch partial observations from
-the last six consecutive validated completed epochs. The six-epoch view sums
-transactions, averages active wallets per epoch (not unique 30-day wallets),
-and weights owner attribution by output counts. Current wallets stay pending.
-Growth always compares the latest two consecutive validated completed epochs,
-independent of the selected view. Missing or gapped windows stay unavailable.
+Directory and category tables show transaction and active-wallet totals for the
+latest validated completed epoch. Growth compares that epoch with its immediate
+consecutive validated predecessor under the same registry. Each change tooltip
+shows both exact counts. Missing comparisons stay unavailable, including positive
+counts following zero baselines. Six-epoch transaction and wallet line charts
+remain on DApp profiles. Owner identification is supplementary tooltip metadata,
+not a directory column. Wallets are not people and are not summed across DApps.
+
+TVL uses the `Cardano.tvl` series from DefiLlama (`minswap-dex` id 1494,
+`sundaeswap` parent#sundaeswap, `wingriders` id 1601). It is a provider estimate
+with different coverage from our selective transaction/wallet scripts; separate
+staking, borrowed and pool2 series are excluded. The latest snapshot at or before
+the reporting epoch’s end is accepted only when at most 24 hours old. The table
+labels it “near epoch end”, displays the approximate offset, and gives the exact
+USD balance, timestamp and source link. It never substitutes a current value or
+claims an exact boundary measurement. TVL is a balance, not a five-day sum.
+The “Listed DApp TVL” card sums balances only if every listed DApp has a snapshot
+at the same time; it is not total Cardano TVL. Provider failures show unavailable
+without hiding the node-based counts. Only final selected balances and provenance
+are cached for an hour in Next.js; daily histories are processed transiently and
+no extra records are added to the relay database.
+
 The live API filters confirmed transactions by the actual current block epoch
 and exposes its collection start, so counts reset correctly at epoch boundaries.
 No historical replay or additional retained transaction data is required.
@@ -52,6 +69,7 @@ For the Python backend and relay operations, see [backend/README.md](backend/REA
 - `npm run build` — production build; API_URL is required.
 - `npm run test:config` — backend URL validation.
 - `npm run test:epochs` — epoch selection, growth and missing-data checks.
+- `npm run test:tvl` — provider identity, time alignment, missing/stale values and aggregate checks.
 - `npm run lint` — source checks.
 - `npm run test:seo` — run against `npm start` on port 3000, or set SEO_BASE_URL.
 - Backend: `.venv/Scripts/python -m unittest discover -s tests -v` from backend.
