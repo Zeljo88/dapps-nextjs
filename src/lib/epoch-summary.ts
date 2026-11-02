@@ -4,6 +4,7 @@ type Epoch = HistoryData["epochs"][number];
 export interface EpochPeriod {
   current: Epoch;
   previous: Epoch | null;
+  window: Epoch[];
 }
 
 export function selectEpochPeriod(history: HistoryData | null, registryDigest: string, now = Date.now() / 1000): EpochPeriod | null {
@@ -14,7 +15,13 @@ export function selectEpochPeriod(history: HistoryData | null, registryDigest: s
   const current = [...epochs].sort((a, b) => b.epoch - a.epoch)[0];
   if (!current) return null;
   const previous = epochs.find(epoch => epoch.epoch === current.epoch - 1 && epoch.endTime === current.startTime) ?? null;
-  return { current, previous };
+  const window: Epoch[] = [];
+  for (let offset = 0; offset < 6; offset++) {
+    const next = epochs.find(epoch => epoch.epoch === current.epoch - offset);
+    if (!next || (window.length && next.endTime !== window[window.length - 1].startTime)) break;
+    window.push(next);
+  }
+  return { current, previous, window: window.length === 6 ? window.reverse() : [] };
 }
 
 function count(value: number | undefined): number | null {
@@ -38,5 +45,31 @@ export function epochMetrics(slug: string, period: EpochPeriod | null) {
     txGrowth: percentageChange(epochTransactions, count(previous?.transactions)),
     walletGrowth: percentageChange(epochWallets, count(previous?.activeWallets)),
     attributionPercent: epochWallets !== null && typeof attribution === "number" && Number.isFinite(attribution) && attribution >= 0 && attribution <= 100 ? attribution : null,
+  };
+}
+
+export function sixEpochMetrics(slug: string, period: EpochPeriod | null) {
+  const empty = { windowTransactions: null, windowWallets: null, windowCoverage: null };
+  if (!period || period.window.length !== 6) return empty;
+  const rows = period.window.map(epoch => epoch.dapps.find(dapp => dapp?.slug === slug));
+  const transactions = rows.map(dapp => count(dapp?.transactions));
+  const wallets = rows.map(dapp => count(dapp?.activeWallets));
+  const candidates = rows.map(dapp => count(dapp?.walletActivity?.candidateOrderOutputs));
+  const identified = rows.map(dapp => count(dapp?.walletActivity?.attributedOrderOutputs));
+  const totalCandidates = candidates.reduce<number>((sum,value) => sum + (value ?? 0), 0);
+  const totalIdentified = identified.reduce<number>((sum,value) => sum + (value ?? 0), 0);
+  const hasCoverage = candidates.every((value,index) => value !== null && identified[index] !== null && identified[index]! <= value);
+  return {
+    windowTransactions: transactions.every(value => value !== null) ? transactions.reduce<number>((sum,value) => sum + (value ?? 0), 0) : null,
+    windowWallets: wallets.every(value => value !== null) ? wallets.reduce<number>((sum,value) => sum + (value ?? 0), 0) / 6 : null,
+    windowCoverage: hasCoverage ? (totalCandidates ? Math.round(totalIdentified / totalCandidates * 10000) / 100 : 100) : null,
+  };
+}
+
+export function directoryPeriod(period: EpochPeriod | null, liveEpoch: number | null, liveSince: number | null) {
+  return {
+    liveEpoch, liveSince, completedEpoch: period?.current.epoch ?? null, previousEpoch: period?.previous?.epoch ?? null,
+    windowStartEpoch: period?.window[0]?.epoch ?? null, windowEndEpoch: period?.window[5]?.epoch ?? null,
+    windowStartTime: period?.window[0]?.startTime ?? null, windowEndTime: period?.window[5]?.endTime ?? null,
   };
 }

@@ -7,7 +7,7 @@ import DappLogo from "./DappLogo";
 
 const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMUNITY", "STABLECOIN"];
 
-type SortKey = "epochTransactions" | "epochWallets" | "txGrowth" | "walletGrowth" | "attributionPercent" | "name";
+type SortKey = "displayTransactions" | "displayWallets" | "txGrowth" | "walletGrowth" | "displayCoverage" | "name";
 
 interface TableDapp {
   id?: string | number;
@@ -21,6 +21,10 @@ interface TableDapp {
   txGrowth: number | null;
   walletGrowth: number | null;
   attributionPercent: number | null;
+  liveTransactions: number | null;
+  windowTransactions: number | null;
+  windowWallets: number | null;
+  windowCoverage: number | null;
   logo?: string;
   link?: string;
   twitter?: string;
@@ -29,18 +33,26 @@ interface TableDapp {
   github?: string;
 }
 
-type Period = { epoch: number; startTime: number; endTime: number; previousEpoch: number | null };
+type Period = { liveEpoch: number | null; liveSince: number | null; completedEpoch: number | null; previousEpoch: number | null;
+  windowStartEpoch: number | null; windowEndEpoch: number | null; windowStartTime: number | null; windowEndTime: number | null };
 
-export default function DAppTable({ dapps, period, hideFilters }: { dapps: TableDapp[], period: Period | null, hideFilters?: boolean }) {
+export default function DAppTable({ dapps, period, hideFilters }: { dapps: TableDapp[], period: Period, hideFilters?: boolean }) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("ALL");
-  const [sort, setSort] = useState<SortKey>("epochTransactions");
+  const [view, setView] = useState<"current" | "six">("six");
+  const [sort, setSort] = useState<SortKey>("displayTransactions");
   const [asc, setAsc] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 25;
 
+  const displayed = useMemo(() => dapps.map(dapp => ({ ...dapp,
+    displayTransactions: view === "six" ? dapp.windowTransactions : dapp.liveTransactions,
+    displayWallets: view === "six" ? dapp.windowWallets : null,
+    displayCoverage: view === "six" ? dapp.windowCoverage : null,
+  })), [dapps, view]);
+
   const filtered = useMemo(() => {
-    let d = dapps;
+    let d = displayed;
     d = d.filter(x => x.hasRecordedData);
     if (search) d = d.filter(x => x.name.toLowerCase().includes(search.toLowerCase()));
     if (cat !== "ALL") d = d.filter(x => x.category === cat);
@@ -54,7 +66,7 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
       return (asc ? av - bv : bv - av) || a.name.localeCompare(b.name);
     });
     return d;
-  }, [dapps, search, cat, sort, asc]);
+  }, [displayed, search, cat, sort, asc]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -66,6 +78,9 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
     if (sort === key) setAsc(!asc);
     else { setSort(key); setAsc(false); }
   };
+  const changeView = (next: "current" | "six") => { setView(next); setSort("displayTransactions"); setAsc(false); setPage(1); };
+  const hasWindow = period.windowStartTime !== null && period.windowEndTime !== null;
+  const comparison = period.completedEpoch !== null && period.previousEpoch !== null ? `${period.completedEpoch} vs ${period.previousEpoch}` : "Unavailable";
 
   const sortHeader = (label: string, key: SortKey, title: string, left = false) => <th style={{ ...th, textAlign: left ? "left" : "right" }} aria-sort={sort === key ? (asc ? "ascending" : "descending") : "none"} title={title}>
     <button type="button" data-sort={key} onClick={() => toggleSort(key)} aria-label={`Sort by ${label}`} style={{ background: "none", border: 0, padding: 0, color: "inherit", font: "inherit", textTransform: "inherit", letterSpacing: "inherit", cursor: "pointer" }}>
@@ -76,9 +91,24 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
   return (
     <div>
       <div data-testid="epoch-directory-period" style={{ marginBottom: 16 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>{period ? `Completed epoch ${period.epoch}` : "Epoch summaries unavailable"}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>DApp activity</h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }} role="group" aria-label="Activity period">
+          <button type="button" data-period="current" aria-pressed={view === "current"} onClick={() => changeView("current")} style={periodButton(view === "current")}>
+            <strong style={{ display: "block", fontSize: 14 }}>This epoch{period.liveEpoch !== null ? ` · ${period.liveEpoch}` : ""}</strong>
+            <span style={{ display: "block", fontSize: 12, marginTop: 4 }}>In progress · partial observations</span>
+          </button>
+          <button type="button" data-period="six" aria-pressed={view === "six"} onClick={() => changeView("six")} style={periodButton(view === "six")}>
+            <strong style={{ display: "block", fontSize: 14 }}>Last 6 completed epochs</strong>
+            <span style={{ display: "block", fontSize: 12, marginTop: 4 }}>{hasWindow ? `${period.windowStartEpoch}–${period.windowEndEpoch} · ~30 days` : "Consecutive history unavailable"}</span>
+          </button>
+          <div data-testid="growth-period" className="card" style={{ flex: 1, minWidth: 200, padding: "12px 16px" }}>
+            <strong style={{ display: "block", fontSize: 14 }}>Growth / decline · {comparison}</strong>
+            <span style={{ display: "block", fontSize: 12, marginTop: 4, color: "var(--text-secondary)" }}>Completed epochs only · unchanged by the period selector</span>
+          </div>
+        </div>
         <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7, marginTop: 6 }}>
-          {period ? `${epochDate(period.startTime)} – ${epochDate(period.endTime)} UTC · ${period.previousEpoch === null ? "Previous consecutive epoch unavailable" : `Growth versus epoch ${period.previousEpoch}`}. All rows use this same completed period.` : "Validated historical figures could not be loaded. Refresh to try again; unavailable values are shown as —."}
+          {view === "six" ? (hasWindow ? `${epochDate(period.windowStartTime!)} – ${epochDate(period.windowEndTime!)} UTC. Transactions are summed over six completed epochs. Wallets show the average per epoch, not unique wallets over 30 days.` : "Six consecutive validated completed epochs are not available. Missing figures are shown as —.")
+            : `Epoch ${period.liveEpoch ?? "—"} is still in progress. ${period.liveSince !== null ? `Transactions observed since ${new Date(period.liveSince * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" })} UTC; earlier activity may be missing.` : "Current-epoch collection details are unavailable."} Wallets are pending completed-epoch validation.`}
         </p>
       </div>
       {/* Toolbar */}
@@ -129,17 +159,23 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
       {/* Table */}
       <div className="card" style={{ overflow: "hidden", minWidth: 0 }}>
         <div style={{ overflowX: "auto" }} role="region" aria-label="DApp epoch metrics, scroll horizontally for all columns" tabIndex={0}>
-          <table data-testid="epoch-directory-table" aria-label={period ? `DApp metrics for epoch ${period.epoch}` : "DApp epoch metrics unavailable"} style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+          <table data-testid="epoch-directory-table" aria-label={view === "six" ? "DApp metrics for the last six completed epochs" : `Partial DApp observations for epoch ${period.liveEpoch ?? "unavailable"}`} style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
             <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)", fontSize: 11, color: "var(--text-secondary)" }}>
+                <th colSpan={3} style={{ padding: "10px 16px", textAlign: "left" }}>DApp</th>
+                <th colSpan={2} style={{ padding: "10px 16px", textAlign: "right" }}>{view === "six" ? `6 completed epochs · ${period.windowStartEpoch ?? "—"}–${period.windowEndEpoch ?? "—"}` : `This epoch · ${period.liveEpoch ?? "—"} · in progress`}</th>
+                <th colSpan={2} style={{ padding: "10px 16px", textAlign: "right" }}>Completed growth · {comparison}</th>
+                <th colSpan={2} style={{ padding: "10px 16px", textAlign: "right" }}>Attribution / links</th>
+              </tr>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 <th style={th}>#</th>
                 {sortHeader("Name", "name", "DApp name", true)}
                 <th style={th} title="Primary category: DeFi, NFT, Marketplace, Gaming, etc.">Category</th>
-                {sortHeader("Transactions / epoch", "epochTransactions", "Validated observed transactions at tracked contracts during the labelled epoch. Partial protocol coverage; not completed trade counts.")}
-                {sortHeader("Active wallets / epoch", "epochWallets", "Distinct identifiable order owners during the labelled epoch, including recreated orders. Wallets are not people.")}
+                {sortHeader(view === "six" ? "Total transactions" : "Observed transactions", "displayTransactions", view === "six" ? "Sum of transactions over the six labelled completed epochs. Partial protocol coverage; not a rolling 30-day total." : "Confirmed observations collected within the current epoch. The epoch and our collection coverage are incomplete.")}
+                {sortHeader(view === "six" ? "Avg wallets / epoch" : "Wallets (pending)", "displayWallets", "Average distinct identifiable owners per completed epoch. This is not a unique 30-day wallet count. Current-epoch wallets await validation.")}
                 {sortHeader("Tx growth", "txGrowth", "Transaction change versus the immediately preceding validated epoch. A percentage is unavailable when a positive count follows a zero baseline.")}
                 {sortHeader("Wallet growth", "walletGrowth", "Wallet-count change versus the immediately preceding validated epoch. Attribution coverage can also affect this change.")}
-                {sortHeader("Coverage", "attributionPercent", "Owner attribution: percentage of outputs at tracked order/request scripts with identifiable owners during this epoch. This is not total protocol coverage.")}
+                {sortHeader("Coverage", "displayCoverage", "Owner attribution over the selected period, weighted by candidate output counts. This is not total protocol coverage; current-epoch ownership is pending.")}
                 <th style={th} title="External links — website, Twitter, Discord, DeFiLlama">Links</th>
               </tr>
             </thead>
@@ -161,12 +197,12 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
                     </Link>
                   </td>
                   <td style={td}><CategoryBadge category={d.category} /></td>
-                  <td data-metric="transactions" style={{ ...td, textAlign: "right", fontFamily: "monospace" }}>{d.epochTransactions?.toLocaleString("en-US") ?? "—"}</td>
-                  <td data-metric="wallets" style={{ ...td, textAlign: "right", fontFamily: "monospace", color: "#ec4899" }}>{d.epochWallets?.toLocaleString("en-US") ?? "—"}</td>
+                  <td data-metric="transactions" style={{ ...td, textAlign: "right", fontFamily: "monospace" }}>{d.displayTransactions?.toLocaleString("en-US") ?? "—"}</td>
+                  <td data-metric="wallets" style={{ ...td, textAlign: "right", fontFamily: "monospace", color: view === "six" ? "#ec4899" : "var(--text-muted)" }}>{view === "six" ? (d.displayWallets?.toLocaleString("en-US", { maximumFractionDigits: 1 }) ?? "—") : "Pending"}</td>
                   <td data-metric="tx-growth" style={{ ...td, textAlign: "right" }}><Growth value={d.txGrowth} /></td>
                   <td data-metric="wallet-growth" style={{ ...td, textAlign: "right" }}><Growth value={d.walletGrowth} /></td>
                   <td data-metric="coverage" style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }} title="Owner attribution within tracked order/request outputs; overall protocol coverage remains partial.">
-                    <span style={{ fontFamily: "monospace" }}>{d.attributionPercent === null ? "—" : `${d.attributionPercent.toLocaleString("en-US", { maximumFractionDigits: 2 })}%`}</span>
+                    <span style={{ fontFamily: "monospace" }}>{d.displayCoverage === null ? "—" : `${d.displayCoverage.toLocaleString("en-US", { maximumFractionDigits: 2 })}%`}</span>
                     <span style={{ display: "block", fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>owner attribution</span>
                   </td>
                   <td style={td}>
@@ -226,7 +262,7 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
       </div>
 
       <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginTop: 12 }}>
-        Coverage measures identifiable owners among outputs at tracked scripts; protocol coverage remains partial. Wallets are not people, and attribution changes can affect wallet growth. — means unavailable, including missing comparisons or a positive count following a zero baseline. Live counters above use their own collection period. DApps without recorded activity are hidden.
+        Average wallets per epoch is not a unique 30-day wallet count. Growth always compares the two completed epochs labelled above; it never compares a partial epoch with a full one. Coverage is owner attribution at tracked scripts, and protocol coverage remains partial. — means unavailable. DApps without recorded activity are hidden.
       </p>
 
       {/* Pagination */}
@@ -273,6 +309,12 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
 
 function epochDate(value: number) {
   return new Date(value * 1000).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" });
+}
+
+function periodButton(active: boolean): React.CSSProperties {
+  return { flex: 1, minWidth: 200, padding: "12px 16px", textAlign: "left", cursor: "pointer", borderRadius: 10,
+    border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`, background: active ? "#8b5cf615" : "var(--bg-card)",
+    color: active ? "var(--accent)" : "var(--text-secondary)" };
 }
 
 function Growth({ value }: { value: number | null }) {

@@ -31,12 +31,15 @@ SundaeSwap uses its V1/V3/V4/stableswap owner authorization keys; WingRiders use
 the explicit owners of tracked V1 constant-product/stableswap requests. Each
 protocol keeps its own validation proof and attribution coverage.
 
-Directory and category tables use the same latest validated completed epoch for
-all rows, with transactions, active wallets, growth versus the previous consecutive
-epoch, and owner-attribution coverage. Dates and epoch numbers are explicit;
-live counters retain their own collection period. Missing comparisons and growth
-from a zero baseline stay unavailable. No additional replay or stored records
-are needed for these derived directory metrics.
+Directory and category tables separate current-epoch partial observations from
+the last six consecutive validated completed epochs. The six-epoch view sums
+transactions, averages active wallets per epoch (not unique 30-day wallets),
+and weights owner attribution by output counts. Current wallets stay pending.
+Growth always compares the latest two consecutive validated completed epochs,
+independent of the selected view. Missing or gapped windows stay unavailable.
+The live API filters confirmed transactions by the actual current block epoch
+and exposes its collection start, so counts reset correctly at epoch boundaries.
+No historical replay or additional retained transaction data is required.
 
 ## Development
 

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { epochMetrics, percentageChange, selectEpochPeriod } from "../src/lib/epoch-summary.ts";
+import { epochMetrics, sixEpochMetrics, percentageChange, selectEpochPeriod } from "../src/lib/epoch-summary.ts";
 
 const dapp = (transactions, activeWallets, attributionPercent = 100) => ({ slug: "test", name: "Test", transactions, activeWallets, walletActivity: { attributionPercent } });
 const epoch = (number, start, end, dapps, passed = true) => ({ epoch: number, startTime: start, endTime: end, dapps, validation: { passed } });
@@ -31,4 +31,16 @@ const missingWallet = selectEpochPeriod(history([previous, epoch(10, 10, 20, [{ 
 assert.equal(epochMetrics("test", missingWallet).epochWallets, null);
 assert.equal(epochMetrics("test", missingWallet).walletGrowth, null);
 assert.equal(epochMetrics("test", missingWallet).attributionPercent, null);
+const six = Array.from({length:6},(_,i)=>epoch(i+1,i*10,(i+1)*10,[{
+  ...dapp(100,i+1),walletActivity:{candidateOrderOutputs:i===0?100:1,attributedOrderOutputs:i===0?50:1},
+}]));
+const fullWindow=selectEpochPeriod(history(six),'reviewed',100);
+assert.equal(fullWindow.window.length,6);
+assert.deepEqual(sixEpochMetrics('test',fullWindow),{windowTransactions:600,windowWallets:3.5,windowCoverage:52.38});
+assert.equal(fullWindow.previous.epoch,5);
+assert.equal(sixEpochMetrics('test',selectEpochPeriod(history(six.slice(1)),'reviewed',100)).windowTransactions,null,'Never present five epochs as six');
+assert.equal(sixEpochMetrics('test',selectEpochPeriod(history(six.filter(e=>e.epoch!==3)),'reviewed',100)).windowWallets,null);
+assert.equal(sixEpochMetrics('missing',fullWindow).windowTransactions,null);
+const seven=selectEpochPeriod(history([...six,epoch(7,60,70,[dapp(50,7)])]),'reviewed',100);
+assert.deepEqual(seven.window.map(e=>e.epoch),[2,3,4,5,6,7],'Six completed periods move forward without including an incomplete epoch');
 console.log("Epoch summary regression checks passed: growth, zero counts, missing data, gaps, completion, validation and registry matching.");

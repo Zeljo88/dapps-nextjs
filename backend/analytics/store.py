@@ -178,16 +178,21 @@ class Store:
         now = time.time() if now is None else now
         status = self.status()
         maximum_height = (status["checkpoint"] or {}).get("height", 0) - confirmations
+        observed_epoch = (status["checkpoint"] or {}).get("epoch")
         result = []
         with self.connection() as db:
+            epoch_since = db.execute("SELECT MIN(time) FROM blocks WHERE epoch=?", (observed_epoch,)).fetchone()[0] if observed_epoch is not None else None
             for project in self.projects:
                 summary = db.execute("""SELECT COUNT(DISTINCT t.id) AS total,
                     COUNT(DISTINCT CASE WHEN b.time>=? THEN t.id END) AS day,
+                    COUNT(DISTINCT CASE WHEN b.epoch=? THEN t.id END) AS epoch_count,
                     MAX(b.time) AS last FROM events e JOIN transactions t ON e.tx=t.id
                     JOIN blocks b ON b.slot=t.slot WHERE e.dapp=? AND b.height<=?""",
-                    (now - 86400, project["slug"], maximum_height)).fetchone()
+                    (now - 86400, observed_epoch, project["slug"], maximum_height)).fetchone()
                 started = status["startedAt"] is not None
                 result.append({**project, "observedTransactions": summary["total"] if started else None, "observedTx24h": summary["day"] if started else None,
+                               "observedEpoch": observed_epoch, "epochRecordedSince": epoch_since,
+                               "observedTxEpoch": summary["epoch_count"] if started and observed_epoch is not None else None,
                                "lastObservedActivity": summary["last"], "confirmationDepth": confirmations,
                                "recordedSince": status["startedAt"], "fresh": status["fresh"],
                                "activeWallets24h": None, "lifetimeTransactions": None,

@@ -102,6 +102,21 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(project["observedTransactions"], 2)
         self.assertEqual(project["observedTx24h"], 1)
 
+    def test_current_epoch_counts_reset_and_respect_confirmations_and_rollback(self):
+        self.store.ingest(block(1,[tx('a',[output()])]),100,664,1)
+        self.store.ingest(block(2,[tx('b',[output(),output()])]),200,665,2)
+        self.store.ingest(block(3,[tx('c',[output()])]),300,665,3)
+        row=self.store.dapps(confirmations=1)[0]
+        self.assertEqual(row['observedEpoch'],665)
+        self.assertEqual(row['epochRecordedSince'],200)
+        self.assertEqual(row['observedTransactions'],2)
+        self.assertEqual(row['observedTxEpoch'],1)
+        self.store.rollback({'slot':10,'id':f'{1:064x}'})
+        row=self.store.dapps(confirmations=0)[0]
+        self.assertEqual(row['observedEpoch'],664)
+        self.assertEqual(row['observedTxEpoch'],1)
+        self.assertEqual(row['epochRecordedSince'],100)
+
     def test_registry_change_requires_replay_not_silent_relabelling(self):
         changed = copy.deepcopy(REGISTRY)
         changed["projects"][0]["scripts"].pop()

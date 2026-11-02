@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { fetchAnalytics, fetchHistory } from "@/lib/analytics";
-import { selectEpochPeriod } from "@/lib/epoch-summary";
+import { selectEpochPeriod, directoryPeriod } from "@/lib/epoch-summary";
 import { hasRecordedActivity, tableDapp } from "@/lib/dapp-view";
 import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
 import DAppTable from "@/components/DAppTable";
@@ -19,6 +19,8 @@ export default async function HomePage() {
   if (!data) return <FeedUnavailable />;
   const dapps = data.dapps.filter(hasRecordedActivity);
   const period = selectEpochPeriod(history, data.status.registryDigest);
+  const liveEpoch = data.status.checkpoint?.epoch ?? null;
+  const liveSince = data.dapps.find(dapp => dapp.observedEpoch === liveEpoch)?.epochRecordedSince ?? null;
   return <main style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px" }}>
     <div className="hero-banner" style={{ padding: "18px 28px" }}>
       <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
@@ -40,6 +42,6 @@ export default async function HomePage() {
       </div>
     </div>
     <CoverageNotice status={data.status} compact />
-    <DAppTable dapps={dapps.map(dapp => tableDapp(dapp, period))} period={period ? { epoch: period.current.epoch, startTime: period.current.startTime, endTime: period.current.endTime, previousEpoch: period.previous?.epoch ?? null } : null} />
+    <DAppTable dapps={dapps.map(dapp => tableDapp(dapp, period, liveEpoch))} period={directoryPeriod(period,liveEpoch,liveSince)} />
   </main>;
 }

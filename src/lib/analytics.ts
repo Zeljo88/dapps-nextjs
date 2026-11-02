@@ -6,6 +6,7 @@ export interface TrackedDapp {
   coverage: "partial"; source: string; sourceDocumentation?: string; mappingReviewedOn?: string;
   scripts: { role: string; hash: string }[];
   observedTransactions: number | null; observedTx24h: number | null;
+  observedEpoch?: number | null; observedTxEpoch?: number | null; epochRecordedSince?: number | null;
   recordedSince: number | null; lastObservedActivity: number | null;
   confirmationDepth: number; fresh: boolean;
 }
