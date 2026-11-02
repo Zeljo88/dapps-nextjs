@@ -10,7 +10,7 @@ import cbor2
 from analytics.adapters.minswap import MinswapWalletAdapter
 from analytics.backfill import HistoricalStore
 from analytics.wallets import aggregate, constructor, decode, SCHEMA, WalletCollector
-from analytics.wallet_backfill import discard_details
+from analytics.wallet_backfill import discard_details, validate_wallets
 from test_analytics import REGISTRY, ORDER, POOL, block, tx, output
 
 
@@ -30,6 +30,25 @@ def datum(family, payment=b'a'*28, stake=None, script=False, recipient=None):
 
 
 class WalletTests(unittest.TestCase):
+    def test_plain_transfer_without_datum_is_independently_checked_and_excluded(self):
+        with tempfile.TemporaryDirectory() as folder:
+            store=HistoricalStore(Path(folder)/'epoch.sqlite3',REGISTRY,{},[MinswapWalletAdapter(REGISTRY)])
+            store.anchor({'slot':0,'id':'0'*64},0,0,663)
+            store.ingest(block(1,[tx('a',outputs=[output()])]),10,664,10)
+            class Source:
+                def transaction_info(self,ids):
+                    return {'a'*64:{'block_hash':f'{1:064x}','block_height':1,'absolute_slot':10,
+                        'outputs':[{'tx_index':0,'payment_addr':{'bech32':ORDER},'datum_hash':None,'inline_datum':None}]}}
+            class Monitor:
+                def sample(self):pass
+            base={'epoch':664,'blocksReplayed':1,'chainTransactionsInspected':1,
+                  'boundaries':{'first':{'hash':f'{1:064x}'},'last':{'hash':f'{1:064x}'}}}
+            counts,samples=validate_wallets(store,Source(),base,{'minswap':MinswapWalletAdapter(REGISTRY)},Monitor())
+            self.assertEqual(counts['minswap']['activeWallets'],0)
+            self.assertEqual(counts['minswap']['walletActivity']['unavailableDatumOrderOutputs'],1)
+            self.assertEqual(samples,{'minswap':1})
+            store.close()
+
     def test_shared_aggregation_is_scoped_per_dapp_and_handles_ambiguous_stake_links(self):
         db = sqlite3.connect(':memory:')
         try:

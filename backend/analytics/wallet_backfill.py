@@ -30,6 +30,9 @@ ADAPTERS = {'minswap': MinswapWalletAdapter, 'sundaeswap': SundaeSwapWalletAdapt
 
 def resolve_missing(store, source, adapters):
     with store.connection() as db:
+        # A plain transfer to a script may have neither datum nor hash. There
+        # is no owner payload to retrieve; validate such exclusions via tx_info.
+        db.execute("UPDATE wallet_orders SET status='unavailable_datum' WHERE status='missing_datum' AND datum_hash IS NULL")
         hashes = [r[0] for r in db.execute("SELECT DISTINCT datum_hash FROM wallet_orders WHERE status='missing_datum'") if r[0]]
     for offset in range(0, len(hashes), 50):
         rows = source.request('/datum_info', {'_datum_hashes': hashes[offset:offset+50]})['data']
@@ -75,12 +78,12 @@ def validate_wallets(store, source, base, adapters, monitor):
                 if refs:
                     sample_refs.update(refs[i] for i in {0, min(1,len(refs)-1), len(refs)//2, max(0,len(refs)-2), len(refs)-1})
             for status, in db.execute('SELECT DISTINCT status FROM wallet_orders WHERE dapp=?', (slug,)):
-                row = db.execute('SELECT ref FROM wallet_orders WHERE dapp=? AND status=? AND datum IS NOT NULL ORDER BY slot LIMIT 1', (slug,status)).fetchone()
+                row = db.execute('SELECT ref FROM wallet_orders WHERE dapp=? AND status=? ORDER BY datum_hash IS NOT NULL,slot LIMIT 1', (slug,status)).fetchone()
                 if row:
                     sample_refs.add(row[0])
         samples = [dict(db.execute('SELECT w.*,b.hash AS block_hash,b.height FROM wallet_orders w JOIN blocks b ON b.slot=w.slot WHERE ref=?', (ref,)).fetchone()) for ref in sorted(sample_refs)]
     txs = source.transaction_info([r['tx'] for r in samples])
-    hashes = sorted({r['datum_hash'] for r in samples})
+    hashes = sorted({r['datum_hash'] for r in samples if r['datum_hash']})
     info = {}
     for offset in range(0, len(hashes), 50):
         info.update({r['datum_hash']: r for r in source.request('/datum_info', {'_datum_hashes':hashes[offset:offset+50]})['data']})
@@ -91,6 +94,16 @@ def validate_wallets(store, source, base, adapters, monitor):
         output = next((o for o in other['outputs'] if o['tx_index'] == sample['output_index']), None)
         if not output or fast_script_hash(output['payment_addr']['bech32']) != sample['script'] or output['datum_hash'] != sample['datum_hash']:
             raise ValueError('Independent wallet sample output differs')
+        if sample['datum_hash'] is None:
+            if sample['datum'] is not None or sample['status']!='unavailable_datum' or output.get('inline_datum'):
+                raise ValueError('Independent source disagrees with datum-free output exclusion')
+            monitor.sample()
+            continue
+        if sample['status']=='unavailable_datum' and sample['datum'] is None:
+            if sample['datum_hash'] in info:
+                raise ValueError('Previously unavailable datum is now published; resolve it before validation')
+            monitor.sample()
+            continue
         datum = info.get(sample['datum_hash'])
         if not datum or hashlib.blake2b(bytes.fromhex(datum['bytes']),digest_size=32).hexdigest() != sample['datum_hash']:
             raise ValueError('Independent wallet sample datum differs')

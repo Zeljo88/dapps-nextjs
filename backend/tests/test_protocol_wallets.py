@@ -85,3 +85,11 @@ class ProtocolWalletTests(unittest.TestCase):
         for adapter,family,value in [(s,'V3',sundae('V3',owner=b'bad')),(w,'V1',wing(owner=b'bad'))]:
             self.assertEqual(WalletCollector.identify(adapter,family,cbor2.dumps(value).hex()).status,'unrecognized_datum')
             self.assertEqual(adapter.reference_participant(family,plutus_json(value)).status,'unrecognized_datum')
+
+    def test_non_sdk_wing_request_actions_remain_explicit_exclusions(self):
+        adapter=WingRidersWalletAdapter(REGISTRY)
+        _,fields=constructor(wing())
+        for action in (3,4):
+            value=c(0,fields[0],c(action))
+            self.assertEqual(WalletCollector.identify(adapter,'V1',cbor2.dumps(value).hex()).status,'unrecognized_datum')
+            self.assertEqual(adapter.reference_participant('V1',plutus_json(value)).status,'unrecognized_datum')

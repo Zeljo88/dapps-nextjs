@@ -313,3 +313,8 @@ protocol coverage. Completed epochs retain separate per-DApp ownership proofs
 under `walletValidations`. Adding another adapter preserves existing wallet
 counts and their original proof instead of replacing them with the new job's
 validation. Resume also checks the exact requested adapter versions.
+Plain script transfers with neither datum nor hash are explicitly unattributed
+and sampled through the independent transaction API. Requests whose action
+shape is outside the pinned WingRiders serializer remain unrecognized rather
+than being guessed into the count. A validation pause preserves its working
+database; a corrected runtime can resume it without replaying completed blocks.

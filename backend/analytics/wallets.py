@@ -126,6 +126,8 @@ class WalletCollector:
                 if datum and advertised_hash and actual_hash != advertised_hash:
                     raise ValueError('Order datum hash does not match the node witness')
                 participant = self.identify(adapter, family, datum)
+                if datum is None and actual_hash is None:
+                    participant = Participant('unavailable_datum')
                 db.execute('INSERT INTO wallet_orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                     (f"{tx['id']}#{index}", block['slot'], adapter.slug, family, script, tx['id'], index,
                      actual_hash, datum, participant.status, participant.key, participant.stake))
