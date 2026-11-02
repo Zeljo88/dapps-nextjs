@@ -3,6 +3,34 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from .wallet_methods import METHOD, ADAPTER_VERSIONS
+
+
+def wallet_fields(report, dapp):
+    """Publish only final validated counts, never the working ownership records."""
+    validation = report.get('walletValidation', {})
+    slug = dapp['slug']
+    if (validation.get('passed') is not True or validation.get('method') != METHOD
+            or report.get('walletDetailsRetained') is not False
+            or slug not in ADAPTER_VERSIONS
+            or validation.get('adapters', {}).get(slug) != ADAPTER_VERSIONS[slug]):
+        return {}
+    count = dapp.get('activeWallets')
+    activity = dapp.get('walletActivity', {})
+    keys = ('candidateOrderOutputs', 'attributedOrderOutputs', 'scriptControlledOrderOutputs',
+            'unrecognizedOrderOutputs', 'unavailableDatumOrderOutputs', 'ambiguousPaymentKeys')
+    if type(count) is not int or count < 0 or activity.get('method') != METHOD:
+        return {}
+    if any(type(activity.get(k)) is not int or activity[k] < 0 for k in keys):
+        return {}
+    total, identified = activity['candidateOrderOutputs'], activity['attributedOrderOutputs']
+    if count > identified or total != sum(activity[k] for k in keys[1:5]):
+        return {}
+    percent = round(100 * identified / total, 2) if total else 100.0
+    if activity.get('attributionPercent') != percent:
+        return {}
+    return {'activeWallets': count, 'walletActivity': {'method': METHOD,
+            **{k: activity[k] for k in keys}, 'attributionPercent': percent}}
 
 
 def history_data(directory: str | Path, registry_digest: str):
@@ -28,7 +56,8 @@ def history_data(directory: str | Path, registry_digest: str):
             raise ValueError("Historical epoch intervals overlap")
         previous_end = end
         epochs.append({"epoch": epoch, "startTime": start, "endTime": end,
-                       "dapps": report["dapps"],
+                       "dapps": [{**{key: dapp[key] for key in ('slug', 'name', 'transactions')},
+                                  **wallet_fields(report, dapp)} for dapp in report['dapps']],
                        "validation": {"passed": True, "checkedAt": report["checkedAt"],
                                       "blocksReplayed": report["blocksReplayed"],
                                       "chainTransactionsInspected": report["chainTransactionsInspected"],
@@ -36,7 +65,7 @@ def history_data(directory: str | Path, registry_digest: str):
                                       "boundaryTransactionsRecovered": report["boundaryTransactionsRecovered"]}})
     return {"coverage": "partial", "registryDigest": registry_digest,
             "aggregation": "epoch", "epochs": epochs,
-            "methodology": "Only completed, independently reconciled epochs for the published payment scripts are included. Counts deduplicate transactions within each DApp. Financial, trade and user metrics are not inferred."}
+            "methodology": "Completed, independently reconciled epochs for published payment scripts. Transactions deduplicate within each DApp. Active wallets count identifiable key-controlled order owners creating orders in each epoch, grouped by unambiguous observed stake keys where possible. Wallets are not people; bots and multiple wallets exist. Script-controlled and unidentified orders are excluded with coverage counts. Epoch wallet counts must not be summed into unique period users."}
 
 
 

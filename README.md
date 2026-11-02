@@ -20,6 +20,14 @@ History tab. Only epoch totals and validation summaries are retained after
 historical validation; temporary detail and response caches are removed.
 Historical imports run separately from the live working database.
 
+Validated active-wallet counts appear in a second epoch line chart where a
+reviewed protocol adapter is available. Minswap identifies key-controlled order
+creators across V1, V2 and stableswap, groups unambiguous observed stake keys and
+reports attribution coverage. Wallets are not people; epoch counts cannot be
+added into unique period users. Only final counts and validation metadata remain.
+The replay, deduplication, validation, API and chart code are shared so other
+DApps can reuse them with their own ownership adapters.
+
 ## Development
 
 Use Node 22 or later. Install locked dependencies with `npm ci` and set

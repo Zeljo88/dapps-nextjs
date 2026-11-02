@@ -224,3 +224,59 @@ The isolated job uses the same CPU/memory/load guards as the initial import,
 and a private writable temporary directory for SQLite validation sorts. Boundary
 recovery metadata is derived from persisted evidence so checkpoint resumption
 reports the full recovery total, including repairs committed before a restart.
+
+## Reusable epoch wallet enrichment
+
+`analytics.wallet_backfill` enriches existing, validated epoch summaries without
+changing their transaction totals or the live collector. Run it against an
+isolated output directory, with the same registry digest as the base reports:
+
+```
+python -m analytics.wallet_backfill --root /mnt/cardano-data/dapps-analytics/history-wallets-minswap-v1 --base-history /mnt/cardano-data/dapps-analytics/history --epochs 664 663 662 661 660 659 --dapps minswap --rate 80
+```
+
+The Minswap adapter identifies key-controlled owners who **create orders** in an
+epoch, across V1, V2 and the registered stableswap scripts. V1 and stableswap use
+the sender in the datum. V2 uses signature authorization, with a refund-address
+stake key only when its payment key matches that authorization. Pool outputs,
+execution-only batchers and failed transactions do not identify active owners.
+Orders can later be cancelled or left unfilled; this is not a count of traders,
+completed swaps, all participants, or people. Script-controlled authorizations,
+unrecognized datums and unavailable published datums have explicit excluded
+order counts. API errors fail the run rather than turning missing data into zero.
+
+Within each DApp and epoch, a payment key observed with exactly one key stake
+credential groups under that stake key. Several payment keys sharing that stake
+key count once. Payment keys without stake information, or with conflicting
+observed stake keys, fall back to payment-key identity. This is a transparent
+heuristic, not proof of an individual account: custodians, bots, shared keys,
+multiple stake keys and smart wallets limit comparisons. Wallet totals across
+epochs or protocols must not be summed to infer unique period users.
+
+The shared engine handles replay, rollback, datum hashing, deduplication,
+independent SQL/Python aggregation, validation, load guards and cleanup. Each
+protocol supplies an adapter under `analytics/adapters/` with a slug, version,
+script-to-family mapping, a CBOR participant decoder and a separate decoder for
+independent Plutus JSON samples. Register the adapter in `wallet_backfill.ADAPTERS`
+and its reviewed version in `wallet_methods.ADAPTER_VERSIONS`. Extend the method
+contract if another DApp needs a different activity definition; never label all
+contract recipients or batchers as users. The API and chart consume optional
+validated counts by slug and require no Minswap-specific chart code.
+
+Every enrichment replays the complete epoch, checks the previously validated
+boundaries/block totals/chain ancestry and independently samples ownership via
+Koios. A temporary SQLite database holds order datums and owner credentials.
+After count validation it is removed, including WAL/SHM files; source responses
+are removed after the batch. Only final integer counts, attribution counts,
+method/adapter versions and validation metadata remain. No wallet identifiers
+or sampled transaction IDs are included in the final wallet report. The API
+publishes the metric only after validation and temporary database cleanup.
+
+The pinned `cbor2` dependency is included in both requirements files. Build the
+isolated runtime with `deploy/package-backfill.py`; install its Linux dependency
+into a separate vendor directory before running this enrichment. Keep
+`PrivateTmp=true` alongside `ProtectSystem=strict` so SQLite can perform validation
+sorts. Use the existing one-core/1 GiB/low-priority profile and live-feed guards.
+Do not replace runtime files while a job is running: final reports hash the
+runtime that performed the calculation. Promote the complete validated batch
+and restart only the history API; the live indexer needs no migration.

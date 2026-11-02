@@ -21,7 +21,10 @@ export interface ContractEvent {
 export interface HistoryData {
   aggregation: "epoch";
   coverage: "partial";
-  epochs: { epoch: number; startTime: number; endTime: number; dapps: { slug: string; name: string; transactions: number }[];
+  epochs: { epoch: number; startTime: number; endTime: number; dapps: { slug: string; name: string; transactions: number;
+    activeWallets?: number; walletActivity?: { method: string; candidateOrderOutputs: number; attributedOrderOutputs: number;
+      scriptControlledOrderOutputs: number; unrecognizedOrderOutputs: number; unavailableDatumOrderOutputs: number;
+      attributionPercent: number; ambiguousPaymentKeys: number } }[];
     validation: { passed: boolean; checkedAt: string; blocksReplayed: number; independentTransactionSamples: number } }[];
 }
 async function read<T>(path: string): Promise<T> {

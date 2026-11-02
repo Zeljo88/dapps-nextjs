@@ -163,7 +163,7 @@ class Koios:
 
 
 class HistoricalStore(Store):
-    def __init__(self, path, registry, expected):
+    def __init__(self, path, registry, expected, wallet_adapters=None):
         self._shared = None
         super().__init__(path, registry)
         self._shared = sqlite3.connect(self.path, timeout=10)
@@ -182,6 +182,12 @@ class HistoricalStore(Store):
             db.executescript(SCHEMA)
             db.executemany("INSERT OR IGNORE INTO expected_txs VALUES(?,?,?)",
                            [(dapp, tx, height) for dapp, records in expected.items() for tx, height in records.items()])
+        self.wallet_collector = None
+        if wallet_adapters:
+            from .wallets import WalletCollector, SCHEMA as WALLET_SCHEMA
+            self.wallet_collector = WalletCollector(wallet_adapters, fast_script_hash)
+            with self.connection() as db:
+                db.executescript(WALLET_SCHEMA)
 
     @contextmanager
     def connection(self):
@@ -204,6 +210,8 @@ class HistoricalStore(Store):
         db.executemany("""INSERT INTO raw_candidates SELECT ?,?,?
             WHERE NOT EXISTS(SELECT 1 FROM transactions WHERE id=?)""",
             [(tx["id"], block["slot"], json.dumps(tx), tx["id"]) for tx in transactions if tx["id"] in self.candidates])
+        if self.wallet_collector:
+            self.wallet_collector.ingest(db, block)
 
     def actual(self):
         with self.connection() as db:
