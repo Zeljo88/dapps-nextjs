@@ -1,13 +1,13 @@
 "use client";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { fmtNum, toSlug, CATEGORY_COLORS } from "@/lib/api";
+import { toSlug, CATEGORY_COLORS } from "@/lib/api";
 import CategoryBadge from "./CategoryBadge";
-import { useCurrency } from "@/lib/currency";
+import DappLogo from "./DappLogo";
 
 const CATEGORIES = ["ALL", "DEFI", "MARKETPLACE", "COLLECTION", "GAMING", "COMMUNITY", "STABLECOIN"];
 
-type SortKey = "tvl" | "volume30d" | "trxCount" | "tx24h" | "activeUsers24h" | "name";
+type SortKey = "epochTransactions" | "epochWallets" | "txGrowth" | "walletGrowth" | "attributionPercent" | "name";
 
 interface TableDapp {
   id?: string | number;
@@ -16,28 +16,28 @@ interface TableDapp {
   category: string;
   subCategory?: string;
   hasRecordedData: boolean;
-  tvl: number | null;
-  volume30d: number | null;
-  trxCount: number | null;
-  tx24h: number | null;
-  activeUsers24h: number | null;
-  change1d: number | null;
+  epochTransactions: number | null;
+  epochWallets: number | null;
+  txGrowth: number | null;
+  walletGrowth: number | null;
+  attributionPercent: number | null;
   logo?: string;
   link?: string;
   twitter?: string;
-  audits: number | null;
+  audits?: number | null;
   auditLinks?: string[];
   github?: string;
 }
 
-export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: TableDapp[], adaPrice: number, hideFilters?: boolean }) {
+type Period = { epoch: number; startTime: number; endTime: number; previousEpoch: number | null };
+
+export default function DAppTable({ dapps, period, hideFilters }: { dapps: TableDapp[], period: Period | null, hideFilters?: boolean }) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("ALL");
-  const [sort, setSort] = useState<SortKey>("trxCount");
+  const [sort, setSort] = useState<SortKey>("epochTransactions");
   const [asc, setAsc] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 25;
-  const { format } = useCurrency();
 
   const filtered = useMemo(() => {
     let d = dapps;
@@ -51,7 +51,7 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
       if (av === null && bv === null) return a.name.localeCompare(b.name);
       if (av === null) return 1;
       if (bv === null) return -1;
-      return asc ? av - bv : bv - av;
+      return (asc ? av - bv : bv - av) || a.name.localeCompare(b.name);
     });
     return d;
   }, [dapps, search, cat, sort, asc]);
@@ -67,8 +67,20 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
     else { setSort(key); setAsc(false); }
   };
 
+  const sortHeader = (label: string, key: SortKey, title: string, left = false) => <th style={{ ...th, textAlign: left ? "left" : "right" }} aria-sort={sort === key ? (asc ? "ascending" : "descending") : "none"} title={title}>
+    <button type="button" data-sort={key} onClick={() => toggleSort(key)} aria-label={`Sort by ${label}`} style={{ background: "none", border: 0, padding: 0, color: "inherit", font: "inherit", textTransform: "inherit", letterSpacing: "inherit", cursor: "pointer" }}>
+      {label}<SortIcon column={key} sort={sort} ascending={asc} />
+    </button>
+  </th>;
+
   return (
     <div>
+      <div data-testid="epoch-directory-period" style={{ marginBottom: 16 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}>{period ? `Completed epoch ${period.epoch}` : "Epoch summaries unavailable"}</h2>
+        <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7, marginTop: 6 }}>
+          {period ? `${epochDate(period.startTime)} – ${epochDate(period.endTime)} UTC · ${period.previousEpoch === null ? "Previous consecutive epoch unavailable" : `Growth versus epoch ${period.previousEpoch}`}. All rows use this same completed period.` : "Validated historical figures could not be loaded. Refresh to try again; unavailable values are shown as —."}
+        </p>
+      </div>
       {/* Toolbar */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
         {/* Search */}
@@ -115,68 +127,31 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
       </div>
 
       {/* Table */}
-      <div className="card" style={{ overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+      <div className="card" style={{ overflow: "hidden", minWidth: 0 }}>
+        <div style={{ overflowX: "auto" }} role="region" aria-label="DApp epoch metrics, scroll horizontally for all columns" tabIndex={0}>
+          <table data-testid="epoch-directory-table" aria-label={period ? `DApp metrics for epoch ${period.epoch}` : "DApp epoch metrics unavailable"} style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 <th style={th}>#</th>
-                <th style={th} onClick={() => toggleSort("name")} className="cursor-pointer" title="DApp name — click to sort alphabetically">
-                  Name <SortIcon column="name" sort={sort} ascending={asc} />
-                </th>
+                {sortHeader("Name", "name", "DApp name", true)}
                 <th style={th} title="Primary category: DeFi, NFT, Marketplace, Gaming, etc.">Category</th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tvl")} className="cursor-pointer" title="Total Value Locked — value of all assets deposited in the DApp's smart contracts">
-                  TVL <SortIcon column="tvl" sort={sort} ascending={asc} />
-                </th>
-                <th style={{ ...th, textAlign: "right" }} title="TVL percentage change in the last 24 hours">24h %</th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("volume30d")} className="cursor-pointer" title="Total trading and transaction volume over the last 30 days">
-                  30d Volume <SortIcon column="volume30d" sort={sort} ascending={asc} />
-                </th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("trxCount")} className="cursor-pointer" title="Observed transactions touching tracked contracts since collection began. Partial coverage, after a three-block display delay.">
-                  Tx Count* <SortIcon column="trxCount" sort={sort} ascending={asc} />
-                </th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("tx24h")} className="cursor-pointer" title="Observed transactions in the available part of the last 24 hours. Partial tracked-contract coverage.">
-                  24h Txs* <SortIcon column="tx24h" sort={sort} ascending={asc} />
-                </th>
-                <th style={{ ...th, textAlign: "right" }} onClick={() => toggleSort("activeUsers24h")} className="cursor-pointer" title="Unique wallet addresses (stake keys) that interacted with this DApp in the last 24 hours">
-                  Active Users <SortIcon column="activeUsers24h" sort={sort} ascending={asc} />
-                </th>
+                {sortHeader("Transactions / epoch", "epochTransactions", "Validated observed transactions at tracked contracts during the labelled epoch. Partial protocol coverage; not completed trade counts.")}
+                {sortHeader("Active wallets / epoch", "epochWallets", "Distinct identifiable order owners during the labelled epoch, including recreated orders. Wallets are not people.")}
+                {sortHeader("Tx growth", "txGrowth", "Transaction change versus the immediately preceding validated epoch. A percentage is unavailable when a positive count follows a zero baseline.")}
+                {sortHeader("Wallet growth", "walletGrowth", "Wallet-count change versus the immediately preceding validated epoch. Attribution coverage can also affect this change.")}
+                {sortHeader("Coverage", "attributionPercent", "Owner attribution: percentage of outputs at tracked order/request scripts with identifiable owners during this epoch. This is not total protocol coverage.")}
                 <th style={th} title="External links — website, Twitter, Discord, DeFiLlama">Links</th>
               </tr>
             </thead>
             <tbody>
               {paginated.map((d, i) => (
-                <tr key={d.slug ?? d.id ?? d.name} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
+                <tr data-dapp={d.slug} key={d.slug ?? d.id ?? d.name} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-card-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                   <td style={{ ...td, color: "var(--text-muted)", width: 50 }}>{(currentPage - 1) * PAGE_SIZE + i + 1}</td>
                   <td style={td}>
                     <Link href={`/dapp/${d.slug ?? toSlug(d.name)}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-                      {d.logo ? (
-                        // Dynamic logos come from many third-party hosts and retain a local fallback.
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={d.logo} alt={d.name} loading="lazy" width={36} height={36}
-                          style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
-                          onError={(e) => {
-                            const img = e.currentTarget;
-                            const parent = img.parentElement!;
-                            img.style.display = "none";
-                            const fb = parent.querySelector(".logo-fallback") as HTMLElement;
-                            if (fb) fb.style.display = "flex";
-                          }}
-                        />
-                      ) : null}
-                      <div className="logo-fallback" style={{
-                        width: 36, height: 36, borderRadius: 10,
-                        background: `${CATEGORY_COLORS[d.category] || "#6b7280"}25`,
-                        border: `1px solid ${CATEGORY_COLORS[d.category] || "#6b7280"}35`,
-                        display: d.logo ? "none" : "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 16, fontWeight: 700,
-                        color: CATEGORY_COLORS[d.category] || "#6b7280",
-                        flexShrink: 0,
-                      }}>
-                        {d.name.charAt(0)}
-                      </div>
+                      <DappLogo slug={d.slug ?? toSlug(d.name)} name={d.name} src={d.logo} size={36} />
                       <div>
                         <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{d.name}</div>
                         {d.subCategory && d.subCategory !== d.category && (
@@ -186,29 +161,13 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
                     </Link>
                   </td>
                   <td style={td}><CategoryBadge category={d.category} /></td>
-                  <td style={{ ...td, textAlign: "right", fontWeight: 600, fontFamily: "monospace",
-                    color: d.tvl !== null ? "var(--text-primary)" : "var(--text-muted)" }} title={d.tvl === null ? "Unavailable in the current feed" : undefined}>
-                    {d.tvl !== null ? format(d.tvl, adaPrice) : "—"}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace", fontWeight: 600,
-                    color: !d.change1d ? "var(--text-muted)" : d.change1d > 0 ? "#10b981" : "#ef4444" }}>
-                    {!d.change1d ? "—" : `${d.change1d > 0 ? "▲" : "▼"} ${Math.abs(d.change1d).toFixed(1)}%`}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
-                    color: d.volume30d !== null ? "#10b981" : "var(--text-muted)" }} title={d.volume30d === null ? "Unavailable in the current feed" : undefined}>
-                    {d.volume30d !== null ? format(d.volume30d, adaPrice) : "—"}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
-                    color: d.trxCount !== null ? "var(--text-primary)" : "var(--text-muted)" }}>
-                    {d.trxCount !== null ? fmtNum(d.trxCount) : "—"}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
-                    color: d.tx24h !== null ? "#06b6d4" : "var(--text-muted)" }}>
-                    {d.tx24h !== null ? fmtNum(d.tx24h) : "—"}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: "monospace",
-                    color: d.activeUsers24h !== null ? "#ec4899" : "var(--text-muted)" }} title={d.activeUsers24h === null ? "Unavailable in the current feed" : undefined}>
-                    {d.activeUsers24h !== null ? fmtNum(d.activeUsers24h) : "—"}
+                  <td data-metric="transactions" style={{ ...td, textAlign: "right", fontFamily: "monospace" }}>{d.epochTransactions?.toLocaleString("en-US") ?? "—"}</td>
+                  <td data-metric="wallets" style={{ ...td, textAlign: "right", fontFamily: "monospace", color: "#ec4899" }}>{d.epochWallets?.toLocaleString("en-US") ?? "—"}</td>
+                  <td data-metric="tx-growth" style={{ ...td, textAlign: "right" }}><Growth value={d.txGrowth} /></td>
+                  <td data-metric="wallet-growth" style={{ ...td, textAlign: "right" }}><Growth value={d.walletGrowth} /></td>
+                  <td data-metric="coverage" style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }} title="Owner attribution within tracked order/request outputs; overall protocol coverage remains partial.">
+                    <span style={{ fontFamily: "monospace" }}>{d.attributionPercent === null ? "—" : `${d.attributionPercent.toLocaleString("en-US", { maximumFractionDigits: 2 })}%`}</span>
+                    <span style={{ display: "block", fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>owner attribution</span>
                   </td>
                   <td style={td}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -225,7 +184,7 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
                           </svg>
                         </a>
                       )}
-                      {d.audits !== null && d.audits > 0 && (
+                      {d.audits != null && d.audits > 0 && (
                         <a href={d.auditLinks?.[0] || "#"} target="_blank" rel="noopener noreferrer"
                           title={`${d.audits} audit${d.audits > 1 ? "s" : ""}`}
                           style={{ fontSize: 11, color: "#10b981", textDecoration: "none",
@@ -260,14 +219,14 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
                   </td>
                 </tr>
               ))}
-              {paginated.length === 0 && <tr><td colSpan={10} style={{ ...td, color: "var(--text-muted)", textAlign: "center" }}>No DApps with recorded data match these filters.</td></tr>}
+              {paginated.length === 0 && <tr><td colSpan={9} style={{ ...td, color: "var(--text-muted)", textAlign: "center" }}>No DApps with recorded data match these filters.</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
 
       <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginTop: 12 }}>
-        *Observed tx since start, with partial contract coverage. The 24h window may be shorter when collection is recent. — means unavailable. DApps without recorded activity are hidden.
+        Coverage measures identifiable owners among outputs at tracked scripts; protocol coverage remains partial. Wallets are not people, and attribution changes can affect wallet growth. — means unavailable, including missing comparisons or a positive count following a zero baseline. Live counters above use their own collection period. DApps without recorded activity are hidden.
       </p>
 
       {/* Pagination */}
@@ -310,6 +269,17 @@ export default function DAppTable({ dapps, adaPrice, hideFilters }: { dapps: Tab
       )}
     </div>
   );
+}
+
+function epochDate(value: number) {
+  return new Date(value * 1000).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" });
+}
+
+function Growth({ value }: { value: number | null }) {
+  if (value === null) return <span title="Comparable data unavailable, or the previous count is zero." style={{ color: "var(--text-muted)" }}>—</span>;
+  const small = value !== 0 && Math.abs(value) < 0.05;
+  const text = value === 0 ? "0.0%" : `${value > 0 ? "+" : "−"}${small ? "<0.1" : Math.abs(value).toFixed(1)}%`;
+  return <span style={{ fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap", color: value > 0 ? "#10b981" : value < 0 ? "#ef4444" : "var(--text-muted)" }} title={`${value.toLocaleString("en-US", { maximumFractionDigits: 4 })}% versus the previous consecutive epoch`}>{text}</span>;
 }
 
 function SortIcon({ column, sort, ascending }: { column: SortKey; sort: SortKey; ascending: boolean }) {

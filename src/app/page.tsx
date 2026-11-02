@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { fetchAnalytics } from "@/lib/analytics";
+import { fetchAnalytics, fetchHistory } from "@/lib/analytics";
+import { selectEpochPeriod } from "@/lib/epoch-summary";
 import { hasRecordedActivity, tableDapp } from "@/lib/dapp-view";
 import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
 import DAppTable from "@/components/DAppTable";
@@ -14,9 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const data = await fetchAnalytics().catch(() => null);
+  const [data, history] = await Promise.all([fetchAnalytics().catch(() => null), fetchHistory().catch(() => null)]);
   if (!data) return <FeedUnavailable />;
   const dapps = data.dapps.filter(hasRecordedActivity);
+  const period = selectEpochPeriod(history, data.status.registryDigest);
   return <main style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px" }}>
     <div className="hero-banner" style={{ padding: "18px 28px" }}>
       <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
@@ -33,11 +35,11 @@ export default async function HomePage() {
         <CompactStat label="Active Users" value={null} color="#ec4899" />
         <CompactStat label="Observed Txs" value={data.status.startedAt === null ? null : data.status.counts.transactions} color="#3b82f6" detail="Distinct recorded transactions since collection began, including recent provisional blocks." />
         <CompactStat label="DApps with data" value={dapps.length} color="#f59e0b" />
-        <CompactStat label="Epoch" value={data.status.checkpoint?.epoch ?? null} color="#06b6d4" />
+        <CompactStat label="Network epoch" value={data.status.checkpoint?.epoch ?? null} color="#06b6d4" />
         <CompactStat label="ADA Price" value={null} isPrice color="#8b5cf6" />
       </div>
     </div>
     <CoverageNotice status={data.status} compact />
-    <DAppTable dapps={dapps.map(tableDapp)} adaPrice={0} />
+    <DAppTable dapps={dapps.map(dapp => tableDapp(dapp, period))} period={period ? { epoch: period.current.epoch, startTime: period.current.startTime, endTime: period.current.endTime, previousEpoch: period.previous?.epoch ?? null } : null} />
   </main>;
 }

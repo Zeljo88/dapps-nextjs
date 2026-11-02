@@ -31,6 +31,13 @@ SundaeSwap uses its V1/V3/V4/stableswap owner authorization keys; WingRiders use
 the explicit owners of tracked V1 constant-product/stableswap requests. Each
 protocol keeps its own validation proof and attribution coverage.
 
+Directory and category tables use the same latest validated completed epoch for
+all rows, with transactions, active wallets, growth versus the previous consecutive
+epoch, and owner-attribution coverage. Dates and epoch numbers are explicit;
+live counters retain their own collection period. Missing comparisons and growth
+from a zero baseline stay unavailable. No additional replay or stored records
+are needed for these derived directory metrics.
+
 ## Development
 
 Use Node 22 or later. Install locked dependencies with `npm ci` and set
@@ -41,6 +48,7 @@ For the Python backend and relay operations, see [backend/README.md](backend/REA
 
 - `npm run build` — production build; API_URL is required.
 - `npm run test:config` — backend URL validation.
+- `npm run test:epochs` — epoch selection, growth and missing-data checks.
 - `npm run lint` — source checks.
 - `npm run test:seo` — run against `npm start` on port 3000, or set SEO_BASE_URL.
 - Backend: `.venv/Scripts/python -m unittest discover -s tests -v` from backend.

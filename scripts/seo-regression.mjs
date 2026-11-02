@@ -86,7 +86,10 @@ console.log(`SEO regression checks passed: ${locations.length} sitemap URLs, ${d
 
 const home = await get("/");
 assert.match(home.body, /Partial contract coverage/, "Coverage must be disclosed");
-assert.match(home.body, /Observed tx since start/, "Counters must describe observations");
+assert.match(home.body, /Completed epoch \d+/, "Directory must identify its historical period");
+assert.match(home.body, /Transactions \/ epoch/, "Directory transaction counts must be labelled by epoch");
+assert.match(home.body, /Active wallets \/ epoch/, "Wallet counts must have an explicit period");
+assert.match(home.body, /owner attribution/, "Coverage must identify what it measures");
 assert.match(home.body, /aria-label="Total TVL: Unavailable"/, "Unknown TVL must remain unavailable in the original UI");
 const registryResponse = await fetch(`${process.env.API_URL || "https://api.dappsoncardano.com"}/v1/dapps`);
 assert.ok(registryResponse.ok, "Registry should be available for the data-visibility check");

@@ -19,6 +19,7 @@ export interface ContractEvent {
   tx: string; slot: number; height: number; time: number; script: string; kind: string; ref: string;
 }
 export interface HistoryData {
+  registryDigest: string;
   aggregation: "epoch";
   coverage: "partial";
   epochs: { epoch: number; startTime: number; endTime: number; dapps: { slug: string; name: string; transactions: number;
@@ -42,7 +43,7 @@ export const fetchAnalytics = cache(async () => {
   return { status, dapps };
 });
 export function fetchEvents(slug: string) { return read<{ events: ContractEvent[] }>(`/v1/dapps/${encodeURIComponent(slug)}/events?limit=30`); }
-export function fetchHistory() { return read<HistoryData>("/v1/history"); }
+export const fetchHistory = cache(() => read<HistoryData>("/v1/history"));
 export function dateTime(value: number | null): string {
   return value === null ? "Not available" : new Date(value * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
 }

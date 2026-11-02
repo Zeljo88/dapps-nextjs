@@ -9,7 +9,7 @@ export function CoverageNotice({ status, compact = false }: { status: IndexerSta
       <Link href="/methodology" style={{ color: "var(--accent)" }}>Methodology & coverage ↗</Link>
     </div>
     <details style={{ marginTop: 4 }}><summary style={{ cursor: "pointer", color: "var(--text-muted)" }}>Data availability and collection details</summary>
-      <p style={{ marginTop: 8 }}>Observed transactions create tracked outputs or spend tracked outputs seen after collection began. DApp counters count each transaction once and wait for three subsequent blocks; chain rollbacks can still remove them. The 24h figure covers only the available collection period. TVL, volume, prices and user counts are unavailable.</p>
+      <p style={{ marginTop: 8 }}>Live observed transactions create tracked outputs or spend tracked outputs seen after collection began. Live counters count each transaction once and wait for three subsequent blocks; chain rollbacks can still remove them. The 24h figure covers only the available collection period. The directory separately labels its validated completed epoch. TVL, volume, prices and counts of individual people are unavailable.</p>
       <p>Last block: {dateTime(status.lastReceivedAt)} · Block {count(status.checkpoint?.height ?? null)} · {status.lagBlocks ?? "—"} blocks behind the reported tip. Refresh for current data.</p>
     </details>
   </aside>;
