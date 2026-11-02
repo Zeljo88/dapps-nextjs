@@ -318,3 +318,9 @@ and sampled through the independent transaction API. Requests whose action
 shape is outside the pinned WingRiders serializer remain unrecognized rather
 than being guessed into the count. A validation pause preserves its working
 database; a corrected runtime can resume it without replaying completed blocks.
+Epoch 659's WingRiders attribution was reviewed below the default threshold:
+all 17 excluded outputs were checked independently and use unsupported action
+constructors 3/4. A batch-specific minimum of 92% permitted publication of the
+recognized-owner lower bound (92.77% attribution), with a retained anonymized
+review. Unsupported operations remain excluded. The chart displays the
+attribution range as well as the per-point coverage.

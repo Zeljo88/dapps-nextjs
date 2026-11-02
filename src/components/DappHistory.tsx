@@ -39,6 +39,9 @@ export default function DappHistory({ slug, history }: { slug: string; history: 
   });
   const total = rows.reduce((sum, row) => sum + (row.transactions ?? 0), 0);
   const latestWallet = [...rows].reverse().find(row => row.activeWallets !== null);
+  const coverage = rows.flatMap(row => row.attributionPercent === undefined ? [] : [row.attributionPercent]);
+  const minimumCoverage = coverage.length ? Math.min(...coverage) : 100;
+  const maximumCoverage = coverage.length ? Math.max(...coverage) : 100;
   return <div style={{ display: "grid", gap: 20, minWidth: 0 }}>
     <section className="card" aria-label="Historical activity by epoch" style={{ padding: 24, minWidth: 0 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
@@ -55,6 +58,7 @@ export default function DappHistory({ slug, history }: { slug: string; history: 
         <div><strong style={{ fontSize: 24, color: "var(--accent)" }}>{latestWallet.activeWallets?.toLocaleString("en-US")}</strong><span style={{ display: "block", color: "var(--text-muted)", fontSize: 12 }}>active wallets · epoch {latestWallet.epoch}</span></div>
       </div>
       <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>Each wallet counts once per epoch when a created order output identifies it as the owner. Orders across tracked contract versions are combined. Hover or tap a point to see attribution coverage.</p>
+      {minimumCoverage < 100 && <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7, marginBottom: 16 }}>Owner attribution: {minimumCoverage}%–{maximumCoverage}% of tracked order outputs across these epochs. Counts are lower bounds where owners could not be identified.</p>}
       <EpochChart rows={rows} metric="activeWallets" label="Active wallets" />
       <p style={{ marginTop: 16, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>Wallets are not people: bots and multiple wallets exist. Addresses sharing an unambiguous observed stake key are grouped where possible. Script-controlled and unidentified orders are excluded. Counts include automatically recreated orders and orders later cancelled; they do not measure all protocol activity. Epoch counts cannot be added together to get unique users across the period.</p>
     </section>}
