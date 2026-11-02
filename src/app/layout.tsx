@@ -23,7 +23,6 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@dappsoncardano",
-    creator: "@AdriaStakePool",
     title: "DApps on Cardano — Real-time Cardano DeFi Analytics",
     description: "Observe Cardano DApp contract activity with transparent coverage and transaction evidence.",
   },
@@ -72,10 +71,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </div>
                 <div style={{ display: "flex", gap: 20 }}>
                   <a href="/methodology">Data: our Cardano node · Coverage & methodology</a>
-                  <a href="https://adriapool.net" target="_blank" rel="noopener noreferrer"
-                    style={{ color: "var(--accent)", textDecoration: "none" }}>
-                    Powered by ADRIA Pool
-                  </a>
                 </div>
               </div>
             </footer>

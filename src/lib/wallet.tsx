@@ -1,8 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
-const ADRIA_POOL_ID = "pool1we9umarzn0l6jp8mcm98y28lxuuzcurzpjldnjwtgdhgw068mnr";
-
 export const SUPPORTED_WALLETS = [
   { name: "eternl",      label: "Eternl",   icon: "/wallets/eternl.svg"  },
   { name: "nami",        label: "Nami",     icon: "/wallets/nami.svg"    },
@@ -49,13 +47,11 @@ interface WalletCtx {
   error: string;
   connect: (walletName: string) => Promise<void>;
   disconnect: () => void;
-  delegate: () => Promise<{ txHash?: string; error?: string }>;
 }
 
 const Ctx = createContext<WalletCtx>({
   wallet: null, installedWallets: [], connecting: false, error: "",
   connect: async () => {}, disconnect: () => {},
-  delegate: async () => ({}),
 });
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -107,7 +103,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         rewardAddress = rewards?.[0] || "";
       } catch {}
 
-      // Raw CIP-30 API (needed for token balances and delegation tx)
+      // Raw CIP-30 API (needed for token balances)
       const cardano = (window as CardanoWindow).cardano;
       const api = cardano?.[walletName] ? await cardano[walletName].enable() : null;
 
@@ -133,35 +129,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") localStorage.removeItem("connectedWallet");
   }, []);
 
-  const delegate = useCallback(async () => {
-    if (!wallet) return { error: "No wallet connected" };
-    try {
-      // Use MeshJS to build delegation tx
-      const { BrowserWallet, Transaction } = await import("@meshsdk/core");
-      const meshWallet = await BrowserWallet.enable(wallet.name);
-
-      const rewardAddresses = await meshWallet.getRewardAddresses();
-      const rewardAddr = rewardAddresses[0];
-      if (!rewardAddr) return { error: "No reward address found" };
-
-      const tx = new Transaction({ initiator: meshWallet });
-      tx.delegateStake(rewardAddr, ADRIA_POOL_ID);
-
-      const unsignedTx = await tx.build();
-      const signedTx = await meshWallet.signTx(unsignedTx);
-      const txHash = await meshWallet.submitTx(signedTx);
-      return { txHash };
-    } catch (error: unknown) {
-      return { error: errorMessage(error, "Delegation failed") };
-    }
-  }, [wallet]);
-
   return (
-    <Ctx.Provider value={{ wallet, installedWallets, connecting, error, connect, disconnect, delegate }}>
+    <Ctx.Provider value={{ wallet, installedWallets, connecting, error, connect, disconnect }}>
       {children}
     </Ctx.Provider>
   );
 }
 
 export const useWallet = () => useContext(Ctx);
-export { ADRIA_POOL_ID };

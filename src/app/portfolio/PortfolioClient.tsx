@@ -24,7 +24,6 @@ interface StakingInfo {
   availableRewards: number;
   epoch: number;
   ros: number; // return on stake %
-  isAdria: boolean;
 }
 
 interface DefiPosition {
@@ -48,7 +47,6 @@ interface YieldOpportunity {
 
 // Use relative path so it works on both HTTP and HTTPS (avoids mixed content)
 const API = "/api";
-const ADRIA_POOL_ID = "pool1we9umarzn0l6jp8mcm98y28lxuuzcurzpjldnjwtgdhgw068mnr";
 
 function fmtAda(lovelace: number) {
   return (lovelace / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -92,7 +90,6 @@ async function fetchStakingInfo(rewardAddress: string): Promise<StakingInfo | nu
       availableRewards: d.availableRewards || 0,
       epoch: 0,
       ros: d.ros || 0,
-      isAdria: d.poolId === ADRIA_POOL_ID,
     };
   } catch {
     return null;
@@ -327,18 +324,6 @@ export default function PortfolioClient() {
           <div className="card" style={{ padding: 24, marginBottom: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
               <h3 style={{ ...sectionTitle, marginBottom: 0 }}>🏊 Staking Status</h3>
-              {!loading && !staking && (
-                <Link href="/" style={ctaBtn}>Stake with ADRIA →</Link>
-              )}
-              {staking && !staking.isAdria && (
-                <Link href="/" style={ctaBtn}>Switch to ADRIA →</Link>
-              )}
-              {staking?.isAdria && (
-                <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 999,
-                  background: "#10b98120", color: "#10b981", border: "1px solid #10b98140", fontWeight: 600 }}>
-                  ⭐ Staking with ADRIA
-                </span>
-              )}
             </div>
 
             {loading && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading staking info...</p>}
@@ -622,10 +607,4 @@ function StatPill({ label, value, color }: { label: string; value: string; color
 const sectionTitle: React.CSSProperties = {
   fontSize: 14, fontWeight: 700, color: "var(--text-secondary)",
   textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 16,
-};
-
-const ctaBtn: React.CSSProperties = {
-  display: "inline-block", padding: "8px 16px", borderRadius: 8,
-  background: "linear-gradient(135deg, #0066ff, #00c6a2)",
-  color: "white", fontSize: 13, fontWeight: 700, textDecoration: "none",
 };

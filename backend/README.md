@@ -122,7 +122,7 @@ stops on low available RAM (<4 GiB), low disk space (<20 GiB), >85% host CPU,
 last saved block; validated epoch reports are not silently overwritten.
 Build that runtime with `python deploy/package-backfill.py`, upload
 `.deploy/backfill.zip` to the existing application folder, and extract it into
-`backfill-runtime`. Install the trial unit and start it with
+`backfill-summary-runtime`. Install the trial unit and start it with
 `systemctl start --no-block dapps-backfill`. Install the expansion drop-in only
 after the trial report passes and its load is reviewed, then daemon-reload and
 start the same unit. The history directory must be writable by `azureuser`.
@@ -145,7 +145,7 @@ The historical database keeps a persistent WAL connection with synchronous
 NORMAL. Block transactions remain atomic and consistent; after an OS/power
 failure, recent uncheckpointed work can be replayed from the node. The live
 database's durability settings are unchanged. The historical reader limits
-source API requests and caches immutable responses for reproducibility.
+source API requests and caches responses temporarily during validation.
 
 When independent API queries dominate elapsed time, `deploy/prefetch-history.py`
 can prepare reference inventories for an explicitly bounded list of completed
@@ -157,9 +157,11 @@ importer still performs every reconciliation and validation check. The one-off
 server run for epochs 660 and 659 is capped at 25% of one core and 256 MiB RAM.
 
 Historical publication uses epoch totals only, with one point per completed epoch on a line chart.
-The API omits daily aggregation. Original validation reports and transaction
-records remain intact as evidence; their existing internal daily checks are not
-separate daily databases. Missing epochs remain gaps rather than zero activity.
+The API omits daily aggregation. Completed historical epochs retain totals, boundaries, validation markers and
+original report hashes. Detailed epoch databases and transaction-response caches
+are discarded after integrity and count checks. Original daily checks and sampled
+transaction IDs are removed from retained summaries. The live working database
+remains separate. Missing epochs remain gaps rather than zero activity.
 
 Only passed reports matching the active registry digest are exposed by
 `GET /v1/history`. In production, a separate loopback reader on port 8001 serves
@@ -179,3 +181,23 @@ original collection date and scope.
 5. Add off-server backups; the existing daily recovery copies share the node disk.
 6. Add full protocol coverage only after its contracts and initial UTXOs have
    been independently checked; do not relabel observations as complete totals.
+
+## Epoch totals retention
+
+`analytics.retention` defaults to a dry run. To review completed epochs:
+
+```
+python -m analytics.retention --root /mnt/cardano-data/dapps-analytics/history --epochs 659 660 661 662 663 664 --purge-cache
+```
+
+Add `--apply` only when detail deletion is intended and historical import/prefetch
+jobs have stopped. The tool verifies SQLite integrity and exact per-DApp counts
+for every requested database before changing any files. It atomically retains
+summary reports before removing their detailed DB/WAL/SHM files. Cache removal
+requires all published historical epochs. The node DB and live working DB are
+outside this retention directory and are never cleanup targets.
+
+Future historical imports default to the same totals-only compaction after the
+batch validates. `--retain-details` explicitly preserves detail for audit runs.
+The isolated backfill runtime must be rebuilt/uploaded to use a source change;
+the original backfill-runtime is preserved as provenance for the original imports.

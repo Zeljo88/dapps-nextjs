@@ -4,7 +4,6 @@ import { hasRecordedActivity, tableDapp } from "@/lib/dapp-view";
 import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
 import DAppTable from "@/components/DAppTable";
 import CompactStat from "@/components/CompactStat";
-import StakeButton from "@/components/StakeButton";
 import CustomSwap from "@/components/CustomSwap";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +22,6 @@ export default async function HomePage() {
       <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <div><h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, lineHeight: 1.2 }}>Cardano DApps Analytics</h1>
           <p style={{ fontSize: 14, opacity: 0.85, maxWidth: 500 }}>On-chain activity from our Cardano node. Only DApps with recorded data are shown.</p></div>
-        <StakeButton />
       </div>
     </div>
     <div className="home-swap-stats" style={{ display: "flex", gap: 16, marginBottom: 20, alignItems: "stretch" }}>

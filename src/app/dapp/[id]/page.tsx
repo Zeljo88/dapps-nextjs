@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { count, fetchAnalytics, fetchEvents, fetchHistory } from "@/lib/analytics";
+import { count, fetchAnalytics, fetchHistory } from "@/lib/analytics";
 import { hasRecordedActivity } from "@/lib/dapp-view";
 import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
 import CategoryBadge from "@/components/CategoryBadge";
@@ -22,7 +22,7 @@ export default async function DappPage({ params }: { params: Promise<{ id: strin
   if (!data) return <FeedUnavailable />;
   const dapp = data.dapps.find(item => item.slug === id);
   if (!dapp) notFound();
-  const [evidence, history] = await Promise.all([fetchEvents(dapp.slug).catch(() => null), fetchHistory().catch(() => null)]);
+  const history = await fetchHistory().catch(() => null);
   const related = data.dapps.filter(item => item.slug !== dapp.slug && hasRecordedActivity(item));
   return <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
     <div style={{ marginBottom: 24, fontSize: 14, color: "var(--text-muted)" }}><Link href="/" style={{ color: "var(--text-muted)", textDecoration: "none" }}>DApps</Link><span style={{ margin: "0 8px" }}>›</span>{dapp.name}</div>
@@ -41,7 +41,7 @@ export default async function DappPage({ params }: { params: Promise<{ id: strin
     </div>
     <CoverageNotice status={data.status} compact />
     <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 20 }}>*Observed tx since start, with partial contract coverage. — means unavailable.</p>
-    <TrackedDappTabs dapp={dapp} events={evidence?.events ?? null} history={history} />
+    <TrackedDappTabs dapp={dapp} history={history} />
     {related.length > 0 && <section style={{ marginTop: 48 }}><h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Related DApps</h2><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 16 }}>{related.map(item => <Link href={`/dapp/${item.slug}`} key={item.slug} style={{ textDecoration: "none" }}><div className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}><DappLogo slug={item.slug} name={item.name} size={40} /><div><strong style={{ color: "var(--text-primary)", fontSize: 14 }}>{item.name}</strong><p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 5 }}>{count(item.observedTransactions)} observed transactions</p></div></div></Link>)}</div></section>}
   </main>;
 }

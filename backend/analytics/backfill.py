@@ -25,6 +25,7 @@ from . import store as store_module
 from .addresses import ALPHABET, payment_script_hash
 from .store import Store
 from .worker import Rpc, slot_coordinates
+from .retention import compact_epochs
 
 LOG = logging.getLogger("analytics.backfill")
 API = "https://api.koios.rest/api/v1"
@@ -552,6 +553,9 @@ async def run(args):
         LOG.info("VALIDATED epoch=%s blocks=%s transactions=%s load=%s", epoch, checks["blocksReplayed"], checks["dapps"], report["load"])
     validated = sorted(json.loads(path.read_text())["epoch"] for path in root.glob("epoch-*-report.json")
                        if json.loads(path.read_text()).get("passed"))
+    if not args.retain_details:
+        write_json(root / "status.json", {"phase": "compacting", "epochs": validated, "updatedAt": time.time()})
+        LOG.info("Retaining epoch totals only: %s", compact_epochs(root, validated, apply=True, purge_cache=True))
     write_json(root / "status.json", {"phase": "complete", "epochs": args.epochs, "validatedEpochs": validated, "updatedAt": time.time()})
 
 
@@ -560,6 +564,7 @@ def main():
     parser.add_argument("--root", required=True)
     parser.add_argument("--epochs", type=int, nargs="+", default=[664])
     parser.add_argument("--rate", type=float, default=100)
+    parser.add_argument("--retain-details", action="store_true", help="Keep detailed history for an explicit audit run; default retains only verified epoch totals")
     parser.add_argument("--ogmios", default="ws://127.0.0.1:1337")
     args = parser.parse_args()
     if args.rate <= 0:
