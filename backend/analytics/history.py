@@ -65,7 +65,7 @@ def history_data(directory: str | Path, registry_digest: str):
                                       "boundaryTransactionsRecovered": report["boundaryTransactionsRecovered"]}})
     return {"coverage": "partial", "registryDigest": registry_digest,
             "aggregation": "epoch", "epochs": epochs,
-            "methodology": "Completed, independently reconciled epochs for published payment scripts. Transactions deduplicate within each DApp. Active wallets count identifiable key-controlled order owners creating orders in each epoch, grouped by unambiguous observed stake keys where possible. Wallets are not people; bots and multiple wallets exist. Script-controlled and unidentified orders are excluded with coverage counts. Epoch wallet counts must not be summed into unique period users."}
+            "methodology": "Completed, independently reconciled epochs for published payment scripts. Transactions deduplicate within each DApp. Active wallets count identifiable key-controlled owners named in order outputs created in each epoch, including automatic recreations, grouped by unambiguous observed stake keys where possible. Wallets are not people; bots and multiple wallets exist. Script-controlled and unidentified orders are excluded with coverage counts. Epoch wallet counts must not be summed into unique period users."}
 
 
 

@@ -54,9 +54,9 @@ export default function DappHistory({ slug, history }: { slug: string; history: 
         <div><h2 style={{ fontSize: 16, fontWeight: 700 }}>Active wallets over time</h2><p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 6 }}>Distinct identifiable order owners per completed epoch</p></div>
         <div><strong style={{ fontSize: 24, color: "var(--accent)" }}>{latestWallet.activeWallets?.toLocaleString("en-US")}</strong><span style={{ display: "block", color: "var(--text-muted)", fontSize: 12 }}>active wallets · epoch {latestWallet.epoch}</span></div>
       </div>
-      <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>A wallet counts once when its identifiable owner creates an order during an epoch. Orders across tracked contract versions are combined. Hover or tap a point to see attribution coverage.</p>
+      <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>Each wallet counts once per epoch when a created order output identifies it as the owner. Orders across tracked contract versions are combined. Hover or tap a point to see attribution coverage.</p>
       <EpochChart rows={rows} metric="activeWallets" label="Active wallets" />
-      <p style={{ marginTop: 16, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>Wallets are not people: bots and multiple wallets exist. Addresses sharing an unambiguous observed stake key are grouped where possible. Script-controlled and unidentified orders are excluded. Counts describe order creation, including orders later cancelled, and do not measure all protocol activity. Epoch counts cannot be added together to get unique users across the period.</p>
+      <p style={{ marginTop: 16, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>Wallets are not people: bots and multiple wallets exist. Addresses sharing an unambiguous observed stake key are grouped where possible. Script-controlled and unidentified orders are excluded. Counts include automatically recreated orders and orders later cancelled; they do not measure all protocol activity. Epoch counts cannot be added together to get unique users across the period.</p>
     </section>}
   </div>;
 }

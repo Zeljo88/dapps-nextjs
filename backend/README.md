@@ -235,12 +235,13 @@ isolated output directory, with the same registry digest as the base reports:
 python -m analytics.wallet_backfill --root /mnt/cardano-data/dapps-analytics/history-wallets-minswap-v1 --base-history /mnt/cardano-data/dapps-analytics/history --epochs 664 663 662 661 660 659 --dapps minswap --rate 80
 ```
 
-The Minswap adapter identifies key-controlled owners who **create orders** in an
+The Minswap adapter identifies key-controlled owners named in **order outputs created** in an
 epoch, across V1, V2 and the registered stableswap scripts. V1 and stableswap use
 the sender in the datum. V2 uses signature authorization, with a refund-address
 stake key only when its payment key matches that authorization. Pool outputs,
 execution-only batchers and failed transactions do not identify active owners.
-Orders can later be cancelled or left unfilled; this is not a count of traders,
+Automatically recreated orders are included. Orders can later be cancelled or
+left unfilled; this is not a count of manual visits, traders,
 completed swaps, all participants, or people. Script-controlled authorizations,
 unrecognized datums and unavailable published datums have explicit excluded
 order counts. API errors fail the run rather than turning missing data into zero.
