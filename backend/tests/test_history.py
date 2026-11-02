@@ -16,7 +16,7 @@ class HistoryTests(unittest.TestCase):
                 "dapps": [{"slug": "minswap", "name": "Minswap", "transactions": sum(row["transactions"] for row in daily)}],
                 "daily": daily}
 
-    def test_adjacent_epoch_fragments_form_one_full_utc_day_without_double_counting(self):
+    def test_epoch_totals_remain_separate_and_daily_data_is_not_published(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             first = self.report(1, 0, 10000, [{"date": "1970-01-01", "dapp": "minswap", "transactions": 3}])
@@ -25,8 +25,9 @@ class HistoryTests(unittest.TestCase):
                 (root / f'epoch-{report["epoch"]}-report.json').write_text(json.dumps(report))
             result = history_data(root, "reviewed")
             self.assertEqual(len(result["epochs"]), 2)
-            self.assertFalse(result["daily"][0]["partialDay"])
-            self.assertEqual(result["daily"][0]["dapps"][0]["transactions"], 10)
+            self.assertEqual(result["aggregation"], "epoch")
+            self.assertNotIn("daily", result)
+            self.assertEqual([e["dapps"][0]["transactions"] for e in result["epochs"]], [3, 7])
 
     def test_unvalidated_or_differently_mapped_reports_are_not_published(self):
         with tempfile.TemporaryDirectory() as directory:

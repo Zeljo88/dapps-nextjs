@@ -1,5 +1,4 @@
 """Publish only independently validated epoch reports for the active registry."""
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -14,8 +13,7 @@ def history_data(directory: str | Path, registry_digest: str):
             reports.append(report)
     reports.sort(key=lambda report: report["epoch"])
     epochs = []
-    daily = {}
-    projects = {}
+    previous_end = None
     seen = set()
     for report in reports:
         epoch = report["epoch"]
@@ -26,8 +24,9 @@ def history_data(directory: str | Path, registry_digest: str):
         end = report["boundaries"]["info"]["end_time"]
         if end <= start:
             raise ValueError("Invalid historical coverage interval")
-        for project in report["dapps"]:
-            projects[project["slug"]] = project["name"]
+        if previous_end is not None and start < previous_end:
+            raise ValueError("Historical epoch intervals overlap")
+        previous_end = end
         epochs.append({"epoch": epoch, "startTime": start, "endTime": end,
                        "dapps": report["dapps"],
                        "validation": {"passed": True, "checkedAt": report["checkedAt"],
@@ -35,26 +34,10 @@ def history_data(directory: str | Path, registry_digest: str):
                                       "chainTransactionsInspected": report["chainTransactionsInspected"],
                                       "independentTransactionSamples": report["independentTransactionSamples"],
                                       "boundaryTransactionsRecovered": report["boundaryTransactionsRecovered"]}})
-        day_start = int(start // 86400) * 86400
-        while day_start < end:
-            date = datetime.fromtimestamp(day_start, timezone.utc).strftime("%Y-%m-%d")
-            value = daily.setdefault(date, {"date": date, "coverageSeconds": 0, "counts": {}})
-            value["coverageSeconds"] += min(end, day_start + 86400) - max(start, day_start)
-            if value["coverageSeconds"] > 86400:
-                raise ValueError("Historical epoch intervals overlap")
-            day_start += 86400
-        for record in report["daily"]:
-            counts = daily[record["date"]]["counts"]
-            counts[record["dapp"]] = counts.get(record["dapp"], 0) + record["transactions"]
-    result = []
-    for date, day in sorted(daily.items()):
-        result.append({"date": date, "partialDay": day["coverageSeconds"] < 86400,
-                       "coverageSeconds": day["coverageSeconds"],
-                       "dapps": [{"slug": slug, "name": name, "transactions": day["counts"].get(slug, 0)}
-                                 for slug, name in sorted(projects.items())]})
-    return {"coverage": "partial", "registryDigest": registry_digest, "dayTimezone": "UTC",
-            "epochs": epochs, "daily": result,
-            "methodology": "Only completed, independently reconciled epochs for the published payment scripts are included. Counts deduplicate transactions within each DApp. Partial UTC days are labelled; financial, trade and user metrics are not inferred."}
+    return {"coverage": "partial", "registryDigest": registry_digest,
+            "aggregation": "epoch", "epochs": epochs,
+            "methodology": "Only completed, independently reconciled epochs for the published payment scripts are included. Counts deduplicate transactions within each DApp. Financial, trade and user metrics are not inferred."}
+
 
 
 def create_app(history_root=None):

@@ -156,16 +156,16 @@ and never writes a historical database or publishes a validated epoch. The main
 importer still performs every reconciliation and validation check. The one-off
 server run for epochs 660 and 659 is capped at 25% of one core and 256 MiB RAM.
 
-Store timestamps in UTC and derive **both epoch and daily views**. Daily buckets
-split at UTC midnight, while epochs split at Cardano's actual epoch boundary.
-Edge days with incomplete coverage are marked partial. The publication layer
-combines adjacent epoch fragments and verifies coverage does not exceed 24h.
+Historical publication uses epoch totals only, with one bar per completed epoch.
+The API omits daily aggregation. Original validation reports and transaction
+records remain intact as evidence; their existing internal daily checks are not
+separate daily databases. Missing epochs remain gaps rather than zero activity.
 
 Only passed reports matching the active registry digest are exposed by
 `GET /v1/history`. In production, a separate loopback reader on port 8001 serves
 this exact nginx path, allowing historical publication without restarting the
 live API or collector. `dapps-history-api.service` is read-only and capped at
-128 MiB. DApp detail pages show a History tab with Per epoch / Per day controls
+128 MiB. DApp detail pages show a History tab with an interactive epoch activity chart
 when validated periods are available. Existing live counters retain their
 original collection date and scope.
 

@@ -19,11 +19,10 @@ export interface ContractEvent {
   tx: string; slot: number; height: number; time: number; script: string; kind: string; ref: string;
 }
 export interface HistoryData {
-  dayTimezone: string;
+  aggregation: "epoch";
   coverage: "partial";
   epochs: { epoch: number; startTime: number; endTime: number; dapps: { slug: string; name: string; transactions: number }[];
     validation: { passed: boolean; checkedAt: string; blocksReplayed: number; independentTransactionSamples: number } }[];
-  daily: { date: string; partialDay: boolean; coverageSeconds: number; dapps: { slug: string; name: string; transactions: number }[] }[];
 }
 async function read<T>(path: string): Promise<T> {
   const origin = process.env.API_URL?.trim() || "http://127.0.0.1:8000";
