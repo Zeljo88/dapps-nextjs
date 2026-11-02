@@ -83,7 +83,7 @@ export default function DAppTable({ dapps, period, hideFilters }: { dapps: Table
           <Growth name={d.name} metric="active wallets" current={d.epochWallets} previous={d.previousWallets} value={d.walletGrowth} period={period} extra={d.attributionPercent !== null ? ` Owners were identifiable in ${d.attributionPercent}% of tracked order/request outputs in the reporting epoch. This does not measure whole-protocol coverage.` : ""} />
           <span className="epoch-previous">Previous: {number(d.previousWallets)}</span></td>
         <td data-metric="tvl"><div className="epoch-mobile-label">TVL · near epoch end <MetricTooltip label={`About ${d.name} TVL`} text={TVL} /></div><TvlCell name={d.name} tvl={d.tvl} epoch={period.completedEpoch} /></td>
-        <td className="epoch-links"><Link href={`/dapp/${d.slug}?tab=history`} className="epoch-profile-link">6-epoch charts →</Link>{d.link && <a href={d.link} target="_blank" rel="noopener noreferrer" aria-label={`${d.name} website`}><Globe size={16} aria-hidden="true" /></a>}</td>
+        <td className="epoch-links">{d.link && <a href={d.link} target="_blank" rel="noopener noreferrer" aria-label={`${d.name} website`}><Globe size={16} aria-hidden="true" /></a>}</td>
       </tr>)}{!rows.length && <tr><td colSpan={5} className="epoch-empty">No DApps with recorded data match these filters.</td></tr>}</tbody>
     </table></div>
     <p className="epoch-footnote">Transactions and wallets cover tracked contracts only. Wallets are identifiable order owners, not people. TVL is a separate DefiLlama estimate with its own protocol coverage. — means unavailable.</p>
@@ -107,7 +107,7 @@ function TvlCell({ name, tvl, epoch }: { name: string; tvl: EpochTvl | null; epo
   const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 2 }).format(snapshot.usd);
   const detail = `${name} TVL for epoch ${epoch}: ${snapshot.usd.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 })}. Source: DefiLlama, ${tvl.scope}. Observed ${utcTime(snapshot.observedAt)}, ${Math.floor(age / 3600)}h ${Math.floor(age % 3600 / 60)}m before the epoch ended. This daily snapshot approximates the end-of-epoch balance; it is not an exact epoch-boundary measurement or a five-day sum. USD changes also reflect token prices. Provider coverage differs from our transaction and wallet scripts; separate staking, borrowed and pool2 series are excluded.`;
   return <div><MetricTooltip label={`${name} TVL snapshot details`} text={detail}><strong className="epoch-value">{age ? "≈ " : ""}{usd}</strong><Info size={14} aria-hidden="true" /></MetricTooltip>
-    <span className="epoch-previous">{age ? `~${Math.round(age / 3600)}h before epoch end` : "At epoch end"}</span><a className="epoch-tvl-source" href={tvl.sourceUrl} target="_blank" rel="noopener noreferrer">DefiLlama ↗</a></div>;
+    <span className="epoch-previous">{age ? `~${Math.round(age / 3600)}h before epoch end` : "At epoch end"}</span></div>;
 }
 function number(value: number | null) { return value === null ? "—" : value.toLocaleString("en-US"); }
 function epochDate(value: number) { return new Date(value * 1000).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }

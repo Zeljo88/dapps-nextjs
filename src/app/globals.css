@@ -142,7 +142,6 @@ body {
 .epoch-growth { font-size:12px; margin-top:5px; font-variant-numeric:tabular-nums; }
 .epoch-growth button { text-decoration:underline dotted; text-underline-offset:4px; }
 .epoch-previous { display:block; color:var(--text-secondary); font-size:12px; margin-top:5px; font-variant-numeric:tabular-nums; }
-.epoch-tvl-source,.epoch-profile-link { display:block; color:var(--accent); font-size:12px; margin-top:5px; text-decoration:none; }
 .epoch-links > a:last-child { display:inline-flex; color:var(--accent); padding:8px; }
 .epoch-footnote { margin-top:12px; font-size:12px; line-height:1.7; color:var(--text-secondary); }
 .epoch-mobile-label { display:none; }
@@ -160,11 +159,10 @@ body {
   .epoch-mobile-label { display:flex; gap:6px; align-items:center; font-size:12px; color:var(--text-secondary); margin-bottom:6px; }
   .epoch-table tbody td[data-metric=tvl] { grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .epoch-table tbody td[data-metric=tvl] > div:last-child { text-align:right; }
-  .epoch-table tbody .epoch-links { grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; padding-top:0; }
-  .epoch-profile-link { margin-top:0; }
+  .epoch-table tbody .epoch-links { grid-column:1/-1; display:flex; justify-content:flex-end; align-items:center; padding-top:0; }
   .epoch-value { font-size:20px; }
 }
-@media(pointer:coarse) { .metric-tooltip-trigger { min-height:44px; min-width:44px; } .epoch-sort,.epoch-filters button,.epoch-profile-link { min-height:44px; display:inline-flex; align-items:center; } }
+@media(pointer:coarse) { .metric-tooltip-trigger { min-height:44px; min-width:44px; } .epoch-sort,.epoch-filters button { min-height:44px; display:inline-flex; align-items:center; } .epoch-links a { min-height:44px; min-width:44px; justify-content:center; } }
 .category-card:hover { background: var(--bg-card-hover); }
 
 .badge {

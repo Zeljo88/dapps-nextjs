@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (data && !dapp) notFound();
   return { title: dapp ? `${dapp.name} — Observed Cardano Contract Activity` : "DApp contract activity", description: dapp?.description, alternates: { canonical: `https://dappsoncardano.com/dapp/${id}` } };
 }
-export default async function DappPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
+export default async function DappPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const data = await fetchAnalytics().catch(() => null);
   if (!data) return <FeedUnavailable />;
@@ -41,7 +41,7 @@ export default async function DappPage({ params, searchParams }: { params: Promi
     </div>
     <CoverageNotice status={data.status} compact />
     <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 20 }}>*Observed tx since start, with partial contract coverage. — means unavailable.</p>
-    <TrackedDappTabs key={dapp.slug} dapp={dapp} history={history} initialTab={(await searchParams).tab === "history" ? "History" : "Overview"} />
+    <TrackedDappTabs key={dapp.slug} dapp={dapp} history={history} />
     {related.length > 0 && <section style={{ marginTop: 48 }}><h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Related DApps</h2><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 16 }}>{related.map(item => <Link href={`/dapp/${item.slug}`} key={item.slug} style={{ textDecoration: "none" }}><div className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}><DappLogo slug={item.slug} name={item.name} size={40} /><div><strong style={{ color: "var(--text-primary)", fontSize: 14 }}>{item.name}</strong><p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 5 }}>{count(item.observedTransactions)} observed transactions</p></div></div></Link>)}</div></section>}
   </main>;
 }

@@ -17,7 +17,7 @@ cards show only projects with a positive confirmed observation count. Projects
 with no recorded activity appear automatically after their first confirmed
 observation. Their registry entries and direct profiles remain available.
 Validated historical periods appear as an epoch line chart in each DApp's
-History tab. Only epoch totals and validation summaries are retained after
+Overview tab. Only epoch totals and validation summaries are retained after
 historical validation; temporary detail and response caches are removed.
 Historical imports run separately from the live working database.
 
@@ -37,7 +37,10 @@ latest validated completed epoch. Growth compares that epoch with its immediate
 consecutive validated predecessor under the same registry. Each change tooltip
 shows both exact counts. Missing comparisons stay unavailable, including positive
 counts following zero baselines. Six-epoch transaction and wallet line charts
-remain on DApp profiles. Owner identification is supplementary tooltip metadata,
+appear directly in each DApp’s Overview; there is no separate History tab.
+Directory rows link to the DApp website, and the DApp name opens its profile.
+TVL source attribution remains in tooltips and methodology without row links.
+Owner identification is supplementary tooltip metadata,
 not a directory column. Wallets are not people and are not summed across DApps.
 
 TVL uses the `Cardano.tvl` series from DefiLlama (`minswap-dex` id 1494,
@@ -46,7 +49,7 @@ with different coverage from our selective transaction/wallet scripts; separate
 staking, borrowed and pool2 series are excluded. The latest snapshot at or before
 the reporting epoch’s end is accepted only when at most 24 hours old. The table
 labels it “near epoch end”, displays the approximate offset, and gives the exact
-USD balance, timestamp and source link. It never substitutes a current value or
+USD balance, timestamp and source attribution. It never substitutes a current value or
 claims an exact boundary measurement. TVL is a balance, not a five-day sum.
 The “Listed DApp TVL” card sums balances only if every listed DApp has a snapshot
 at the same time; it is not total Cardano TVL. Provider failures show unavailable

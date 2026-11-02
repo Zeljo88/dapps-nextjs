@@ -92,7 +92,7 @@ assert.doesNotMatch(home.body, /data-period="(?:current|six)"/, "Do not mix peri
 assert.doesNotMatch(home.body, /data-metric="coverage"/, "Owner identification must not appear as a directory column");
 assert.match(home.body, /TVL · near epoch end/, "Daily TVL must not claim exact epoch-boundary accuracy");
 assert.match(home.body, /DefiLlama/, "External TVL source must be disclosed");
-assert.match(home.body, /6-epoch charts/, "Keep the route to historical charts");
+assert.doesNotMatch(home.body, /6-epoch charts|class="epoch-tvl-source"/, "Directory rows must not include chart or TVL-provider links");
 const registryResponse = await fetch(`${process.env.API_URL || "https://api.dappsoncardano.com"}/v1/dapps`);
 assert.ok(registryResponse.ok, "Registry should be available for the data-visibility check");
 for (const dapp of await registryResponse.json()) {
