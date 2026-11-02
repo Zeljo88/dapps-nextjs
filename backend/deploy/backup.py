@@ -5,7 +5,7 @@ import os
 import sqlite3
 import time
 
-source = Path(os.environ.get("ANALYTICS_DB", "/mnt/cardano-data/dapps-analytics/analytics-v2.sqlite3"))
+source = Path(os.environ.get("ANALYTICS_DB", "/mnt/cardano-data/dapps-analytics/analytics-v3.sqlite3"))
 destination = source.parent / "backups"
 destination.mkdir(mode=0o750, exist_ok=True)
 name = "analytics-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + ".sqlite3"

@@ -7,7 +7,7 @@ User=azureuser
 WorkingDirectory=/home/azureuser/dapps-analytics/backend
 Environment=PYTHONPATH=/home/azureuser/dapps-analytics/vendor
 Environment=PYTHONDONTWRITEBYTECODE=1
-Environment=ANALYTICS_DB=/mnt/cardano-data/dapps-analytics/analytics-v2.sqlite3
+Environment=ANALYTICS_DB=/mnt/cardano-data/dapps-analytics/analytics-v3.sqlite3
 ExecStart=/usr/bin/python3 -m uvicorn analytics.api:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
 Restart=on-failure
 RestartSec=10

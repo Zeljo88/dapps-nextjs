@@ -426,8 +426,14 @@ def reconcile_boundary_spends(store, source, boundaries, monitor):
         removed = {txid for excluded_slug, txid, _ in excluded if excluded_slug == slug}
         if actual[slug] != set(expected) - removed:
             raise ValueError("Final node transaction set does not reconcile to the independent credential history")
-    return {"boundaryTransactionsRecovered": len({item[1] for item in repairs}),
-            "boundarySpendEventsRecovered": repaired_events,
+    # A resumed validation may have no new repairs while earlier committed
+    # repairs remain in the database. Report the persisted evidence total.
+    with store.connection() as db:
+        persisted = db.execute("""SELECT COUNT(DISTINCT e.tx),COUNT(*) FROM events e
+            JOIN boundary_outputs b ON b.ref=e.ref AND b.dapp=e.dapp
+            WHERE e.kind='output_spent'""").fetchone()
+    return {"boundaryTransactionsRecovered": persisted[0],
+            "boundarySpendEventsRecovered": persisted[1],
             "excludedCandidates": [{"dapp": slug, "tx": tx, "reason": reason} for slug, tx, reason in excluded]}
 
 

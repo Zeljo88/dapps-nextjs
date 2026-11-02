@@ -67,7 +67,9 @@ class BackfillTests(unittest.TestCase):
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM outputs").fetchone()[0], 0)
                 self.assertEqual(db.execute("SELECT kind FROM events").fetchone()[0], "output_spent")
             # A repeated validation is idempotent and rollbacks restore boundary state.
-            reconcile_boundary_spends(store, Source(), {"first": {"abs_slot": 20}}, QuietMonitor())
+            resumed = reconcile_boundary_spends(store, Source(), {"first": {"abs_slot": 20}}, QuietMonitor())
+            self.assertEqual(resumed["boundaryTransactionsRecovered"], 1)
+            self.assertEqual(resumed["boundarySpendEventsRecovered"], 1)
             store.rollback({"slot": 10, "id": f"{1:064x}"})
             with store.connection() as db:
                 self.assertIsNone(db.execute("SELECT spent_slot FROM boundary_outputs").fetchone()[0])

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "network": "mainnet",
   "projects": [
     {
@@ -8,11 +8,19 @@
       "category": "DEFI",
       "subCategory": "AMM_DEX",
       "website": "https://minswap.org",
-      "description": "Pilot coverage of Minswap V2 order and pool payment credentials. Other versions and protocol actions are not yet covered.",
+      "description": "Observed transactions at Minswap V1, V2 and published stableswap order and pool payment scripts. Farming, staking, governance and launch-event contracts are outside this coverage.",
       "coverage": "partial",
-      "source": "https://github.com/minswap/sdk/blob/main/src/types/constants.ts",
+      "source": "https://github.com/minswap/sdk/blob/ccf8fe740a7f56b7bda7f973596cbf6577871985/src/types/constants.ts",
       "sourceFileSha": "e73b6f49b19c6edddf35189652a94c3fcb3915d5",
       "scripts": [
+        {
+          "role": "V1 order",
+          "hash": "a65ca58a4e9c755fa830173d2a5caed458ac0c73f97db7faae2e7e3b"
+        },
+        {
+          "role": "V1 pool",
+          "hash": "e1317b152faac13426e6a83e06ff88a4d62cce3c1634ab0a5ec13309"
+        },
         {
           "role": "V2 order",
           "hash": "c3e28c36c3447315ba5a56f33da6a6ddc1770a876a8d9f0cb3a97c4c"
@@ -20,9 +28,114 @@
         {
           "role": "V2 pool",
           "hash": "ea07b733d932129c378af627436e7cbc2ef0bf96e0036bb51b3bde6b"
+        },
+        {
+          "role": "Stableswap 1 order",
+          "hash": "4c4d65a0616f60adc2cba70f533705233b1d7e8cb3e9868cdca39d86"
+        },
+        {
+          "role": "Stableswap 1 pool",
+          "hash": "3d6b603c4c4abe4273223b45a858e7f546b8c520048f43218e250c66"
+        },
+        {
+          "role": "Stableswap 2 order",
+          "hash": "62d3e3975c6ec02d4002640413368a2d46ea10548b1cd217a3e9b7cd"
+        },
+        {
+          "role": "Stableswap 2 pool",
+          "hash": "8edad0df48fe66f9785b327321abb50b23d4b37bc4250504632be59e"
+        },
+        {
+          "role": "Stableswap 3 order",
+          "hash": "96c2d95fc73740ef18abb95af68be279f80bb711eb69a527f3b1d713"
+        },
+        {
+          "role": "Stableswap 3 pool",
+          "hash": "68a7a481d2221939af26d24ab146b7695cdb5cfb2b73b319a5449227"
+        },
+        {
+          "role": "Stableswap 4 order",
+          "hash": "865085a4d810ed21f7677bdf3b1a93e1b75fd17f246d7f0243493cde"
+        },
+        {
+          "role": "Stableswap 4 pool",
+          "hash": "8cd62e5a2553c5d57be78ba0058451b925b4f1d111a2f6fd5c73a94b"
+        },
+        {
+          "role": "Stableswap 5 order",
+          "hash": "6d0241ff7fa052c63645a75e189f84214b6be062f59d6ac9c7bbb2c1"
+        },
+        {
+          "role": "Stableswap 5 pool",
+          "hash": "8fe23277978e4cdefaaf278f5c6f534de8b361cb6cb178a622a71319"
+        },
+        {
+          "role": "Stableswap 6 order",
+          "hash": "fb65ab56748b6c2894d04e68c0b92fc2a00178303ef1ee62a539afda"
+        },
+        {
+          "role": "Stableswap 6 pool",
+          "hash": "b109e0ae17302c6f185883f2e1eea8cf54fa2386ddf3e32769674a91"
+        },
+        {
+          "role": "Stableswap 7 order",
+          "hash": "f5da441786eef04048a9f59fff53c5c9ef101a59ad0488e1a8aa3897"
+        },
+        {
+          "role": "Stableswap 7 pool",
+          "hash": "17b793894c04d15b79a6b7fdbfd75ba273b2d3229c4a9717f6221a7a"
+        },
+        {
+          "role": "Stableswap 8 order",
+          "hash": "2aa1ae236856def55f77e6bb1aa5b43801ec0097f9e0a69fa24fc0ed"
+        },
+        {
+          "role": "Stableswap 8 pool",
+          "hash": "aae7c6c0a2d37ef5aa4ed1fca519949fd9f6588318839dc5d7c7b27f"
+        },
+        {
+          "role": "Stableswap 9 order",
+          "hash": "f1d4865bce47591d67ec320e92eeb26b917389e65f8fb12bb9b38877"
+        },
+        {
+          "role": "Stableswap 9 pool",
+          "hash": "1cd639e0731532fb27252504801100c9cd0f31419c0c63c914301771"
+        },
+        {
+          "role": "Stableswap 10 order",
+          "hash": "e296ea95bb834b0816ee6b700fb008c1e52d7508728b914ff3f52764"
+        },
+        {
+          "role": "Stableswap 10 pool",
+          "hash": "119a5401c8942c2a8f49d2372ed090868aff53a6211a8600ec0bc13e"
+        },
+        {
+          "role": "Stableswap 11 order",
+          "hash": "2c3a242850258ed3ebf501bb9515a159370de774a86fa70e27f24075"
+        },
+        {
+          "role": "Stableswap 11 pool",
+          "hash": "85c162aaf17039cb3f9949dcd7fc5d81020bcb18dd764d2b21dddabc"
+        },
+        {
+          "role": "Stableswap 12 order",
+          "hash": "9fb4b54c367463bd3da3d2e8aa9357133ef7b489adb1cf9cb2e8dd70"
+        },
+        {
+          "role": "Stableswap 12 pool",
+          "hash": "5ec0bf47958dfa60def3b4e96b89953fa51f99c288fcb61495f9b9c7"
+        },
+        {
+          "role": "Stableswap 13 order",
+          "hash": "baef35198c17567a43cf11a5d049b83f664241b35a666f5988f08092"
+        },
+        {
+          "role": "Stableswap 13 pool",
+          "hash": "a2f52338d5ab1d9f0c603a51c07168aafebf54f5d708b2abe71988c6"
         }
       ],
-      "mappingReviewedOn": "2026-11-01"
+      "mappingReviewedOn": "2026-11-02",
+      "sourceSnapshotSha256": "07369649e8d0a8f81ea3946d5b68e0f4cf5d622d8110656725673a02f909a5ff"
     },
     {
       "slug": "sundaeswap",

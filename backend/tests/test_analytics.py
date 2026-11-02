@@ -47,8 +47,9 @@ class AnalyticsTests(unittest.TestCase):
         self.store.ingest(block(number, transactions), timestamp if timestamp is not None else time.time(), 665, number)
 
     def test_real_sdk_addresses_match_payment_script_not_stake_script(self):
-        self.assertEqual(payment_script_hash(ORDER), REGISTRY["projects"][0]["scripts"][0]["hash"])
-        self.assertEqual(payment_script_hash(POOL), REGISTRY["projects"][0]["scripts"][1]["hash"])
+        scripts = {script["role"]: script["hash"] for script in REGISTRY["projects"][0]["scripts"]}
+        self.assertEqual(payment_script_hash(ORDER), scripts["V2 order"])
+        self.assertEqual(payment_script_hash(POOL), scripts["V2 pool"])
         self.assertIsNone(payment_script_hash(ORDER[:-1] + "q"))
         self.assertIsNone(payment_script_hash("stake1" + ORDER[5:]))
         self.assertIsNone(payment_script_hash(ORDER[:10].upper() + ORDER[10:]))

@@ -1,97 +1,213 @@
 {
-  "checkedAt": "2026-11-01T12:54:02.365314+00:00",
+  "checkedAt": "2026-11-02T08:08:38.717953+00:00",
   "checkpoint": {
-    "slot": 201971333,
-    "hash": "c6f816df48e28fff1f2055b1ad3f67dcfc9b807a9e5f01f82a47959ce2f04268",
-    "height": 14144123
+    "slot": 202040624,
+    "hash": "897df546dc81987071b12809cb4b68507f7460ed384e29ac41afd14dd28c2c9d",
+    "height": 14147646
   },
   "sqliteIntegrity": "ok",
   "foreignKeys": "ok",
-  "eventAttributionChecks": 273,
+  "eventAttributionChecks": 10332,
   "independentSource": "https://api.koios.rest/api/v1/tx_info",
-  "sampledTransactions": 10,
+  "sampledTransactions": 15,
   "evidence": [
     {
-      "tx": "18c637e63d73efbf1d5759bef78c98dc16f82f17f4336aa2b7e0d90645996550",
-      "blockHeight": 14144120,
+      "tx": "028a361a43a07fea0357cfbff665b4daa83f4c5afcdc5d7d40f86f0171726a85",
+      "blockHeight": 14147634,
       "dapps": [
         "minswap"
       ],
       "matchedEvents": 1
     },
     {
-      "tx": "36fd5a455e80e1c6855cb51ca27719340bdc5262c1e168ff2ab0c6a3ae53e388",
-      "blockHeight": 14144116,
+      "tx": "1ce18a13fafb34db87a7c06358d3b4c7776d01b1afbaf3a72157c9a3326805f8",
+      "blockHeight": 14146293,
+      "dapps": [
+        "wingriders"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "47cf4d8562f44334b907cca9bbe23ecd87c42ee3f3af6787abb719b41c175577",
+      "blockHeight": 14146291,
+      "dapps": [
+        "wingriders"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "4cf3948bcf1f969ffb634642149dde6d2a4ffa95923a426843f3f210bbf5279b",
+      "blockHeight": 14147629,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "6c4cd2afc664f7099737a51a59a136c6f8443558f77ab355bcbb546daeaf253a",
+      "blockHeight": 14147636,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 3
+    },
+    {
+      "tx": "6d29d8cab21a476f32aaf104fb64da88336066ffe46ff041872c6bfa9d3bb6b4",
+      "blockHeight": 14147641,
+      "dapps": [
+        "sundaeswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "6d592b1ed82c0f5b4de8ec306a9e18cf91e3d79db332e3f9f2a771ccb93db58d",
+      "blockHeight": 14147634,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 1
+    },
+    {
+      "tx": "6e9b4eb3c70ea782f7fb84d0690219dc395adc0e6a915bc5fa6104c86cf517b5",
+      "blockHeight": 14147636,
+      "dapps": [
+        "minswap"
+      ],
+      "matchedEvents": 3
+    },
+    {
+      "tx": "7377e536d30144a1319b044ada3e5ac8610e03f58483cc635ce8c6a4dbd79a24",
+      "blockHeight": 14147642,
       "dapps": [
         "sundaeswap"
       ],
       "matchedEvents": 3
     },
     {
-      "tx": "3bb91b999682d820007cd49486205f2bf85dfeee75f9d7cc6cdede5954eb56dd",
-      "blockHeight": 14144114,
+      "tx": "8889f67918437f942e85f478bd2fba9bc61b956df97339a65a8fb4bece00ead5",
+      "blockHeight": 14147630,
       "dapps": [
         "sundaeswap"
       ],
-      "matchedEvents": 2
+      "matchedEvents": 3
     },
     {
-      "tx": "57852b75e03e72b5de0228f2e823215057d294fb50235b20351880e1c0666c4e",
-      "blockHeight": 14144120,
+      "tx": "8feea9c4cb23c945ae525d6b04aab23d9d1649195f71385cf2174848d3895701",
+      "blockHeight": 14147407,
       "dapps": [
-        "minswap"
+        "wingriders"
       ],
       "matchedEvents": 1
     },
     {
-      "tx": "5b106609bf728e5b0bc3d7f32a9c907fb3b6ba12856c676ca8a9e6168f436ad4",
-      "blockHeight": 14144115,
+      "tx": "90a99bace7f2e1002dc6eb439ef49ef9728c7e8b59bc3950a75ce5095866930d",
+      "blockHeight": 14146178,
       "dapps": [
-        "sundaeswap"
-      ],
-      "matchedEvents": 4
-    },
-    {
-      "tx": "79174a844355f3172a8a19da72faddbe15880b43f1641b0ed594a11200ca271c",
-      "blockHeight": 14144119,
-      "dapps": [
-        "minswap"
-      ],
-      "matchedEvents": 2
-    },
-    {
-      "tx": "79a0a66841ccc04f550a90208e650e1855ea95a1b4287dcdc855a1e151a09f43",
-      "blockHeight": 14144119,
-      "dapps": [
-        "minswap"
-      ],
-      "matchedEvents": 4
-    },
-    {
-      "tx": "8f602aafa7acb1f03212799404690d7b0d84ccb78f60e397455c61ad9e1c1be3",
-      "blockHeight": 14144120,
-      "dapps": [
-        "minswap"
+        "wingriders"
       ],
       "matchedEvents": 1
     },
     {
-      "tx": "b258964073373d72dddb4db29152c6b9a2ae2795efe62cbe65867394220a78d6",
-      "blockHeight": 14144115,
+      "tx": "a5da810b669e91e007022af5b7e957aeb012a7aa702ab133fe07e3f49d4aaf26",
+      "blockHeight": 14147627,
       "dapps": [
         "sundaeswap"
       ],
-      "matchedEvents": 1
+      "matchedEvents": 3
     },
     {
-      "tx": "c8004d0620180f1040409a347657dd7d6ce99be2705e66e860531cf8dfc7fb9f",
-      "blockHeight": 14144115,
+      "tx": "b8914aec99021b4780fce803a060d0fafd106c5fe459539ca3b5b50f21ce8f55",
+      "blockHeight": 14147632,
       "dapps": [
-        "sundaeswap"
+        "minswap"
+      ],
+      "matchedEvents": 3
+    },
+    {
+      "tx": "be714661b27be99c1571e67cf8b67b7a9f891ab4c46ba65794522571eeeee8da",
+      "blockHeight": 14147412,
+      "dapps": [
+        "wingriders"
       ],
       "matchedEvents": 1
     }
   ],
   "coverage": "partial",
-  "limitations": "Sample validation does not prove complete protocol coverage. Historical spends before the anchor and unregistered contracts can be missed."
+  "limitations": "Sample validation does not prove complete protocol coverage. Historical spends before the anchor and unregistered contracts can be missed.",
+  "minswapFamilySamples": [
+    {
+      "tx": "6c4cd2afc664f7099737a51a59a136c6f8443558f77ab355bcbb546daeaf253a",
+      "families": [
+        "V1"
+      ],
+      "blockHeight": 14147636,
+      "matchedEvents": 3
+    },
+    {
+      "tx": "028a361a43a07fea0357cfbff665b4daa83f4c5afcdc5d7d40f86f0171726a85",
+      "families": [
+        "V1"
+      ],
+      "blockHeight": 14147634,
+      "matchedEvents": 1
+    },
+    {
+      "tx": "c247600323a239336e25f54b67e2409a7fe7c27e5cf87da73e3d8c03c0853411",
+      "families": [
+        "V2"
+      ],
+      "blockHeight": 14147650,
+      "matchedEvents": 3
+    },
+    {
+      "tx": "e1b9c96b7b5847b6ce94f9c05c394e533a87ce9d8d079b17201d133b604afda0",
+      "families": [
+        "V2"
+      ],
+      "blockHeight": 14147649,
+      "matchedEvents": 1
+    },
+    {
+      "tx": "d410e84b41c109e15f29ae227cb7fdbc44829aa5f2107d9b49064b621575eb3f",
+      "families": [
+        "Stableswap"
+      ],
+      "blockHeight": 14147343,
+      "matchedEvents": 2
+    },
+    {
+      "tx": "fdaf5b00084274d1fca287023b682bc15bae5faff31ff2cbf551b9348e46d3bb",
+      "families": [
+        "Stableswap"
+      ],
+      "blockHeight": 14147341,
+      "matchedEvents": 1
+    }
+  ],
+  "expandedRegistryComparison": {
+    "height": 14147657,
+    "projects": [
+      {
+        "dapp": "minswap",
+        "before": 4255,
+        "after": 4412,
+        "missing": 0,
+        "additional": 157
+      },
+      {
+        "dapp": "sundaeswap",
+        "before": 526,
+        "after": 526,
+        "missing": 0,
+        "additional": 0
+      },
+      {
+        "dapp": "wingriders",
+        "before": 22,
+        "after": 22,
+        "missing": 0,
+        "additional": 0
+      }
+    ]
+  }
 }

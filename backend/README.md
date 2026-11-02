@@ -57,7 +57,7 @@ Ogmios release: 7.0.0, official x86_64 Linux zip SHA-256:
 
 Code is in `/home/azureuser/dapps-analytics/backend`, Python dependencies are
 isolated in `/home/azureuser/dapps-analytics/vendor`, and the new SQLite data
-is in `/mnt/cardano-data/dapps-analytics/analytics-v2.sqlite3`.
+is in `/mnt/cardano-data/dapps-analytics/analytics-v3.sqlite3`.
 
 Review through an SSH tunnel, using your existing SSH identity:
 
@@ -75,16 +75,17 @@ To stop the pilot without deleting data:
 
 ## Website connection — 1 November 2026
 
-The reviewed registry contains Minswap V2, selected SundaeSwap V1/V3/V4/Stableswaps
-pool/order contracts, and WingRiders V1 request contracts: three DApps, 12 payment
-scripts. Coverage remains partial. In particular, WingRiders V2 is not tracked.
+The reviewed registry contains Minswap V1/V2 and 13 published stableswap
+order/pool pairs (30 payment scripts), selected SundaeSwap V1/V3/V4/Stableswaps
+contracts (8 scripts), and WingRiders V1 request contracts (2 scripts):
+three DApps, 40 payment scripts. Coverage remains partial. In particular, WingRiders V2 is not tracked.
 
 `analytics/sources/validation.json` records the read-only integrity checks and
 independent Koios transaction sample. Run `deploy/validate_data.py DATABASE
 --output REPORT.json` with the application's PYTHONPATH to repeat it. This is a
 dated sample, not a guarantee that all future observations have been reviewed.
 
-The expanded database is `/mnt/cardano-data/dapps-analytics/analytics-v2.sqlite3`.
+The expanded database is `/mnt/cardano-data/dapps-analytics/analytics-v3.sqlite3`.
 It was replayed from the original checkpoint at height 14144018, slot 201969211.
 The original database and its pre-expansion snapshot are retained. Do not run
 the replay command against an existing destination or silently change a registry
@@ -122,7 +123,7 @@ stops on low available RAM (<4 GiB), low disk space (<20 GiB), >85% host CPU,
 last saved block; validated epoch reports are not silently overwritten.
 Build that runtime with `python deploy/package-backfill.py`, upload
 `.deploy/backfill.zip` to the existing application folder, and extract it into
-`backfill-summary-runtime`. Install the trial unit and start it with
+`backfill-minswap-v3-runtime`. Install the trial unit and start it with
 `systemctl start --no-block dapps-backfill`. Install the expansion drop-in only
 after the trial report passes and its load is reviewed, then daemon-reload and
 start the same unit. The history directory must be writable by `azureuser`.
@@ -201,3 +202,25 @@ Future historical imports default to the same totals-only compaction after the
 batch validates. `--retain-details` explicitly preserves detail for audit runs.
 The isolated backfill runtime must be rebuilt/uploaded to use a source change;
 the original backfill-runtime is preserved as provenance for the original imports.
+
+## Minswap expansion — 2 November 2026
+
+Minswap's V1/V2 and mainnet stableswap mapping is pinned to SDK commit
+`ccf8fe740a7f56b7bda7f973596cbf6577871985`; the source addresses and hashes are
+recorded in `analytics/sources/minswap-mainnet.json`. The mapping still excludes
+factory-only, farming, staking, governance and launch-event contracts.
+Transactions touching multiple Minswap families are counted once per epoch.
+
+Epochs 659–664 are recalculated in an isolated directory with the expanded
+registry, including independent credential-set reconciliation and node replay.
+Only validated totals and metadata are promoted; raw historical records and
+source caches are discarded after the batch. Live data is replayed into
+`analytics-v3.sqlite3` from the original anchor before public services switch.
+The staged replay preserves previously observed transactions; independent live
+samples cover V1, V2 and stableswap separately. No registry is changed in place
+against an existing database.
+
+The isolated job uses the same CPU/memory/load guards as the initial import,
+and a private writable temporary directory for SQLite validation sorts. Boundary
+recovery metadata is derived from persisted evidence so checkpoint resumption
+reports the full recovery total, including repairs committed before a restart.

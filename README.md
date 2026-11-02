@@ -3,20 +3,22 @@
 Next.js website backed by our selective Cardano mainnet indexer at
 `https://api.dappsoncardano.com`.
 
-The reviewed registry currently covers selected Minswap, SundaeSwap and
-WingRiders payment scripts. Counts describe observed contract transactions from
+The reviewed registry covers Minswap V1/V2 and published stableswap order/pool
+scripts, selected SundaeSwap scripts, and WingRiders V1 request scripts. Counts describe observed contract transactions from
 a known collection checkpoint. They are lower bounds, not lifetime protocol
 totals, trades or users. TVL, volume, price and yield figures are unavailable in
 this feed. The existing swap widget obtains quotes independently from DexHunter.
 
-Visitors can inspect script mappings and recent transaction evidence on each
+Visitors can inspect script mappings and validated epoch activity on each
 DApp page. `/methodology` explains coverage, freshness and confirmations.
 The original interface is retained. Directory tables, related DApps and category
 cards show only projects with a positive confirmed observation count. Projects
 with no recorded activity appear automatically after their first confirmed
 observation. Their registry entries and direct profiles remain available.
-Validated historical periods appear in each DApp's History tab, with epoch and
-UTC-day views. Historical imports run separately from the live database.
+Validated historical periods appear as an epoch line chart in each DApp's
+History tab. Only epoch totals and validation summaries are retained after
+historical validation; temporary detail and response caches are removed.
+Historical imports run separately from the live working database.
 
 ## Development
 

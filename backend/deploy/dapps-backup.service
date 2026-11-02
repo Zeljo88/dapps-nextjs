@@ -4,6 +4,7 @@ Description=Snapshot DApp analytics SQLite database
 [Service]
 Type=oneshot
 User=azureuser
+Environment=ANALYTICS_DB=/mnt/cardano-data/dapps-analytics/analytics-v3.sqlite3
 ExecStart=/usr/bin/python3 /home/azureuser/dapps-analytics/backend/deploy/backup.py
 UMask=0027
 NoNewPrivileges=true
