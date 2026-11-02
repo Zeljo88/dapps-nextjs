@@ -70,8 +70,13 @@ class Participant:
     status: str
     payment: str | None = None
     stake: str | None = None
+    kind: str = 'payment'
 
     def __post_init__(self):
+        if self.kind not in {'payment', 'authorization'}:
+            raise ValueError('Unknown participant credential kind')
+        if self.kind == 'authorization' and self.stake is not None:
+            raise ValueError('An untyped authorization key cannot claim a stake link')
         if self.status not in {'identified','script_controlled','unrecognized_datum','missing_datum','unavailable_datum'}:
             raise ValueError('Unknown wallet attribution status')
         if self.status == 'identified':
@@ -79,6 +84,12 @@ class Participant:
                 raise ValueError('Invalid participant credential length')
         elif self.payment is not None or self.stake is not None:
             raise ValueError('Unattributed orders cannot carry a wallet identity')
+
+    @property
+    def key(self):
+        # Keep untyped protocol authorization keys distinct from payment keys;
+        # the schema stores an opaque credential token, never a guessed role.
+        return ('authorization:' + self.payment if self.kind == 'authorization' else self.payment) if self.payment else None
 
 
 SCHEMA = '''
@@ -117,7 +128,7 @@ class WalletCollector:
                 participant = self.identify(adapter, family, datum)
                 db.execute('INSERT INTO wallet_orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                     (f"{tx['id']}#{index}", block['slot'], adapter.slug, family, script, tx['id'], index,
-                     actual_hash, datum, participant.status, participant.payment, participant.stake))
+                     actual_hash, datum, participant.status, participant.key, participant.stake))
 
     @staticmethod
     def identify(adapter, family, datum):

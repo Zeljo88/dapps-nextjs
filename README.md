@@ -27,6 +27,9 @@ reports attribution coverage. Wallets are not people; epoch counts cannot be
 added into unique period users. Only final counts and validation metadata remain.
 The replay, deduplication, validation, API and chart code are shared so other
 DApps can reuse them with their own ownership adapters.
+SundaeSwap uses its V1/V3/V4/stableswap owner authorization keys; WingRiders uses
+the explicit owners of tracked V1 constant-product/stableswap requests. Each
+protocol keeps its own validation proof and attribution coverage.
 
 ## Development
 

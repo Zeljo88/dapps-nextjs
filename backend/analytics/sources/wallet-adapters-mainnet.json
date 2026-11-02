@@ -1,0 +1,53 @@
+{
+  "reviewedOn": "2026-11-02",
+  "sundaeswap": {
+    "repository": "SundaeSwap-finance/sundae-sdk",
+    "commit": "e32b6e2d8a2329468c82e32d20a942dbc6d40601",
+    "files": [
+      {
+        "path": "packages/core/src/DatumBuilders/ContractTypes/Contract.Stableswaps.ts",
+        "gitBlobSha": "d23f3a48b8c114809a1d3f6cecaeafad89b3704c"
+      },
+      {
+        "path": "packages/core/src/DatumBuilders/ContractTypes/Contract.v1.ts",
+        "gitBlobSha": "b574167aa98ee1373477db06b73cc15d154c513a"
+      },
+      {
+        "path": "packages/core/src/DatumBuilders/ContractTypes/Contract.v3.ts",
+        "gitBlobSha": "d7281688220a7538b39899eb565e1d1581485869"
+      },
+      {
+        "path": "packages/core/src/DatumBuilders/ContractTypes/Contract.v4.ts",
+        "gitBlobSha": "9f111227c5daa4c02a8a0ac0bbe8f198fa6922b5"
+      },
+      {
+        "path": "packages/core/src/DatumBuilders/DatumBuilder.V3.class.ts",
+        "gitBlobSha": "1fa1559f1d69cc5e053fdfbf290b5723aa45ee4e"
+      },
+      {
+        "path": "packages/core/src/TxBuilders/TxBuilder.V1.class.ts",
+        "gitBlobSha": "8babaa56f2641c0c7acd56abf169e5e5f1484274"
+      }
+    ],
+    "identity": "Opaque single-signature owner key across V1/V3/V4/stableswaps; V1 alternate else key stake then payment. Complex policies excluded."
+  },
+  "wingriders": {
+    "repository": "WingRiders/dex-serializer",
+    "commit": "acc572a40acc498a8843db79e2d3afa409f509b1",
+    "files": [
+      {
+        "path": "src/RequestCommon.ts",
+        "gitBlobSha": "3efbcb33e99f97303b916e1aaca2edb2de6ea749"
+      },
+      {
+        "path": "src/RequestDatumV1.ts",
+        "gitBlobSha": "bf76a66b5144028749047a4e2d24ac6a0032566d"
+      },
+      {
+        "path": "src/addressUtils.ts",
+        "gitBlobSha": "61ee9af02242ca1c1a844977be469748f1d258fb"
+      }
+    ],
+    "identity": "V1 constant-product/stableswap request metadata owner key. Beneficiary stake grouping only for a matching key payment credential."
+  }
+}

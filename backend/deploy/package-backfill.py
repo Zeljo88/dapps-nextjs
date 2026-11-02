@@ -7,7 +7,9 @@ destination = root / ".deploy" / "backfill.zip"
 destination.parent.mkdir(exist_ok=True)
 with zipfile.ZipFile(destination, "w", zipfile.ZIP_DEFLATED) as archive:
     for name in ("__init__.py", "addresses.py", "store.py", "worker.py", "registry.json", "backfill.py", "retention.py",
-                 "wallet_backfill.py", "wallets.py", "wallet_methods.py", "adapters/__init__.py", "adapters/minswap.py"):
+                 "wallet_backfill.py", "wallets.py", "wallet_methods.py", "history.py",
+                 "adapters/__init__.py", "adapters/minswap.py", "adapters/reference.py",
+                 "adapters/sundaeswap.py", "adapters/wingriders.py"):
         path = root / "analytics" / name
         data = path.read_bytes()
         if path.suffix != ".json":

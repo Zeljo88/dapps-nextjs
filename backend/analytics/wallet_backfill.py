@@ -17,11 +17,15 @@ import time
 
 from . import store as store_module
 from .adapters.minswap import MinswapWalletAdapter
+from .adapters.sundaeswap import SundaeSwapWalletAdapter
+from .adapters.wingriders import WingRidersWalletAdapter
+from .history import wallet_fields
 from .backfill import HistoricalStore, Koios, Monitor, fast_script_hash, replay, write_json
 from .wallets import METHOD, aggregate
 
 LOG = logging.getLogger('analytics.wallet_backfill')
-ADAPTERS = {'minswap': MinswapWalletAdapter}
+ADAPTERS = {'minswap': MinswapWalletAdapter, 'sundaeswap': SundaeSwapWalletAdapter,
+            'wingriders': WingRidersWalletAdapter}
 
 
 def resolve_missing(store, source, adapters):
@@ -44,7 +48,7 @@ def resolve_missing(store, source, adapters):
                 for ref, slug, family in db.execute('SELECT ref,dapp,family FROM wallet_orders WHERE datum_hash=?', (h,)).fetchall():
                     owner = store.wallet_collector.identify(adapters[slug], family, datum)
                     db.execute('UPDATE wallet_orders SET datum=?,status=?,payment=?,stake=? WHERE ref=?',
-                               (datum, owner.status, owner.payment, owner.stake, ref))
+                               (datum, owner.status, owner.key, owner.stake, ref))
 
 
 def validate_wallets(store, source, base, adapters, monitor):
@@ -91,10 +95,10 @@ def validate_wallets(store, source, base, adapters, monitor):
         if not datum or hashlib.blake2b(bytes.fromhex(datum['bytes']),digest_size=32).hexdigest() != sample['datum_hash']:
             raise ValueError('Independent wallet sample datum differs')
         owner = adapters[sample['dapp']].reference_participant(sample['family'], datum['value'])
-        if (owner.status,owner.payment,owner.stake) != (sample['status'],sample['payment'],sample['stake']):
+        if (owner.status,owner.key,owner.stake) != (sample['status'],sample['payment'],sample['stake']):
             raise ValueError('Independent JSON wallet attribution differs from node CBOR decoding')
         monitor.sample()
-    return metrics, len(samples)
+    return metrics, {slug:sum(s['dapp']==slug for s in samples) for slug in adapters}
 
 
 def discard_details(root, epoch, report, expected_metrics):
@@ -127,10 +131,15 @@ async def run(args):
         base = json.loads(base_bytes)
         if not base.get('passed') or base['registryDigest'] != digest:
             raise ValueError('Wallet scan requires a validated epoch under the active registry')
+        for dapp in base['dapps']:
+            if 'activeWallets' in dapp and not wallet_fields(base,dapp):
+                raise ValueError('Existing wallet counts lack supported final validation')
         report_path = root/f'epoch-{epoch}-report.json'
         if report_path.exists():
             saved = json.loads(report_path.read_text())
-            if saved.get('walletValidation',{}).get('method') == METHOD and saved['walletValidation'].get('passed') and saved['walletValidation']['baseSummarySha256'] == hashlib.sha256(base_bytes).hexdigest():
+            if (saved.get('walletValidation',{}).get('method') == METHOD and saved['walletValidation'].get('passed')
+                    and saved['walletValidation']['baseSummarySha256'] == hashlib.sha256(base_bytes).hexdigest()
+                    and saved['walletValidation'].get('adapters') == {slug:a.version for slug,a in adapters.items()}):
                 metrics = {d['slug']:{k:d[k] for k in ['activeWallets','walletActivity']} for d in saved['dapps'] if d['slug'] in adapters}
                 discard_details(root,epoch,saved,metrics)
                 continue
@@ -148,18 +157,29 @@ async def run(args):
         LOG.info('Validating wallet owners epoch=%s',epoch)
         resolve_missing(store,source,adapters)
         metrics,samples = validate_wallets(store,source,base,adapters,monitor)
+        if any(m['walletActivity']['attributionPercent'] < args.minimum_attribution for m in metrics.values()):
+            raise ValueError('Wallet attribution is below the requested review threshold; details retained for inspection')
         report = dict(base)
         report['dapps'] = [dict(d,**metrics.get(d['slug'],{})) for d in base['dapps']]
         report['walletValidation'] = {'passed':True,'method':METHOD,'checkedAt':datetime.now(timezone.utc).isoformat(),
-            'baseSummarySha256':hashlib.sha256(base_bytes).hexdigest(),'independentSamples':samples,
+            'baseSummarySha256':hashlib.sha256(base_bytes).hexdigest(),'independentSamples':sum(samples.values()),
+            'samplesByDapp':samples,
             'adapters':{slug:a.version for slug,a in adapters.items()},
-            'runtimeSha256':{name:hashlib.sha256((Path(__file__).parent/name).read_bytes()).hexdigest() for name in ['wallet_backfill.py','wallets.py','wallet_methods.py','adapters/minswap.py','backfill.py','store.py','addresses.py']}}
+            'runtimeSha256':{name:hashlib.sha256((Path(__file__).parent/name).read_bytes()).hexdigest() for name in
+                ['wallet_backfill.py','wallets.py','wallet_methods.py','history.py','backfill.py','store.py','addresses.py'] +
+                sorted(p.relative_to(Path(__file__).parent).as_posix() for p in (Path(__file__).parent/'adapters').glob('*.py'))}}
         report['walletDetailsRetained'] = True
         with store.connection() as db:db.execute('PRAGMA wal_checkpoint(TRUNCATE)')
         store.close()
         await asyncio.sleep(max(0,5-(time.monotonic()-monitor.last_check)))
         monitor.sample(force=True)
         report['walletValidation']['load'] = monitor.summary()
+        # Each protocol keeps its own proof, so enriching another DApp cannot
+        # hide or silently revalidate existing Minswap counts.
+        report['walletValidations'] = {d['slug']:base.get('walletValidations',{}).get(d['slug'],base.get('walletValidation',{}))
+                                     for d in base['dapps'] if 'activeWallets' in d}
+        report['walletValidations'].update({slug:{**report['walletValidation'], 'independentSamples':samples[slug],
+                                                 'adapters':{slug:adapters[slug].version}} for slug in adapters})
         write_json(report_path,report)
         discard_details(root,epoch,report,metrics)
         LOG.info('VALIDATED_WALLETS epoch=%s counts=%s',epoch,json.dumps(metrics))
@@ -175,9 +195,11 @@ def main():
     parser.add_argument('--dapps',nargs='+',choices=sorted(ADAPTERS),default=['minswap'])
     parser.add_argument('--ogmios',default='ws://127.0.0.1:1337')
     parser.add_argument('--rate',type=float,default=80)
+    parser.add_argument('--minimum-attribution',type=float,default=95)
     args=parser.parse_args()
     if Path(args.root).resolve()==Path(args.base_history).resolve():parser.error('Use an isolated output directory')
     if args.rate<=0:parser.error('Rate must be positive')
+    if not 0<=args.minimum_attribution<=100:parser.error('Attribution threshold must be between 0 and 100')
     logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
     try:asyncio.run(run(args))
     except Exception as error:

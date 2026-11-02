@@ -58,6 +58,12 @@ class HistoryTests(unittest.TestCase):
             result = publish(report)
             self.assertEqual(result['activeWallets'],3)
             self.assertNotIn('privateWorkingKeys',result['walletActivity'])
+            enriched=deepcopy(report)
+            enriched['walletValidations']={'minswap':deepcopy(report['walletValidation'])}
+            enriched['walletValidation']['adapters']={'sundaeswap':ADAPTER_VERSIONS['sundaeswap']}
+            self.assertEqual(publish(enriched)['activeWallets'],3)
+            enriched['walletValidations']['minswap']['passed']=False
+            self.assertNotIn('activeWallets',publish(enriched))
             for change in ['pending','unvalidated','unknown_adapter','invalid_count','coverage_mismatch']:
                 bad = deepcopy(report)
                 if change == 'pending':bad['walletDetailsRetained'] = True

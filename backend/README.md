@@ -284,3 +284,32 @@ sorts. Use the existing one-core/1 GiB/low-priority profile and live-feed guards
 Do not replace runtime files while a job is running: final reports hash the
 runtime that performed the calculation. Promote the complete validated batch
 and restart only the history API; the live indexer needs no migration.
+
+### SundaeSwap and WingRiders owner adapters
+
+`--dapps sundaeswap wingriders` calculates both protocols in one epoch replay.
+The reviewed source commits and blob hashes are recorded in
+`analytics/sources/wallet-adapters-mainnet.json`.
+
+SundaeSwap covers the registered V1 escrow, V3, V4 and stableswap order scripts.
+V1 uses the alternate authorization key, otherwise a key stake credential then
+a key payment credential from its destination, following SDK cancellation rules.
+V3/V4/stableswaps use the explicit single-signature owner policy. Arbitrary
+payout recipients are not owners. Complex multisignature and script policies
+are excluded with coverage counts. Sundae's signature keys may be stake or
+payment credentials, so all families deduplicate the same opaque authorization
+key. Temporary keys use an `authorization:` namespace and are never claimed to
+be observed payment-to-stake links.
+
+WingRiders V1 constant-product and stableswap requests use the explicit owner
+key in RequestDatumV1 metadata. A matching key-payment beneficiary can supply
+its stake credential for grouping; third-party beneficiaries cannot. The V2,
+pool, farming and governance scripts remain outside this registry.
+
+The default `--minimum-attribution 95` pauses a new enrichment before deleting
+details if identified order coverage falls below 95%, so unexpected formats can
+be reviewed. This measures attribution within tracked outputs, not complete
+protocol coverage. Completed epochs retain separate per-DApp ownership proofs
+under `walletValidations`. Adding another adapter preserves existing wallet
+counts and their original proof instead of replacing them with the new job's
+validation. Resume also checks the exact requested adapter versions.

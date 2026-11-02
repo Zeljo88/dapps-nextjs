@@ -8,8 +8,8 @@ from .wallet_methods import METHOD, ADAPTER_VERSIONS
 
 def wallet_fields(report, dapp):
     """Publish only final validated counts, never the working ownership records."""
-    validation = report.get('walletValidation', {})
     slug = dapp['slug']
+    validation = report.get('walletValidations', {}).get(slug, report.get('walletValidation', {}))
     if (validation.get('passed') is not True or validation.get('method') != METHOD
             or report.get('walletDetailsRetained') is not False
             or slug not in ADAPTER_VERSIONS
