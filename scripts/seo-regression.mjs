@@ -92,7 +92,8 @@ assert.match(home.body, /data-period="completed" aria-pressed="true"/, "Default 
 assert.match(home.body, /data-period="six" aria-pressed="false"/, "Provide a six-epoch view");
 assert.match(home.body, /data-period="current" aria-pressed="false"/, "Keep current partial observations behind an explicit selection");
 assert.doesNotMatch(home.body, /data-metric="coverage"/, "Owner identification must not appear as a directory column");
-assert.doesNotMatch(home.body, /data-metric="tvl"|Listed DApp TVL|DefiLlama/, "External TVL must be absent from the own-data directory");
+assert.match(home.body, /data-metric="tvl"/, "Keep TVL on the directory while our own reliable TVL is unavailable");
+assert.match(home.body, /external DefiLlama Cardano estimate/, "Distinguish external TVL from our own activity metrics");
 assert.doesNotMatch(home.body, /6-epoch charts|class="epoch-tvl-source"/, "Directory rows must not include chart or TVL-provider links");
 const registryResponse = await fetch(`${process.env.API_URL || "https://api.dappsoncardano.com"}/v1/dapps`);
 assert.ok(registryResponse.ok, "Registry should be available for the data-visibility check");

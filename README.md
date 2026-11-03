@@ -7,8 +7,10 @@ The reviewed registry covers Minswap V1/V2 and published stableswap order/pool
 scripts, selected SundaeSwap scripts, and WingRiders V1 request scripts. Counts describe observed contract transactions from
 a known collection checkpoint. They are lower bounds, not lifetime protocol
 totals, trades or users. The node feed does not calculate TVL, volume, prices or
-yields. Directory TVL and external valuation requests are hidden in the own-data
-staging version. Analytics use only our node and retained validated summaries.
+yields. Activity and Overview metrics use our node and retained validated
+summaries. Directory TVL remains a separate DefiLlama Cardano estimate until
+reliable TVL from our own indexer is available. Provider, coverage and snapshot
+time stay in tooltips; no provider hyperlink is added to directory rows.
 The existing swap widget obtains quotes independently from DexHunter.
 
 Visitors can inspect script mappings and validated epoch activity on each
@@ -64,6 +66,10 @@ only tracked outputs seen since collection began and unspent at that cutoff;
 they include deposits and pending orders and are not complete liquidity or TVL.
 Token quantities are exact raw units with policy IDs/hex names, without external
 metadata or prices. No historical fee values are invented from compacted totals.
+Directory TVL uses a single snapshot near the selected completed period's end,
+not a sum across six epochs; the current view uses a recent provider snapshot.
+Missing/stale values remain unavailable. Our partial observed balances are never
+substituted as TVL. The detail-page own-data sections do not use these valuations.
 The optional staging reader supplies aggregates under `/staging/v1/dapps/{slug}/metrics`
 and caches only aggregate responses in memory for 30 seconds. No new raw records
 or wallet credentials are stored. Missing/mismatched reader data stays unavailable.

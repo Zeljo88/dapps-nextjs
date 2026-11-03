@@ -136,8 +136,9 @@ body {
 .epoch-table-wrap { min-width:0; }
 .epoch-table { width:100%; border-collapse:collapse; font-size:14px; table-layout:fixed; }
 .epoch-table thead th { text-align:right; padding:14px 16px; color:var(--text-secondary); font-size:12px; font-weight:600; border-bottom:1px solid var(--border); }
-.epoch-table thead th:first-child { width:38%; text-align:left; }
-.epoch-table thead th:nth-child(2),.epoch-table thead th:nth-child(3) { width:27%; }
+.epoch-table thead th:first-child { width:28%; text-align:left; }
+.epoch-table thead th:nth-child(2),.epoch-table thead th:nth-child(3) { width:21%; }
+.epoch-table thead th:nth-child(4) { width:22%; }
 .epoch-table thead th:last-child { width:8%; }
 .epoch-column-heading { justify-content:flex-end; }
 .epoch-table th:first-child .epoch-column-heading { justify-content:flex-start; }
@@ -170,6 +171,8 @@ body {
   .epoch-table tbody th { grid-column:1/-1; display:block; padding:16px 14px 0; border:0; }
   .epoch-table tbody td { display:block; text-align:left; border:0; padding:14px; }
   .epoch-mobile-label { display:flex; gap:6px; align-items:center; font-size:12px; color:var(--text-secondary); margin-bottom:6px; }
+  .epoch-table tbody td[data-metric=tvl] { grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .epoch-table tbody td[data-metric=tvl] > div:last-child { text-align:right; }
   .epoch-table tbody .epoch-links { grid-column:1/-1; display:flex; justify-content:flex-end; align-items:center; padding-top:0; }
   .epoch-value { font-size:20px; }
 }

@@ -9,7 +9,7 @@ export function CoverageNotice({ status, compact = false }: { status: IndexerSta
       <Link href="/methodology" style={{ color: "var(--accent)" }}>Methodology & coverage ↗</Link>
     </div>
     <details style={{ marginTop: 4 }}><summary style={{ cursor: "pointer", color: "var(--text-muted)" }}>Data availability and collection details</summary>
-      <p style={{ marginTop: 8 }}>This status describes the live collector. Completed-epoch metrics use independently validated totals from our own node; those periods can precede the live collector. Live counters wait for three subsequent blocks and can change after rollbacks. Recorded-period fees and observed balances on detail pages have their own dates and partial coverage. Financial valuations, trading volume and counts of individual people are unavailable.</p>
+      <p style={{ marginTop: 8 }}>This status describes the live collector. Completed-epoch activity uses independently validated totals from our own node; those periods can precede the live collector. Live counters wait for three subsequent blocks and can change after rollbacks. Recorded-period fees and observed balances on detail pages have their own dates and partial coverage. Directory TVL is a separate DefiLlama estimate with its own timestamp and coverage; it is not calculated from our observed balances. Trading volume and counts of individual people are unavailable.</p>
       <p>Last block: {dateTime(status.lastReceivedAt)} · Block {count(status.checkpoint?.height ?? null)} · {status.lagBlocks ?? "—"} blocks behind the reported tip. Refresh for current data.</p>
     </details>
   </aside>;
