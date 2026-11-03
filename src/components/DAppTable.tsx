@@ -78,9 +78,6 @@ export default function DAppTable({ dapps, period, hideFilters, swap, notice }: 
   const gainers = comparison.previous && !isCurrent ? filtered.filter(d => d.txGrowth !== null && d.txGrowth > 0).sort((a, b) => b.txGrowth! - a.txGrowth!) : [];
   const decliners = comparison.previous && !isCurrent ? filtered.filter(d => d.txGrowth !== null && d.txGrowth < 0).sort((a, b) => a.txGrowth! - b.txGrowth!) : [];
   return <section className="epoch-directory" aria-label="DApp activity by reporting period">
-    <div className="epoch-view-picker" role="group" aria-label="Activity period">
-      {([ ["completed", "Last completed epoch", "Default · validated totals"], ["six", "Last 6 completed epochs", "30 days · completed history"], ["current", "Current epoch", "In progress · incomplete"] ] as const).map(([key, label, detail]) => <button type="button" key={key} data-period={key} aria-pressed={view === key} onClick={() => { setView(key); setPage(1); setSort("epochTransactions"); setAsc(false); }}><strong>{label}</strong><span>{detail}</span></button>)}
-    </div>
     <div className={swap ? "home-swap-stats" : "epoch-summary-row"}>
       {swap && <div className="home-swap-widget" style={{ width: 380, flexShrink: 0, minWidth: 0 }}>{swap}</div>}
       <div className="epoch-summary-stats">
@@ -105,6 +102,9 @@ export default function DAppTable({ dapps, period, hideFilters, swap, notice }: 
         return <button type="button" key={c} aria-pressed={cat === c} onClick={() => { setCat(c); setPage(1); }} style={{ color, background: cat === c ? "var(--accent-dim)" : "transparent" }}>{c === "ALL" ? "All" : c === "COLLECTION" ? "NFT" : c.charAt(0) + c.slice(1).toLowerCase()}</button>;
       })}</div>}
       <span aria-live="polite">{filtered.length} DApps</span>
+    </div>
+    <div className="epoch-view-picker" role="group" aria-label="Activity period">
+      {([ ["completed", "Last completed epoch", "Default · validated totals"], ["six", "Last 6 completed epochs", "30 days · completed history"], ["current", "Current epoch", "In progress · incomplete"] ] as const).map(([key, label, detail]) => <button type="button" key={key} data-period={key} aria-pressed={view === key} onClick={() => { setView(key); setPage(1); setSort("epochTransactions"); setAsc(false); }}><strong>{label}</strong><span>{detail}</span></button>)}
     </div>
     <div className="card epoch-table-wrap"><table data-testid="epoch-directory-table" className="epoch-table" aria-label={title}>
       <thead><tr>{sortHeader("DApp", "name")}{sortHeader(transactionsLabel, "epochTransactions", transactionHelp)}{sortHeader(walletsLabel, "epochWallets", walletHelp)}{sortHeader(tvlLabel, "tvl", tvlHelp)}<th scope="col">Links</th></tr></thead>
