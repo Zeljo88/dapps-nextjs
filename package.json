@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:config": "node scripts/config-regression.mjs",
     "test:epochs": "node --experimental-strip-types scripts/epoch-summary-regression.mjs",
+    "test:own": "node --experimental-strip-types scripts/own-metrics-regression.mjs",
     "test:tvl": "node --experimental-strip-types scripts/tvl-regression.mjs",
     "test:seo": "node scripts/seo-regression.mjs"
   },

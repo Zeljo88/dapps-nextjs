@@ -27,7 +27,18 @@ export interface HistoryData {
     activeWallets?: number; walletActivity?: { method: string; candidateOrderOutputs: number; attributedOrderOutputs: number;
       scriptControlledOrderOutputs: number; unrecognizedOrderOutputs: number; unavailableDatumOrderOutputs: number;
       attributionPercent: number; ambiguousPaymentKeys: number } }[];
-    validation: { passed: boolean; checkedAt: string; blocksReplayed: number; independentTransactionSamples: number } }[];
+    validation: { passed: boolean; checkedAt: string; blocksReplayed: number; independentTransactionSamples: number; chainTransactionsInspected?: number } }[];
+}
+export interface OwnMetrics {
+  source: "own-cardano-node"; registryDigest: string; slug: string; generatedAt: number; confirmationDepth: number;
+  epochs: { epoch: number; startTime: number; endTime: number; transactions: number; activeWallets: number | null;
+    orderOutputsCreated: number | null; networkTransactions: number | null; transactionSharePercent: number | null;
+    walletVersions: { version: string; activeWallets: number }[] }[];
+  recorded: null | { fromTime: number; throughTime: number; confirmedHeight: number; fresh: boolean;
+    transactions: number; networkFeesLovelace: string; averageNetworkFeeAda: string | null;
+    outputsCreated: number; outputsSpent: number; versionTransactions: { version: string; transactions: number }[];
+    observedLovelace: string; observedUnspentOutputs: number; assetCount: number; assetsLimit: number;
+    assets: { policyId: string; assetNameHex: string; quantity: string }[] };
 }
 async function read<T>(path: string): Promise<T> {
   const origin = process.env.API_URL?.trim() || "http://127.0.0.1:8000";
@@ -45,6 +56,7 @@ export const fetchAnalytics = cache(async () => {
 });
 export function fetchEvents(slug: string) { return read<{ events: ContractEvent[] }>(`/v1/dapps/${encodeURIComponent(slug)}/events?limit=30`); }
 export const fetchHistory = cache(() => read<HistoryData>("/v1/history"));
+export const fetchOwnMetrics = cache((slug: string) => read<OwnMetrics>(`/staging/v1/dapps/${encodeURIComponent(slug)}/metrics`));
 export function dateTime(value: number | null): string {
   return value === null ? "Not available" : new Date(value * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
 }

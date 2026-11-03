@@ -9,6 +9,7 @@ export function viewDapp(dapp: ReturnType<typeof tableDapp>, view: DirectoryView
     ...dapp, epochTransactions: dapp.windowTransactions, epochWallets: dapp.windowWallets,
     previousTransactions: dapp.windowPreviousTransactions, previousWallets: dapp.windowPreviousWallets,
     txGrowth: dapp.windowTxGrowth, walletGrowth: dapp.windowWalletGrowth, attributionPercent: dapp.windowCoverage,
+    tvl: period.windowEndTime !== null ? dapp.tvl : null,
   };
   return {
     ...dapp, epochTransactions: period.liveAvailable && dapp.observedEpoch === period.currentEpoch ? dapp.liveTransactions : null,
