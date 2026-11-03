@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import type { HistoryData, TrackedDapp } from "@/lib/analytics";
+import type { HistoryData, TrackedDapp, OwnMetrics } from "@/lib/analytics";
+import OwnDappMetrics from "./OwnDappMetrics";
 
 function time(value: number | null) {
   return value === null ? "Unavailable" : new Date(value * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
@@ -8,7 +9,7 @@ function time(value: number | null) {
 import DappHistory from "./DappHistory";
 const heading = { fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 16 };
 
-export default function TrackedDappTabs({ dapp, history }: { dapp: TrackedDapp; history: HistoryData | null }) {
+export default function TrackedDappTabs({ dapp, history, metrics, registryDigest }: { dapp: TrackedDapp; history: HistoryData | null; metrics: OwnMetrics | null; registryDigest: string }) {
   const [active, setActive] = useState("Overview");
   return <div>
     <div role="tablist" aria-label="DApp details" style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1px solid var(--border)", overflowX: "auto" }}>
@@ -16,6 +17,7 @@ export default function TrackedDappTabs({ dapp, history }: { dapp: TrackedDapp; 
     </div>
     <div role="tabpanel" id={`panel-${active}`} aria-labelledby={`tab-${active}`}>
       {active === "Overview" && <div style={{ display: "grid", gap: 20, minWidth: 0 }}>
+        <OwnDappMetrics slug={dapp.slug} registryDigest={registryDigest} history={history} metrics={metrics} />
         {history && <DappHistory slug={dapp.slug} history={history} />}
         <div className="dapp-overview-grid">
         <div className="card" style={{ padding: 24 }}><h2 style={heading}>About</h2><p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>{dapp.description}</p>

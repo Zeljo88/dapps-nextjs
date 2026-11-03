@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { formatAda, matchingOwnMetrics } from '../src/lib/own-metrics.ts';
+assert.equal(formatAda('0'),'0 ADA');
+assert.equal(formatAda('1'),'0.000001 ADA');
+assert.equal(formatAda('4246649186'),'4,246.649186 ADA');
+assert.equal(formatAda('900719925474099312345'),'900,719,925,474,099.312345 ADA');
+for(const invalid of [undefined,null,'','-1','1.2','NaN','Infinity'])assert.equal(formatAda(invalid),'—');
+const metrics={source:'own-cardano-node',registryDigest:'reviewed',slug:'minswap'};
+assert.equal(matchingOwnMetrics(metrics,'minswap','reviewed'),metrics);
+assert.equal(matchingOwnMetrics(metrics,'sundaeswap','reviewed'),null);
+assert.equal(matchingOwnMetrics(metrics,'minswap','wrong'),null);
+assert.equal(matchingOwnMetrics({...metrics,source:'external'},'minswap','reviewed'),null);
+assert.equal(matchingOwnMetrics(null,'minswap','reviewed'),null);
+console.log('Own metrics checks passed: exact ADA units, zero/missing values, source and registry isolation.');

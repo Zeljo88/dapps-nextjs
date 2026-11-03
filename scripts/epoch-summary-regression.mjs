@@ -72,7 +72,7 @@ assert.equal(directoryPeriod(twelvePeriod,{fresh:false,checkpoint:{epoch:13}},no
 assert.equal(directoryPeriod(twelvePeriod,freshStatus,13*432000).currentEpoch,14,'Advance at the exact epoch boundary');
 assert.equal(directoryPeriod(twelvePeriod,freshStatus,13*432000).liveAvailable,false,'Never use prior-epoch observations after rollover');
 assert.equal(directoryPeriod(null,freshStatus,now).currentEpoch,null,'Do not invent epoch timing without validated history');
-const row={...epochMetrics('test',twelvePeriod),...sixCompare,observedEpoch:13,liveTransactions:7,liveSince:now-50,tvl:{current:{usd:10}},currentTvl:{current:{usd:20}}};
+const row={...epochMetrics('test',twelvePeriod),...sixCompare,observedEpoch:13,liveTransactions:7,liveSince:now-50};
 assert.equal(viewDapp(row,'completed',live),row,'The completed view is the unchanged validated summary');
 assert.equal(viewDapp(row,'six',live).epochTransactions,1200);
 assert.equal(viewDapp(row,'six',live).epochWallets,4);
@@ -82,7 +82,6 @@ assert.equal(liveRow.epochTransactions,7);
 assert.equal(liveRow.epochWallets,null,'Current wallets must remain pending');
 assert.equal(liveRow.txGrowth,null,'Never compare a partial epoch to a complete epoch');
 assert.equal(liveRow.walletGrowth,null);
-assert.equal(liveRow.tvl.current.usd,20,'Use a current TVL snapshot only in the current view');
 assert.equal(viewDapp({...row,observedEpoch:12},'current',live).epochTransactions,null);
 assert.equal(viewDapp(row,'current',{...live,liveAvailable:false}).epochTransactions,null);
 assert.equal(viewDapp(row,'current',{...live,liveAvailable:false}).liveSince,null);

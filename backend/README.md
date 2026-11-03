@@ -1,5 +1,33 @@
 # Selective Cardano contract analytics
 
+## Staging own-data reader
+
+`analytics.insights` reads the existing working database with SQLite `mode=ro`
+and `query_only=ON`, plus validated final historical reports. It publishes only
+aggregates for the registered DApp and matching registry digest. Fees, output
+activity and observed balances use one read snapshot with a three-block cutoff.
+Fees deduplicate per transaction/DApp; provisional spends do not remove outputs
+from the earlier confirmed balance snapshot. Version counts can overlap.
+Token amounts remain exact strings, without external metadata or prices.
+
+Package with `python deploy/package-staging-metrics.py`; upload the ZIP and
+`deploy/install-staging-metrics.py` to `/home/azureuser/dapps-analytics`, then run
+the installer there. It creates a separate `staging-metrics-runtime` and
+`dapps-staging-metrics` service on loopback port 8002. Only `/staging/` is added
+to nginx; existing 8000/8001 routes and the collector remain unchanged. The
+installer validates all three DApps before exposing the route and stops if the
+existing feed is delayed. Existing runtime/configuration backups are preserved.
+
+The reader is capped at 25% CPU and 256 MiB, uses a 3-second SQL budget and
+30-second in-memory aggregate cache, and creates no new database records. Cache
+hits recheck the recorded block hash and confirmation depth, so a rollback
+invalidates an orphaned or no-longer-confirmed snapshot immediately.
+Its service permits the analytics directory for SQLite's transient WAL shared-memory
+coordination; database access itself remains read-only in the driver and connection.
+Historical fees/balances are unavailable after detailed historical records were
+discarded. Wallet-family counts are published only after the same ownership
+validation used by the historical API. Private owner credentials are never returned.
+
 This is a new database built from the owner's mainnet Cardano node. No old API
 statistics or historical totals are imported. The website uses a coverage-aware
 view of this service. Financial metrics remain unavailable.

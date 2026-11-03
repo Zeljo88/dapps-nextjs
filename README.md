@@ -7,7 +7,8 @@ The reviewed registry covers Minswap V1/V2 and published stableswap order/pool
 scripts, selected SundaeSwap scripts, and WingRiders V1 request scripts. Counts describe observed contract transactions from
 a known collection checkpoint. They are lower bounds, not lifetime protocol
 totals, trades or users. The node feed does not calculate TVL, volume, prices or
-yields. Directory TVL comes separately from reviewed DefiLlama Cardano mappings.
+yields. Directory TVL and external valuation requests are hidden in the own-data
+staging version. Analytics use only our node and retained validated summaries.
 The existing swap widget obtains quotes independently from DexHunter.
 
 Visitors can inspect script mappings and validated epoch activity on each
@@ -50,26 +51,22 @@ Positive counts after a zero baseline have no percentage change.
 Six-epoch transaction and wallet line charts
 appear directly in each DApp’s Overview; there is no separate History tab.
 Directory rows link to the DApp website, and the DApp name opens its profile.
-TVL source attribution remains in tooltips and methodology without row links.
 Owner identification is supplementary tooltip metadata,
 not a directory column. Wallets are not people and are not summed across DApps.
 
-TVL uses the `Cardano.tvl` series from DefiLlama (`minswap-dex` id 1494,
-`sundaeswap` parent#sundaeswap, `wingriders` id 1601). It is a provider estimate
-with different coverage from our selective transaction/wallet scripts; separate
-staking, borrowed and pool2 series are excluded. The latest snapshot at or before
-the reporting epoch’s end is accepted only when at most 24 hours old. The table
-labels it “near epoch end”, displays the approximate offset, and gives the exact
-USD balance, timestamp and source attribution. It never substitutes a current value or
-claims an exact boundary measurement. TVL is a balance, not a five-day sum.
-The “Listed DApp TVL” card sums balances only if every listed DApp has a snapshot
-at the same time; it is not total Cardano TVL. Provider failures show unavailable
-without hiding the node-based counts. Only final selected balances and provenance
-are cached for an hour in Next.js; daily histories are processed transiently and
-no extra records are added to the relay database.
-The current-epoch view uses a separate latest available provider snapshot,
-cached for five minutes and accepted only within the preceding 24 hours.
-Its actual observation time is shown; it is not a live tick or an epoch-end value.
+Overview adds completed-epoch order/request counts, overlapping version-level
+wallet counts and share of network transactions from our validated node replay.
+An order/request activity line chart joins the transaction and wallet charts.
+A separate recorded-period section shows network fees in ADA, average fees,
+output creations/spends and overlapping version-level transaction counts. Its
+collection start and confirmed cutoff are explicit. Observed balances include
+only tracked outputs seen since collection began and unspent at that cutoff;
+they include deposits and pending orders and are not complete liquidity or TVL.
+Token quantities are exact raw units with policy IDs/hex names, without external
+metadata or prices. No historical fee values are invented from compacted totals.
+The optional staging reader supplies aggregates under `/staging/v1/dapps/{slug}/metrics`
+and caches only aggregate responses in memory for 30 seconds. No new raw records
+or wallet credentials are stored. Missing/mismatched reader data stays unavailable.
 
 The live API filters confirmed transactions by the actual current block epoch
 and exposes its collection start, so counts reset correctly at epoch boundaries.
@@ -86,6 +83,7 @@ For the Python backend and relay operations, see [backend/README.md](backend/REA
 - `npm run build` — production build; API_URL is required.
 - `npm run test:config` — backend URL validation.
 - `npm run test:epochs` — epoch selection, growth and missing-data checks.
+- `npm run test:own` — exact ADA units, source and registry isolation.
 - `npm run test:tvl` — provider identity, time alignment, missing/stale values and aggregate checks.
 - `npm run lint` — source checks.
 - `npm run test:seo` — run against `npm start` on port 3000, or set SEO_BASE_URL.
@@ -100,8 +98,8 @@ TLS verification.
 Changes are reviewed on the `staging` branch before production. Pushes to
 `staging` use Vercel's Preview environment and its branch preview URL; `main`
 remains the production branch for `dappsoncardano.com`. The preview uses the
-public analytics API for read-only data. No relay/indexer changes or database
-writes are part of this frontend workflow. `API_URL` must be configured for
+public analytics API for read-only data. The optional metrics reader is isolated
+from the production API and collector; it never writes database records. `API_URL` must be configured for
 Preview as well as Production. After review, merge a pull request from `staging`
 into `main`; that merge triggers the production build. Do not promote or merge
 staging automatically just because its checks pass.

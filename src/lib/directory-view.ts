@@ -14,6 +14,6 @@ export function viewDapp(dapp: ReturnType<typeof tableDapp>, view: DirectoryView
     ...dapp, epochTransactions: period.liveAvailable && dapp.observedEpoch === period.currentEpoch ? dapp.liveTransactions : null,
     liveSince: period.liveAvailable && dapp.observedEpoch === period.currentEpoch ? dapp.liveSince : null,
     epochWallets: null, previousTransactions: null, previousWallets: null,
-    txGrowth: null, walletGrowth: null, attributionPercent: null, tvl: dapp.currentTvl,
+    txGrowth: null, walletGrowth: null, attributionPercent: null,
   };
 }
