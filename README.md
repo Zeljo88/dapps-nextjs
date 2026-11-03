@@ -83,6 +83,15 @@ TLS verification.
 
 ## Hosting
 
+Changes are reviewed on the `staging` branch before production. Pushes to
+`staging` use Vercel's Preview environment and its branch preview URL; `main`
+remains the production branch for `dappsoncardano.com`. The preview uses the
+public analytics API for read-only data. No relay/indexer changes or database
+writes are part of this frontend workflow. `API_URL` must be configured for
+Preview as well as Production. After review, merge a pull request from `staging`
+into `main`; that merge triggers the production build. Do not promote or merge
+staging automatically just because its checks pass.
+
 The Vercel project `dapps-nextjs` builds the `main` branch of
 `Zeljo88/dapps-nextjs`. Production API_URL points to the HTTPS API above. Analytics
 pages fetch without persistent caching so an old successful response cannot be
