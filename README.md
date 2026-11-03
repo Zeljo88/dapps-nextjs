@@ -32,11 +32,22 @@ SundaeSwap uses its V1/V3/V4/stableswap owner authorization keys; WingRiders use
 the explicit owners of tracked V1 constant-product/stableswap requests. Each
 protocol keeps its own validation proof and attribution coverage.
 
-Directory and category tables show transaction and active-wallet totals for the
-latest validated completed epoch. Growth compares that epoch with its immediate
-consecutive validated predecessor under the same registry. Each change tooltip
-shows both exact counts. Missing comparisons stay unavailable, including positive
-counts following zero baselines. Six-epoch transaction and wallet line charts
+Directory and category tables default to transaction and active-wallet totals
+for the latest validated completed epoch, compared with its immediate validated
+predecessor under the same registry. The selector also offers the last six
+consecutive completed epochs (summed transactions and average wallets per epoch,
+not unique 30-day wallets) and the current incomplete epoch. Six-epoch growth
+compares only with the preceding six completed epochs, requiring twelve adjacent
+validated epochs; absent comparison data stays unavailable. Current transactions
+are confirmed observations collected so far, with the collection start shown.
+They are withheld when the live checkpoint is stale or belongs to another epoch.
+Current wallets stay pending and current growth is hidden. The progress indicator
+uses the page's reporting time, not an independently updating live clock.
+Summary cards and table metrics use the same selected period. Biggest rises and
+declines describe transaction percentage changes among the filtered DApps and
+use the table's comparison. Each change tooltip shows both underlying counts.
+Positive counts after a zero baseline have no percentage change.
+Six-epoch transaction and wallet line charts
 appear directly in each DApp’s Overview; there is no separate History tab.
 Directory rows link to the DApp website, and the DApp name opens its profile.
 TVL source attribution remains in tooltips and methodology without row links.
@@ -56,6 +67,9 @@ at the same time; it is not total Cardano TVL. Provider failures show unavailabl
 without hiding the node-based counts. Only final selected balances and provenance
 are cached for an hour in Next.js; daily histories are processed transiently and
 no extra records are added to the relay database.
+The current-epoch view uses a separate latest available provider snapshot,
+cached for five minutes and accepted only within the preceding 24 hours.
+Its actual observation time is shown; it is not a live tick or an epoch-end value.
 
 The live API filters confirmed transactions by the actual current block epoch
 and exposes its collection start, so counts reset correctly at epoch boundaries.
@@ -82,6 +96,15 @@ On Windows behind a trusted TLS-inspecting proxy, Node may need
 TLS verification.
 
 ## Hosting
+
+Changes are reviewed on the `staging` branch before production. Pushes to
+`staging` use Vercel's Preview environment and its branch preview URL; `main`
+remains the production branch for `dappsoncardano.com`. The preview uses the
+public analytics API for read-only data. No relay/indexer changes or database
+writes are part of this frontend workflow. `API_URL` must be configured for
+Preview as well as Production. After review, merge a pull request from `staging`
+into `main`; that merge triggers the production build. Do not promote or merge
+staging automatically just because its checks pass.
 
 The Vercel project `dapps-nextjs` builds the `main` branch of
 `Zeljo88/dapps-nextjs`. Production API_URL points to the HTTPS API above. Analytics
