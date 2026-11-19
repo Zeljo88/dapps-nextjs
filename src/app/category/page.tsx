@@ -3,7 +3,7 @@ import { fetchAnalytics } from "@/lib/analytics";
 import { hasRecordedActivity } from "@/lib/dapp-view";
 import { FeedUnavailable } from "@/components/ContractAnalytics";
 import { categorySlugMap, categoryDisplayName, CATEGORY_COLORS } from "@/lib/api";
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const metadata = { title: "Cardano DApp Categories", description: "Browse Cardano DApp categories with recorded on-chain activity.", alternates: { canonical: "https://dappsoncardano.com/category" } };
 const ICONS: Record<string,string> = { defi:"📊",nft:"🖼️",marketplace:"🏪",gaming:"🎮",community:"🤝",stablecoin:"💵",wallet:"👛",infrastructure:"⚙️","nft-minting":"🎨" };
 const DESCRIPTIONS: Record<string,string> = { defi:"DEXes, lending and yield protocols",nft:"Digital collectibles and art",marketplace:"NFT marketplaces",gaming:"Blockchain games",community:"Governance and social platforms",stablecoin:"Price-stable native assets",wallet:"Self-custody solutions",infrastructure:"Blockchain infrastructure","nft-minting":"Create and launch collections" };

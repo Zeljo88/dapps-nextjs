@@ -3,11 +3,11 @@ import { fetchAnalytics, fetchHistory } from "@/lib/analytics";
 import { selectEpochPeriod, directoryPeriod } from "@/lib/epoch-summary";
 import { hasRecordedActivity, tableDapp } from "@/lib/dapp-view";
 import { fetchEpochTvl, fetchCurrentTvl } from "@/lib/tvl";
-import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
+import { FeedUnavailable } from "@/components/ContractAnalytics";
 import DAppTable from "@/components/DAppTable";
 import CustomSwap from "@/components/CustomSwap";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Cardano DApps Analytics",
   description: "Explore observed Cardano DApp contract activity from our own mainnet node, with published coverage and transaction evidence.",
@@ -32,7 +32,7 @@ export default async function HomePage() {
           <p style={{ fontSize: 14, opacity: 0.85, maxWidth: 600 }}>Compare a completed epoch, six completed epochs, or current partial observations. The last completed epoch is selected by default.</p></div>
       </div>
     </div>
-    <DAppTable dapps={dapps.map(dapp => tableDapp(dapp, period, tvl[dapp.slug] ?? null, currentTvl[dapp.slug] ?? null))} period={reporting}
-      swap={<CustomSwap />} notice={<CoverageNotice status={data.status} compact />} />
+    <DAppTable dapps={dapps.map(dapp => tableDapp(dapp, period, tvl[dapp.slug] ?? null, currentTvl[dapp.slug] ?? null))} period={reporting} status={data.status}
+      swap={<CustomSwap />} />
   </main>;
 }

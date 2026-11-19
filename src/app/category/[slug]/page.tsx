@@ -5,10 +5,11 @@ import { fetchAnalytics, fetchHistory } from "@/lib/analytics";
 import { selectEpochPeriod, directoryPeriod } from "@/lib/epoch-summary";
 import { hasRecordedActivity, tableDapp } from "@/lib/dapp-view";
 import { fetchEpochTvl, fetchCurrentTvl } from "@/lib/tvl";
-import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
+import { FeedUnavailable } from "@/components/ContractAnalytics";
 import DAppTable from "@/components/DAppTable";
 import { categoryDisplayName, categorySlugMap } from "@/lib/api";
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
+export function generateStaticParams() { return Object.keys(categorySlugMap).map(slug => ({ slug })); }
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const{slug}=await params;if(!categorySlugMap[slug])notFound();return{title:`Cardano ${categoryDisplayName[slug]} DApps`,description:`Cardano ${categoryDisplayName[slug]} DApps with recorded contract activity.`,alternates:{canonical:`https://dappsoncardano.com/category/${slug}`}};}
 export default async function Category({params}:{params:Promise<{slug:string}>}) {
   const {slug}=await params;
@@ -24,6 +25,6 @@ export default async function Category({params}:{params:Promise<{slug:string}>})
   return <main style={{maxWidth:1280,margin:"0 auto",padding:"32px 24px"}}>
     <div style={{marginBottom:24,fontSize:14,color:"var(--text-muted)"}}><Link href="/category" style={{color:"var(--text-muted)",textDecoration:"none"}}>Categories</Link><span style={{margin:"0 8px"}}>›</span>{categoryDisplayName[slug]}</div>
     <h1 style={{fontSize:28,fontWeight:800,marginBottom:10}}>Cardano {categoryDisplayName[slug]} DApps</h1><p style={{color:"var(--text-secondary)",fontSize:15,lineHeight:1.6,marginBottom:24}}>Compare DApps with recorded activity. Projects without observations are hidden.</p>
-    <DAppTable dapps={dapps.map(dapp=>tableDapp(dapp,period,tvl[dapp.slug]??null,currentTvl[dapp.slug]??null))} period={reporting} notice={<CoverageNotice status={data.status} compact/>} hideFilters/>
+    <DAppTable dapps={dapps.map(dapp=>tableDapp(dapp,period,tvl[dapp.slug]??null,currentTvl[dapp.slug]??null))} period={reporting} status={data.status} hideFilters/>
   </main>;
 }

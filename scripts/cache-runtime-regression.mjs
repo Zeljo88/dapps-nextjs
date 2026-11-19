@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+const base=process.env.CACHE_TEST_BASE_URL||'http://127.0.0.1:3001';
+const mock='http://127.0.0.1:18081';
+const get=async path=>fetch(base+path,{redirect:'manual'});
+const control=async changes=>fetch(mock+'/__control',{method:'POST',body:JSON.stringify(changes)});
+const counts=async()=> (await fetch(mock+'/__counts')).json();
+await control({offline:false,stale:false,registry:'local-regression-registry',transactions:7});
+const warm=await get('/');assert.equal(warm.status,200);const html=await warm.text();
+assert.match(html,/data-metric="tvl"/);assert.match(html,/24,726/);
+assert.match(html,/data-period="completed" aria-pressed="true"/);
+const before=await counts();
+assert.ok(Number.isInteger(before['/__tvl/minswap-dex']),'Build with the local mock-tvl.cjs preload to verify provider reuse');
+for(let i=0;i<5;i++){const response=await get('/');assert.equal(response.status,200);await response.text();}
+const after=await counts();
+assert.equal(after['/v1/status'],before['/v1/status'],'Cached page hits must not query relay status again');
+assert.equal(after['/v1/history'],before['/v1/history'],'Cached page hits must not read epoch history again');
+assert.equal(after['/__tvl/minswap-dex'],before['/__tvl/minswap-dex'],'TVL must not be reparsed on each visit');
+let response=await get('/api/activity');assert.equal(response.status,200);
+assert.match(response.headers.get('cache-control'),/no-store/);assert.equal(response.headers.get('cdn-cache-control'),'no-store');
+let data=await response.json();assert.equal(data.dapps[0].observedTxEpoch,7);assert.equal(data.status.fresh,true);
+await control({transactions:12});response=await get('/api/activity');data=await response.json();assert.equal(data.dapps[0].observedTxEpoch,12,'Live counters bypass the cached page and Data Cache');
+await control({stale:true});response=await get('/api/activity');data=await response.json();assert.equal(data.status.fresh,false,'Do not trust a cached fresh flag when timestamps are old');
+await control({offline:true});response=await get('/api/activity');assert.equal(response.status,503);assert.match(response.headers.get('cache-control'),/no-store/);
+const outagePage=await get('/');assert.equal(outagePage.status,200);assert.match(await outagePage.text(),/24,726/,'Relay outage preserves the completed summary already in cache');
+await control({offline:false,stale:false,transactions:13});response=await get('/api/activity');data=await response.json();assert.equal(data.dapps[0].observedTxEpoch,13,'An outage response must not become a cached failure');
+console.log(JSON.stringify({passed:true,repeatedPageHits:5,extraStatusReads:after['/v1/status']-before['/v1/status'],extraHistoryReads:after['/v1/history']-before['/v1/history'],extraProviderReads:after['/__tvl/minswap-dex']-before['/__tvl/minswap-dex'],liveCountersUncached:true,staleCollectorRejected:true,outage503:true,completedTotalsPreserved:true,recovery:true}));

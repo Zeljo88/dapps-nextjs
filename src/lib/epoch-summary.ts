@@ -1,4 +1,5 @@
 import type { HistoryData, IndexerStatus } from "./analytics";
+import { feedIsFresh } from "./feed-freshness.ts";
 
 type Epoch = HistoryData["epochs"][number];
 export interface EpochPeriod {
@@ -108,6 +109,20 @@ export function directoryPeriod(period: EpochPeriod | null, status?: IndexerStat
     windowStartTime: period?.window[0]?.startTime ?? null, windowEndTime: period?.window[5]?.endTime ?? null,
     previousWindowStartEpoch: period?.previousWindow[0]?.epoch ?? null, previousWindowEndEpoch: period?.previousWindow[5]?.epoch ?? null,
     currentEpoch, currentStartTime, currentEndTime, asOf: now,
-    liveAvailable: currentEpoch !== null && status?.fresh === true && status.checkpoint?.epoch === currentEpoch,
+    liveAvailable: currentEpoch !== null && feedIsFresh(status, now) && status?.checkpoint?.epoch === currentEpoch,
+  };
+}
+
+// Recompute the current interval in the browser without changing validated totals.
+export function refreshDirectoryPeriod(period: ReturnType<typeof directoryPeriod>, status: IndexerStatus | null, now: number, observedAt = now) {
+  const duration = period.endTime !== null && period.startTime !== null ? period.endTime - period.startTime : 0;
+  const offset = duration === 432000 && period.completedEpoch !== null && now >= period.endTime!
+    ? Math.floor((now - period.endTime!) / duration) : null;
+  const currentEpoch = offset === null ? null : period.completedEpoch! + 1 + offset;
+  const currentStartTime = offset === null ? null : period.endTime! + offset * duration;
+  return { ...period, currentEpoch, currentStartTime,
+    currentEndTime: currentStartTime === null ? null : currentStartTime + duration,
+    asOf: observedAt,
+    liveAvailable: currentEpoch !== null && feedIsFresh(status, now) && status?.checkpoint?.epoch === currentEpoch,
   };
 }

@@ -2,7 +2,7 @@ import { fetchAnalytics } from "@/lib/analytics";
 import { hasRecordedActivity } from "@/lib/dapp-view";
 import { CoverageNotice, FeedUnavailable } from "@/components/ContractAnalytics";
 import EcosystemCharts from "@/components/EcosystemCharts";
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const metadata = { title:"Cardano Ecosystem Overview",description:"Explore the coverage of our Cardano contract activity feed.",alternates:{canonical:"https://dappsoncardano.com/ecosystem"} };
 export default async function Ecosystem() {
   const data=await fetchAnalytics().catch(()=>null);

@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
-import { selectEpochTvl, listedTvlTotal } from "../src/lib/tvl-summary.ts";
+import { selectEpochTvl, listedTvlTotal, compactProtocolTvl, selectCompactTvl } from "../src/lib/tvl-summary.ts";
 
 const end=1793483091, previousEnd=end-5*86400, now=end+86400;
 const point=(date,totalLiquidityUSD)=>({date,totalLiquidityUSD});
 const payload=points=>({id:"1494",chainTvls:{Cardano:{tvl:points},"Cardano-staking":{tvl:[point(end,999999)]}},tvl:[point(end,888888)]});
 const points=[point(end+1,999),point(end-78291,13973556),point(previousEnd-78291,14593389)];
 const selected=selectEpochTvl("minswap",payload(points),end,previousEnd,now);
+const compact=compactProtocolTvl('minswap',{...payload(points),tokens:{unneeded:'x'.repeat(100000)}});
+assert.ok(JSON.stringify(compact).length<500,'Discard unrelated token histories before caching');
+assert.deepEqual(selectCompactTvl('minswap',compact,end,previousEnd,now),selected,'Shared compact history preserves exact selection and provenance');
+assert.equal(selectCompactTvl('wingriders',compact,end,previousEnd,now),null,'Cached histories must still match reviewed protocol identity');
 assert.deepEqual(selected.current,{usd:13973556,observedAt:end-78291,epochEnd:end},"Use a pre-boundary Cardano snapshot, never a future value or staking/global aggregate");
 assert.equal(selected.previous.usd,14593389);
 assert.equal(selected.sourceUrl,"https://defillama.com/protocol/minswap-dex");

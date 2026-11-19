@@ -62,7 +62,7 @@ const gapTwelve=selectEpochPeriod(history(twelve.filter(e=>e.epoch!==5)),'review
 assert.equal(gapTwelve.previousWindow.length,0,'A missing epoch invalidates the comparison window');
 assert.equal(sixEpochComparison('test',gapTwelve).windowWalletGrowth,null);
 const now=12*432000+100;
-const freshStatus={fresh:true,checkpoint:{epoch:13}};
+const freshStatus={fresh:true,phase:'running',lastReceivedAt:now-10,lagBlocks:0,checkpoint:{epoch:13,time:now-10}};
 const live=directoryPeriod(twelvePeriod,freshStatus,now);
 assert.equal(live.currentEpoch,13);
 assert.equal(live.currentStartTime,12*432000);
