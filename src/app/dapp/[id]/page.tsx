@@ -9,7 +9,11 @@ import CategoryBadge from "@/components/CategoryBadge";
 import DappLogo from "@/components/DappLogo";
 import TrackedDappTabs from "@/components/TrackedDappTabs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+export async function generateStaticParams() {
+  const data = await fetchAnalytics().catch(() => null);
+  return (data?.dapps ?? []).filter(hasRecordedActivity).map(dapp => ({ id: dapp.slug }));
+}
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const data = await fetchAnalytics().catch(() => null);

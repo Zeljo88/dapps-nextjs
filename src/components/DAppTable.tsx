@@ -11,6 +11,12 @@ import CategoryBadge from "./CategoryBadge";
 import DappLogo from "./DappLogo";
 import MetricTooltip from "./MetricTooltip";
 import CompactStat from "./CompactStat";
+import type { IndexerStatus } from "@/lib/analytics";
+import { refreshDirectoryPeriod } from "@/lib/epoch-summary";
+import { mergeLiveRows, usableLiveSnapshot } from "@/lib/live-directory";
+import { useClock } from "@/lib/use-clock";
+import { useLiveDirectory } from "@/lib/use-live-directory";
+import { CoverageNotice } from "./CoverageNotice";
 
 type TableDapp = ReturnType<typeof tableDapp>;
 type Period = ReturnType<typeof directoryPeriod>;
@@ -24,13 +30,18 @@ const SCOPES: Record<string, string> = {
   wingriders: "Transactions and wallets cover registered WingRiders V1 constant-product and stableswap request contracts. V2, pool-only, farming and governance activity are outside this coverage. Wallets count identifiable request-owner keys, not arbitrary beneficiaries.",
 };
 
-export default function DAppTable({ dapps, period, hideFilters, swap, notice }: { dapps: TableDapp[]; period: Period; hideFilters?: boolean; swap?: ReactNode; notice?: ReactNode }) {
+export default function DAppTable({ dapps: initialDapps, period: initialPeriod, status, hideFilters, swap, notice }: { dapps: TableDapp[]; period: Period; status?: IndexerStatus; hideFilters?: boolean; swap?: ReactNode; notice?: ReactNode }) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("epochTransactions");
   const [asc, setAsc] = useState(false);
   const [page, setPage] = useState(1);
   const [view, setView] = useState<DirectoryView>("completed");
+  const received = useLiveDirectory(view === "current");
+  const now = useClock(received?.checkedAt ?? initialPeriod.asOf);
+  const snapshot = usableLiveSnapshot(received?.data ?? null, status?.registryDigest, now);
+  const period = refreshDirectoryPeriod(initialPeriod, view === "current" ? snapshot?.status ?? null : status ?? null, now, snapshot?.generatedAt ?? now);
+  const dapps = mergeLiveRows(initialDapps, snapshot, now);
   const pageSize = 25;
   const displayed = useMemo(() => dapps.map(dapp => viewDapp(dapp, view, period)), [dapps, view, period]);
   const filtered = useMemo(() => {
@@ -67,9 +78,9 @@ export default function DAppTable({ dapps, period, hideFilters, swap, notice }: 
   const walletsLabel = isCurrent ? "Active wallets (pending)" : isSix ? "Avg wallets / epoch" : "Active wallets";
   const tvlLabel = isCurrent ? "Latest TVL snapshot" : "TVL · near period end";
   const tvlHelp = "TVL is an external DefiLlama Cardano estimate in US dollars, with its own protocol coverage. Completed views use the latest daily snapshot at or before the period’s end, at most 24 hours earlier. Current view uses a recent snapshot at its displayed time. TVL is a balance, never a sum across epochs; prices can move it without deposits. Our observed contract balances are not substituted as TVL.";
-  const transactionHelp = TRANSACTIONS + (isSix ? " This view sums six consecutive validated completed epochs." : isCurrent ? " This view is an incomplete count collected so far in the current epoch. Activity before collection began may be missing. Refresh for updated counts." : "");
+  const transactionHelp = TRANSACTIONS + (isSix ? " This view sums six consecutive validated completed epochs." : isCurrent ? " This view is an incomplete count collected so far in the current epoch. Activity before collection began may be missing. Updates every 30 seconds while this view is visible." : "");
   const walletHelp = isCurrent ? "Current-epoch wallet counts are pending completed-epoch validation. Pending does not mean zero." : WALLETS + (isSix ? " This view shows the arithmetic average across six epochs, not unique wallets over 30 days. The same wallet can appear in multiple epochs." : "");
-  const reportingHelp = isCurrent ? `As of ${utcTime(period.asOf)}. The current epoch is incomplete. Transactions are observations so far; active wallets await validation. No growth against a full epoch is shown. ${period.liveAvailable ? "Refresh for updated observations." : "The live feed is delayed or does not match this epoch, so transaction counts are unavailable."}`
+  const reportingHelp = isCurrent ? `As of ${utcTime(period.asOf)}. The current epoch is incomplete. Transactions are observations so far; active wallets await validation. No growth against a full epoch is shown. ${period.liveAvailable ? "Updates every 30 seconds while this view is visible." : "The live feed is delayed or does not match this epoch, so transaction counts are unavailable."}`
     : isSix ? "Transactions are summed over exactly six consecutive validated completed epochs. Wallets show the average per epoch, not unique 30-day wallets. Growth compares these six epochs only with the preceding six; at least twelve consecutive epochs are needed."
     : start !== null && end !== null ? `Transactions and wallets cover epoch ${epochLabel}: ${utcTime(start)} to ${utcTime(end)}. The unfinished epoch is excluded. All activity figures come from our own node’s validated summaries.` : "Validated completed-epoch history is unavailable. Partial live counts are not substituted.";
   const progress = start !== null && end !== null ? Math.max(0, Math.min(100, (period.asOf - start) / (end - start) * 100)) : null;
@@ -84,12 +95,12 @@ export default function DAppTable({ dapps, period, hideFilters, swap, notice }: 
         <CompactStat label="Period length (days)" value={start !== null && end !== null ? (end - start) / 86400 : null} color="#10b981" />
       </div>
     </div>
-    {notice}
+    {status ? <CoverageNotice status={view === "current" ? snapshot?.status ?? { ...status, fresh: false } : status} compact /> : notice}
     <div data-testid="epoch-directory-period" className="card epoch-period">
       <div><div className="epoch-period-heading"><h2>{title}</h2><MetricTooltip label="About the reporting period" text={reportingHelp} /></div>
         <p>{start !== null && end !== null ? `${epochDate(start)} – ${epochDate(end)} · UTC · ${isSix ? 30 : 5} days` : "Reporting period unavailable"}</p></div>
       <div data-testid="growth-period"><strong>{isCurrent ? "Growth not shown for an unfinished epoch" : comparison.previous ? `Changes: ${comparison.current} compared with ${comparison.previous}` : isSix ? "Previous 6-epoch period unavailable" : "Previous-epoch comparison unavailable"}</strong><p>{isCurrent ? `Observed as of ${utcTime(period.asOf)}` : isSix ? "6 completed epochs versus the preceding 6" : "Two completed 5-day epochs"}</p></div>
-      {isCurrent && progress !== null && <div className="epoch-progress"><label htmlFor="current-epoch-progress">Epoch progress as of this page load: {progress.toFixed(1)}%</label><progress id="current-epoch-progress" value={progress} max={100} /><span>{period.liveAvailable ? "Partial observations · refresh to update" : "Live feed delayed · observations unavailable"}</span></div>}
+      {isCurrent && progress !== null && <div className="epoch-progress"><label htmlFor="current-epoch-progress">Epoch progress at observation: {progress.toFixed(1)}%</label><progress id="current-epoch-progress" value={progress} max={100} /><span>{period.liveAvailable ? "Partial observations · updates every 30 seconds" : "Live feed delayed · observations unavailable"}</span></div>}
     </div>
     {(gainers.length > 0 || decliners.length > 0) && <div className="epoch-movers" aria-label="Transaction changes among shown DApps">{gainers[0] && <span>Largest transaction rise: <strong>{gainers[0].name} {growthText(gainers[0].txGrowth)}</strong></span>}{decliners[0] && <span>Largest transaction decline: <strong>{decliners[0].name} {growthText(decliners[0].txGrowth)}</strong></span>}<span>Among shown DApps · same comparison as the table</span></div>}
     <div className="epoch-toolbar">
@@ -140,7 +151,7 @@ function TvlCell({ name, data, current }: { name: string; data: EpochTvl | null;
   if (!point) return <div><MetricTooltip label={`${name} TVL unavailable`} text="A recent, correctly mapped DefiLlama Cardano TVL snapshot is unavailable. Unknown values stay unavailable; we do not replace them with partial observed balances."><strong className="epoch-value">—</strong><Info size={14} aria-hidden="true" /></MetricTooltip><span className="epoch-previous">Unavailable</span></div>;
   const age = point.epochEnd - point.observedAt;
   const amount = point.usd.toLocaleString("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 2 });
-  const detail = `${name} TVL: ${point.usd.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 })}. Source: DefiLlama, ${data.scope}. Observed ${utcTime(point.observedAt)}. ${current ? "Latest available snapshot, cached for up to five minutes; not a live tick." : `${Math.floor(age / 3600)}h ${Math.floor(age % 3600 / 60)}m before the period ended; this daily snapshot is not an exact epoch-boundary measurement.`} Separate staking, borrowed and pool2 series are excluded. Provider coverage differs from our tracked activity. Token prices can change USD TVL without deposits or withdrawals. This is not a total summed across epochs.`;
+  const detail = `${name} TVL: ${point.usd.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 })}. Source: DefiLlama, ${data.scope}. Observed ${utcTime(point.observedAt)}. ${current ? "Latest available daily snapshot, refreshed at most hourly; not a live tick." : `${Math.floor(age / 3600)}h ${Math.floor(age % 3600 / 60)}m before the period ended; this daily snapshot is not an exact epoch-boundary measurement.`} Separate staking, borrowed and pool2 series are excluded. Provider coverage differs from our tracked activity. Token prices can change USD TVL without deposits or withdrawals. This is not a total summed across epochs.`;
   return <div><MetricTooltip label={`${name} TVL snapshot details`} text={detail}><strong className="epoch-value">{age ? "≈ " : ""}{amount}</strong><Info size={14} aria-hidden="true" /></MetricTooltip><span className="epoch-previous">{current ? `Observed ${utcTime(point.observedAt)}` : age ? `~${Math.round(age / 3600)}h before period end` : "At period end"}</span></div>;
 }
 function epochDate(value: number) { return new Date(value * 1000).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }

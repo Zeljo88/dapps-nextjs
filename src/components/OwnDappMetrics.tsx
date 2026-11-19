@@ -2,6 +2,7 @@ import type { HistoryData, OwnMetrics } from "@/lib/analytics";
 import { selectEpochPeriod } from "@/lib/epoch-summary";
 import { formatAda, metricDateTime as dateTime } from "@/lib/own-metrics";
 import MetricTooltip from "./MetricTooltip";
+import { useClock } from "@/lib/use-clock";
 
 function value(number: number | null | undefined) { return typeof number === "number" && Number.isFinite(number) && number >= 0 ? number.toLocaleString("en-US") : "—"; }
 function Stat({ label, amount, help }: { label: string; amount: string; help: string }) {
@@ -16,6 +17,8 @@ export default function OwnDappMetrics({ slug, registryDigest, history, metrics 
   const chainTransactions = completed?.validation.chainTransactionsInspected;
   const share = dapp && typeof chainTransactions === "number" && chainTransactions > 0 && dapp.transactions <= chainTransactions ? dapp.transactions / chainTransactions * 100 : null;
   const recorded = metrics?.recorded;
+  const now = useClock(metrics?.generatedAt ?? 0);
+  const fresh = recorded?.fresh === true && metrics && now >= metrics.generatedAt && now - metrics.generatedAt < 180;
   const averageFee = recorded?.averageNetworkFeeAda !== null && recorded?.averageNetworkFeeAda !== undefined ? Number(recorded.averageNetworkFeeAda) : null;
   return <div className="own-metrics" data-testid="own-dapp-metrics">
     <section aria-label="Completed epoch metrics">
@@ -31,7 +34,7 @@ export default function OwnDappMetrics({ slug, registryDigest, history, metrics 
     <section aria-label="Recorded period metrics" data-testid="own-recorded-metrics">
       <h2>Recorded period · partial observations</h2>
       {recorded ? <>
-        <p className="own-context">{dateTime(recorded.fromTime)} – {dateTime(recorded.throughTime)} · Through confirmed block {value(recorded.confirmedHeight)} · {recorded.fresh ? "Feed current" : "Snapshot delayed"}</p>
+        <p className="own-context">{dateTime(recorded.fromTime)} – {dateTime(recorded.throughTime)} · Through confirmed block {value(recorded.confirmedHeight)} · {fresh ? "Feed current" : "Snapshot delayed"}</p>
         <p className="own-note">These figures cover the collector’s recorded period, not a complete historical epoch. {value(recorded.transactions)} transactions · {metrics?.confirmationDepth} subsequent blocks required.</p>
         <div className="own-stat-grid">
           <Stat label="Network fees paid" amount={formatAda(recorded.networkFeesLovelace)} help="Total Cardano network fees on the recorded transactions touching this DApp, counted once per transaction within this DApp. These are network costs, not trading fees or DApp revenue. Shared transactions can appear in several DApps’ totals." />

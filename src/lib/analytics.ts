@@ -1,5 +1,7 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
+import { feedIsFresh } from "./feed-freshness";
 
 export interface TrackedDapp {
   slug: string; name: string; category: string; subCategory?: string; description: string; website: string;
@@ -11,6 +13,7 @@ export interface TrackedDapp {
   confirmationDepth: number; fresh: boolean;
 }
 export interface IndexerStatus {
+  snapshotAt?: number;
   fresh: boolean; phase: string; startedAt: number | null; lastReceivedAt: number | null;
   checkpoint: { height: number; slot: number; time: number; epoch: number; hash: string } | null;
   watchedScripts: number; lagBlocks: number | null; registryDigest: string;
@@ -40,23 +43,30 @@ export interface OwnMetrics {
     observedLovelace: string; observedUnspentOutputs: number; assetCount: number; assetsLimit: number;
     assets: { policyId: string; assetNameHex: string; quantity: string }[] };
 }
-async function read<T>(path: string): Promise<T> {
+async function read<T>(path: string, revalidate = 0): Promise<T> {
   const origin = process.env.API_URL?.trim() || "http://127.0.0.1:8000";
   const url = new URL(origin);
   const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
   if (process.env.NODE_ENV === "production" && (!process.env.API_URL || (url.protocol !== "https:" && !local))) throw new Error("API_URL must specify the HTTPS analytics origin");
-  const response = await fetch(`${origin.replace(/\/+$/, "")}${path}`, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+  const response = await fetch(`${origin.replace(/\/+$/, "")}${path}`, {
+    ...(revalidate ? { next: { revalidate } } : { cache: "no-store" as const }),
+    signal: AbortSignal.timeout(10000),
+  });
   if (!response.ok) throw new Error(`Analytics request failed (${response.status})`);
   return response.json();
 }
-export const fetchAnalytics = cache(async () => {
+export async function fetchLiveAnalytics() {
   const [status, dapps] = await Promise.all([read<IndexerStatus>("/v1/status"), read<TrackedDapp[]>("/v1/dapps")]);
   if (!Array.isArray(dapps) || typeof status.fresh !== "boolean") throw new Error("Invalid analytics response");
-  return { status, dapps };
-});
+  const fresh = feedIsFresh(status);
+  return { status: { ...status, fresh, snapshotAt: Date.now() / 1000 }, dapps: dapps.map(dapp => ({ ...dapp, fresh: fresh && dapp.fresh })) };
+}
+const readCachedAnalytics = unstable_cache(fetchLiveAnalytics, ["analytics-snapshot-v1"], { revalidate: 300 });
+export const fetchAnalytics = cache(readCachedAnalytics);
 export function fetchEvents(slug: string) { return read<{ events: ContractEvent[] }>(`/v1/dapps/${encodeURIComponent(slug)}/events?limit=30`); }
-export const fetchHistory = cache(() => read<HistoryData>("/v1/history"));
-export const fetchOwnMetrics = cache((slug: string) => read<OwnMetrics>(`/staging/v1/dapps/${encodeURIComponent(slug)}/metrics`));
+export const fetchHistory = cache(() => read<HistoryData>("/v1/history", 300));
+export const fetchDirectoryDapps = cache(() => read<TrackedDapp[]>("/v1/dapps", 3600));
+export const fetchOwnMetrics = cache((slug: string) => read<OwnMetrics>(`/staging/v1/dapps/${encodeURIComponent(slug)}/metrics`, 60));
 export function dateTime(value: number | null): string {
   return value === null ? "Not available" : new Date(value * 1000).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
 }

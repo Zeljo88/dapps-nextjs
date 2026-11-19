@@ -116,3 +116,38 @@ pages fetch without persistent caching so an old successful response cannot be
 presented as a current feed. The Python API and Ogmios stay bound to loopback on
 the relay, behind nginx. Certificate renewal and daily local SQLite backups are
 enabled. Off-server backups and external alerting remain follow-up work.
+
+
+## Staging CPU optimizations
+
+The directory, category pages and ecosystem use five-minute ISR. DApp profiles
+use one-minute ISR; the sitemap uses hourly regeneration and reads the DApp
+catalog without querying live node status. The www redirect is a routing rule,
+so static assets and every page no longer invoke a catch-all proxy function.
+
+The Current epoch table fetches `/api/activity` with no browser or CDN cache,
+only while selected and visible, every 30 seconds and on focus. A failed request,
+response older than 45 seconds, registry mismatch, stale received block or chain
+checkpoint, or epoch rollover withholds current counts. Cached SSR counters are
+never a live fallback. Current wallets stay pending and no partial/full growth
+comparison is introduced. Feed badges expire on open pages too.
+
+Both TVL views share one hourly cache of compact, validated Cardano observations
+per provider protocol. Full provider token histories are discarded after parsing.
+The 24-hour snapshot bound and existing protocol identity checks remain in place.
+This refresh cadence applies to external daily TVL, not live epoch transactions.
+
+Run `npm run test:live`, `npm run test:epochs`, `npm run test:tvl`, and
+`npm run test:own` for freshness, rollover and data-boundary checks. Local runtime
+checks can use `node scripts/mock-analytics.mjs` on port 18081; its data and control
+routes are test fixtures and are never used by staging or production. The real
+`API_URL` remains https://api.dappsoncardano.com. Relay/API downtime must be
+resolved separately; frontend caching cannot generate missing observations or
+remove a Vercel team usage pause.
+
+For the isolated full runtime check, start `node scripts/mock-analytics.mjs`, set
+`API_URL=http://127.0.0.1:18081` and
+`NODE_OPTIONS=--require=./scripts/mock-tvl.cjs` in a local terminal, then run
+`npm run build` and `npm start -- --port 3001`. From another terminal, run
+`npm run test:cache-runtime`. The TVL preload is test-only; do not configure it
+on Vercel. Remove those temporary environment settings when testing is done.

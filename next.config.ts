@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      { source: "/:path*", has: [{ type: "host", value: "www.dappsoncardano.com" }], destination: "https://dappsoncardano.com/:path*", permanent: true },
       { source: "/analytics/globalstats", destination: "/ecosystem", permanent: true },
       { source: "/releases/:path*",        destination: "/",          permanent: true },
       { source: "/crafted/:path*",         destination: "/",          permanent: true },
